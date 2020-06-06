@@ -2,12 +2,13 @@
 import logging
 from typing import Any, Dict, Union
 
-from marshmallow import Schema, fields, post_dump, post_load, pre_load
+from marshmallow import Schema, fields, post_dump, post_load, pre_load, validate
 
 from ..exceptions import AIOMySensorsMessageError
 
 _LOGGER = logging.getLogger(__name__)
 
+BROADCAST_ID = 255
 DELIMITER = ";"
 
 
@@ -37,7 +38,12 @@ class Message:
 class MessageSchema(Schema):
     """Represent a message schema."""
 
-    node_id = fields.Int(required=True)
+    node_id = fields.Int(
+        required=True,
+        validate=validate.Range(
+            min=0, max=BROADCAST_ID, error="Not valid node_id: {input}",
+        ),
+    )
     child_id = fields.Int(required=True)
     command = fields.Int(required=True)
     ack = fields.Int(required=True)
