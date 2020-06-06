@@ -16,6 +16,7 @@ It will also install this package in development mode, so that code changes are 
 - Here's a list of development tools we use.
   - [black](https://pypi.org/project/black/)
   - [flake8](https://pypi.org/project/flake8/)
+  - [mypy](https://pypi.org/project/mypy/)
   - [pydocstyle](https://pypi.org/project/pydocstyle/)
   - [pylint](https://pypi.org/project/pylint/)
   - [pytest](https://pypi.org/project/pytest/)
