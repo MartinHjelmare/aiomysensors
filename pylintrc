@@ -6,3 +6,8 @@ reports=no
 disable=
   bad-continuation,
   locally-disabled,
+  too-few-public-methods
+
+
+max-args=9
+max-attributes=12
