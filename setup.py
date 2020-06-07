@@ -10,6 +10,8 @@ VERSION = (PROJECT_DIR / "aiomysensors" / "VERSION").read_text().strip()
 GITHUB_URL = "https://github.com/MartinHjelmare/aiomysensors"
 DOWNLOAD_URL = f"{GITHUB_URL}/archive/master.zip"
 
+REQUIRES = ["marshmallow"]
+
 
 setup(
     name="aiomysensors",
@@ -23,7 +25,7 @@ setup(
     download_url=DOWNLOAD_URL,
     packages=find_packages(exclude=["contrib", "docs", "tests*"]),
     python_requires=">=3.7",
-    install_requires=[],
+    install_requires=REQUIRES,
     include_package_data=True,
     license="Apache-2.0",
     zip_safe=False,
