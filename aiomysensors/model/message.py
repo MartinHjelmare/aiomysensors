@@ -1,9 +1,9 @@
 """Provide a mysensors message abstraction."""
 from typing import Any, Dict, Union
 
-from marshmallow import Schema, fields, post_dump, post_load, pre_load, validate
+from marshmallow import Schema, fields, post_dump, post_load, pre_load
 
-from .const import BROADCAST_ID
+from .const import NODE_ID_FIELD
 
 DELIMITER = ";"
 
@@ -40,12 +40,7 @@ class Message:
 class MessageSchema(Schema):
     """Represent a message schema."""
 
-    node_id = fields.Int(
-        required=True,
-        validate=validate.Range(
-            min=0, max=BROADCAST_ID, error="Not valid node_id: {input}",
-        ),
-    )
+    node_id = NODE_ID_FIELD
     child_id = fields.Int(required=True)
     command = fields.Int(required=True)
     ack = fields.Int(required=True)

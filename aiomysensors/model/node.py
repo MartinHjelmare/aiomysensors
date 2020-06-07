@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 
 from marshmallow import Schema, fields, post_load, validate
 
-from .const import BROADCAST_ID
+from .const import NODE_ID_FIELD
 
 
 class Node:
@@ -72,8 +72,8 @@ class Child:
 class ChildSchema(Schema):
     """Represent a child sensor schema."""
 
-    child_id = fields.Int()
-    child_type = fields.Int()
+    child_id = fields.Int(required=True)
+    child_type = fields.Int(required=True)
     description = fields.Str()
     values = fields.Dict(keys=fields.Int(), values=fields.Str())
 
@@ -87,12 +87,7 @@ class ChildSchema(Schema):
 class NodeSchema(Schema):
     """Represent a node schema."""
 
-    node_id = fields.Int(
-        required=True,
-        validate=validate.Range(
-            min=0, max=BROADCAST_ID, error="Not valid node_id: {input}",
-        ),
-    )
+    node_id = NODE_ID_FIELD
     node_type = fields.Int(required=True)
     protocol_version = fields.Str(required=True)
     children = fields.Dict(keys=fields.Int(), values=fields.Nested(ChildSchema))
