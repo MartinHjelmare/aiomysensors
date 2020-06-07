@@ -1,0 +1,1 @@
+"""Provide the aiomysensors model."""
