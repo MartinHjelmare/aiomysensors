@@ -3,30 +3,37 @@ from typing import Any, Dict, Union
 
 from marshmallow import Schema, fields, post_dump, post_load, pre_load, validate
 
-BROADCAST_ID = 255
+from .const import BROADCAST_ID
+
 DELIMITER = ";"
 
 
 class Message:
     """Represent a message from the gateway."""
 
-    # pylint: disable=too-few-public-methods
-
-    def __init__(self, **data: Any) -> None:
+    def __init__(
+        self,
+        node_id: int = 0,
+        child_id: int = 0,
+        command: int = 0,
+        ack: int = 0,
+        message_type: int = 0,
+        payload: str = "",
+    ) -> None:
         """Set up message."""
-        self.node_id: int = data.get("node_id", 0)
-        self.child_id: int = data.get("child_id", 0)
-        self.command: int = data.get("command", 0)
-        self.ack: int = data.get("ack", 0)
-        self.type: int = data.get("type", 0)
-        self.payload: str = data.get("payload", "")
+        self.node_id = node_id
+        self.child_id = child_id
+        self.command = command
+        self.ack = ack
+        self.message_type = message_type
+        self.payload = payload
 
     def __repr__(self) -> str:
         """Return the representation."""
         return (
             f"{type(self).__name__}(node_id={self.node_id}, child_id={self.child_id}, "
-            f"command={self.command}, ack={self.ack}, type={self.type}, "
-            f"payload={self.payload})"
+            f"command={self.command}, ack={self.ack}, "
+            f"message_type={self.message_type}, payload={self.payload})"
         )
 
 
@@ -42,15 +49,13 @@ class MessageSchema(Schema):
     child_id = fields.Int(required=True)
     command = fields.Int(required=True)
     ack = fields.Int(required=True)
-    type = fields.Int(required=True)
+    message_type = fields.Int(required=True)
     payload = fields.Str(required=True)
 
     class Meta:
         """Schema options."""
 
-        # pylint: disable=too-few-public-methods
-
-        fields = ("node_id", "child_id", "command", "ack", "type", "payload")
+        fields = ("node_id", "child_id", "command", "ack", "message_type", "payload")
         ordered = True
 
     @pre_load
