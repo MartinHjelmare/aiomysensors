@@ -1,12 +1,7 @@
 """Provide a mysensors message abstraction."""
-import logging
 from typing import Any, Dict, Union
 
 from marshmallow import Schema, fields, post_dump, post_load, pre_load, validate
-
-from ..exceptions import AIOMySensorsMessageError
-
-_LOGGER = logging.getLogger(__name__)
 
 BROADCAST_ID = 255
 DELIMITER = ";"
@@ -62,15 +57,8 @@ class MessageSchema(Schema):
     def to_dict(self, in_data: str, **kwargs: Any) -> Dict[str, str]:
         """Transform message string to a dict."""
         # pylint: disable=unused-argument
-        try:
-            list_data = in_data.rstrip().split(DELIMITER)
-            out_data = dict(zip(self.fields, list_data))
-        except ValueError as exc:
-            _LOGGER.warning(
-                "Error decoding message from gateway, bad data received: %s",
-                in_data.rstrip(),
-            )
-            raise AIOMySensorsMessageError from exc
+        list_data = in_data.rstrip().split(DELIMITER)
+        out_data = dict(zip(self.fields, list_data))
         return out_data
 
     @post_load
