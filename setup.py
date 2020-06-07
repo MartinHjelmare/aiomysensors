@@ -5,7 +5,7 @@ from setuptools import find_packages, setup
 
 PROJECT_DIR = Path(__file__).parent.resolve()
 README_FILE = PROJECT_DIR / "README.md"
-LONG_DESCR = README_FILE.read_text(encoding="utf-8")
+LONG_DESCRIPTION = README_FILE.read_text(encoding="utf-8")
 VERSION = (PROJECT_DIR / "aiomysensors" / "VERSION").read_text().strip()
 GITHUB_URL = "https://github.com/MartinHjelmare/aiomysensors"
 DOWNLOAD_URL = f"{GITHUB_URL}/archive/master.zip"
@@ -17,7 +17,7 @@ setup(
     name="aiomysensors",
     version=VERSION,
     description="Provide a package for aiomysensors",
-    long_description=LONG_DESCR,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     author="Martin Hjelmare",
     author_email="marhje52@gmail.com",
