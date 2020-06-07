@@ -1,6 +1,5 @@
 """Test the message model."""
 import pytest
-
 from marshmallow.exceptions import ValidationError
 
 from aiomysensors.model.message import Message, MessageSchema
