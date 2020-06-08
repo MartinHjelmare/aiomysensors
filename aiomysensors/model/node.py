@@ -2,9 +2,11 @@
 from typing import Any, Dict, Optional
 
 from marshmallow import Schema, fields, post_load, validate
+from marshmallow.exceptions import ValidationError
 
-from ..exceptions import AIOMySensorsMissingChildError
+from ..exceptions import AIOMySensorsInvalidMessageError, AIOMySensorsMissingChildError
 from .const import NODE_ID_FIELD
+from .message import Message, MessageSchema
 
 
 class Node:
@@ -60,6 +62,32 @@ class Node:
         if child_id not in self.children:
             raise AIOMySensorsMissingChildError(child_id)
         self.children.pop(child_id)
+
+    def set_child_value(
+        self, child_id: int, value_type: int, value: str, ack: int = 0
+    ) -> None:
+        """Set a child sensor's value."""
+        if child_id not in self.children:
+            raise AIOMySensorsMissingChildError(child_id)
+
+        command = 1
+        msg = Message(
+            node_id=self.node_id,
+            child_id=child_id,
+            command=command,
+            ack=ack,
+            message_type=value_type,
+            payload=value,
+        )
+        msg_schema = MessageSchema()
+        try:  # Do roundtrip to validate message
+            msg_dump = msg_schema.dump(msg)
+            msg = msg_schema.load(msg_dump)
+        except (ValueError, ValidationError) as exc:
+            raise AIOMySensorsInvalidMessageError from exc
+
+        child = self.children[msg.child_id]
+        child.values[msg.message_type] = msg.payload
 
 
 class Child:
