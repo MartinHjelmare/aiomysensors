@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 
 from marshmallow import Schema, fields, post_load, validate
 
+from ..exceptions import AIOMySensorsMissingChildError
 from .const import NODE_ID_FIELD
 
 
@@ -41,6 +42,24 @@ class Node:
             f"sketch_version={self.sketch_version}, "
             f"battery_level={self.battery_level}, heartbeat={self.heartbeat})"
         )
+
+    def add_child(
+        self,
+        child_id: int,
+        child_type: int,
+        description: str = "",
+        values: Optional[Dict[int, str]] = None,
+    ) -> None:
+        """Create and add a child sensor."""
+        self.children[child_id] = Child(
+            child_id, child_type, description=description, values=values
+        )
+
+    def remove_child(self, child_id: int) -> None:
+        """Remove a child sensor."""
+        if child_id not in self.children:
+            raise AIOMySensorsMissingChildError(child_id)
+        self.children.pop(child_id)
 
 
 class Child:
