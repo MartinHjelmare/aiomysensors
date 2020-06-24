@@ -50,7 +50,7 @@ class CommandField(fields.Field):
     """Represent a command field."""
 
     def validate_command(self, *, value: str, data: Optional[Mapping[str, Any]]) -> int:
-        """Serialize the command field."""
+        """Validate the command field."""
         assert data is not None  # Satisfy typing.
         try:
             command = int(value)
