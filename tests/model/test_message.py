@@ -47,3 +47,7 @@ def test_load_bad_message(schema):
     # Message that fails loading
     with pytest.raises(ValidationError):
         schema.load("bad;bad;bad;bad;bad;bad\n")
+
+    # Message with incorrect child id and command type combination
+    with pytest.raises(ValidationError):
+        schema.load("1;255;1;0;0;0\n")
