@@ -62,15 +62,15 @@ class CommandField(fields.Field):
         )
         protocol = get_protocol(protocol_version)
         # Dynamic import of the protocol makes typing hard.
-        Command = protocol.Command  # type: ignore
+        command_enum = protocol.Command  # type: ignore
 
-        valid_commands = [member.value for member in tuple(Command)]
+        valid_commands = [member.value for member in tuple(command_enum)]
         child_id = int(data["child_id"])
         if child_id == SYSTEM_CHILD_ID:
             valid_commands = [
-                Command.presentation.value,
-                Command.internal.value,
-                Command.stream.value,
+                command_enum.presentation.value,
+                command_enum.internal.value,
+                command_enum.stream.value,
             ]
 
         if command not in valid_commands:
