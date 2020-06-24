@@ -1,4 +1,5 @@
 """Provide a MySensors message abstraction."""
+from types import ModuleType
 from typing import Any, Dict, Mapping, Optional, Union
 
 from marshmallow import (
@@ -46,31 +47,48 @@ class Message:
         )
 
 
+class ChildIdField(fields.Field):
+    """Represent a child id field."""
+
+    def _deserialize(
+        self,
+        value: str,
+        attr: Optional[str],
+        data: Optional[Mapping[str, Any]],
+        **kwargs: Any,
+    ) -> int:
+        assert data is not None  # Satisfy typing.
+        protocol_version = self.context.get(
+            "protocol_version", DEFAULT_PROTOCOL_VERSION
+        )
+        protocol = get_protocol(protocol_version)
+        return validate_child_id(value=value, data=data, protocol=protocol)
+
+
 class CommandField(fields.Field):
     """Represent a command field."""
 
     def validate_command(self, *, value: str, data: Optional[Mapping[str, Any]]) -> int:
         """Validate the command field."""
         assert data is not None  # Satisfy typing.
-        try:
-            command = int(value)
-        except ValueError as exc:
-            raise ValidationError("The command type must be an integer.") from exc
+        command = validate_command(value)
 
         protocol_version = self.context.get(
             "protocol_version", DEFAULT_PROTOCOL_VERSION
         )
         protocol = get_protocol(protocol_version)
         # Dynamic import of the protocol makes typing hard.
-        command_enum = protocol.Command  # type: ignore
+        command_type = protocol.Command  # type: ignore
 
-        valid_commands = [member.value for member in tuple(command_enum)]
-        child_id = int(data["child_id"])
+        valid_commands = [member.value for member in tuple(command_type)]
+        child_id = validate_child_id(
+            value=data["child_id"], data=data, protocol=protocol
+        )
         if child_id == SYSTEM_CHILD_ID:
             valid_commands = [
-                command_enum.presentation.value,
-                command_enum.internal.value,
-                command_enum.stream.value,
+                command_type.presentation.value,
+                command_type.internal.value,
+                command_type.stream.value,
             ]
 
         if command not in valid_commands:
@@ -95,7 +113,7 @@ class MessageSchema(Schema):
     """Represent a message schema."""
 
     node_id = NODE_ID_FIELD
-    child_id = fields.Int(required=True)
+    child_id = ChildIdField(required=True)
     command = CommandField(required=True)
     ack = fields.Int(required=True, validate=validate.OneOf((0, 1)))
     message_type = fields.Int(required=True)
@@ -126,3 +144,55 @@ class MessageSchema(Schema):
         """Serialize message from a dict to a MySensors message string."""
         # pylint: disable=unused-argument
         return f"{DELIMITER.join([str(data[field]) for field in self.fields])}\n"
+
+
+def validate_child_id(
+    *, value: str, data: Mapping[str, Any], protocol: ModuleType
+) -> int:
+    """Validate the child id field."""
+    try:
+        child_id = int(value)
+    except ValueError as exc:
+        raise ValidationError("The child_id type must be an integer.") from exc
+
+    child_range = validate.Range(
+        min=0, max=SYSTEM_CHILD_ID, error="Not valid child_id: {input}"
+    )
+    child_range(child_id)
+
+    # Dynamic import of the protocol makes typing hard.
+    command_type = protocol.Command  # type: ignore
+    command = validate_command(data["command"])
+    message_type = validate_message_type(data["message_type"])
+    internal_type = protocol.Internal  # type: ignore
+
+    if command == command_type.internal and message_type in [
+        internal_type.I_ID_REQUEST,
+        internal_type.I_ID_RESPONSE,
+    ]:
+        return child_id
+
+    if command in (command_type.internal, command_type.stream):
+        valid_child_id = SYSTEM_CHILD_ID
+        error = f"When message command is {command}, child_id must be {SYSTEM_CHILD_ID}"
+
+        if child_id != valid_child_id:
+            raise ValidationError(error)
+
+    return child_id
+
+
+def validate_command(value: str) -> int:
+    """Validate a command."""
+    try:
+        return int(value)
+    except ValueError as exc:
+        raise ValidationError("The command type must be an integer.") from exc
+
+
+def validate_message_type(value: str) -> int:
+    """Validate a message type."""
+    try:
+        return int(value)
+    except ValueError as exc:
+        raise ValidationError("The message type must be an integer.") from exc

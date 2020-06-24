@@ -42,11 +42,54 @@ def test_load(schema):
     assert msg.payload == "57"
 
 
+def test_load_internal_id_request(schema):
+    """Test load internal id request message."""
+    msg = schema.load("1;5;3;0;3;\n")
+    assert msg.node_id == 1
+    assert msg.child_id == 5
+    assert msg.command == 3
+    assert msg.ack == 0
+    assert msg.message_type == 3
+    assert msg.payload == ""
+
+
 def test_load_bad_message(schema):
     """Test load of bad message."""
-    # Message that fails loading
+    # Message that fails on bad node id
     with pytest.raises(ValidationError):
-        schema.load("bad;bad;bad;bad;bad;bad\n")
+        schema.load("bad;0;0;0;0;0\n")
+
+    # Message that fails on bad child id
+    with pytest.raises(ValidationError):
+        schema.load("0;bad;0;0;0;0\n")
+
+    # Message that fails on bad command type
+    with pytest.raises(ValidationError):
+        schema.load("0;0;bad;0;0;0\n")
+
+    # Message that fails on bad ack flag
+    with pytest.raises(ValidationError):
+        schema.load("0;0;0;bad;0;0\n")
+
+    # Message that fails on bad message type
+    with pytest.raises(ValidationError):
+        schema.load("0;0;0;0;bad;0\n")
+
+    # Message that fails on range of child id
+    with pytest.raises(ValidationError):
+        schema.load("0;300;0;0;0;0\n")
+
+    # Message that fails on range of command type
+    with pytest.raises(ValidationError):
+        schema.load("0;0;-1;0;0;0\n")
+
+    # Message that fails on range of ack flag
+    with pytest.raises(ValidationError):
+        schema.load("0;0;0;3;0;0\n")
+
+    # Message with incorrect child id and command type combination
+    with pytest.raises(ValidationError):
+        schema.load("1;5;3;0;0;0\n")
 
     # Message with incorrect child id and command type combination
     with pytest.raises(ValidationError):
