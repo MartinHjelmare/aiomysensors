@@ -1,9 +1,18 @@
 """Provide a MySensors message abstraction."""
-from typing import Any, Dict, Union
+from typing import Any, Dict, Mapping, Optional, Union
 
-from marshmallow import Schema, fields, post_dump, post_load, pre_load
+from marshmallow import (
+    Schema,
+    ValidationError,
+    fields,
+    post_dump,
+    post_load,
+    pre_load,
+    validate,
+)
 
-from .const import NODE_ID_FIELD
+from .const import NODE_ID_FIELD, SYSTEM_CHILD_ID
+from .protocol import DEFAULT_PROTOCOL_VERSION, get_protocol
 
 DELIMITER = ";"
 
@@ -37,13 +46,58 @@ class Message:
         )
 
 
+class CommandField(fields.Field):
+    """Represent a command field."""
+
+    def validate_command(self, *, value: str, data: Optional[Mapping[str, Any]]) -> int:
+        """Serialize the command field."""
+        assert data is not None  # Satisfy typing.
+        try:
+            command = int(value)
+        except ValueError as exc:
+            raise ValidationError("The command type must be an integer.") from exc
+
+        protocol_version = self.context.get(
+            "protocol_version", DEFAULT_PROTOCOL_VERSION
+        )
+        protocol = get_protocol(protocol_version)
+        # Dynamic import of the protocol makes typing hard.
+        Command = protocol.Command  # type: ignore
+
+        valid_commands = [member.value for member in tuple(Command)]
+        child_id = int(data["child_id"])
+        if child_id == SYSTEM_CHILD_ID:
+            valid_commands = [
+                Command.presentation.value,
+                Command.internal.value,
+                Command.stream.value,
+            ]
+
+        if command not in valid_commands:
+            raise ValidationError(
+                f"The command type must one of {valid_commands} "
+                f"when child id is {SYSTEM_CHILD_ID}."
+            )
+
+        return command
+
+    def _deserialize(
+        self,
+        value: str,
+        attr: Optional[str],
+        data: Optional[Mapping[str, Any]],
+        **kwargs: Any,
+    ) -> int:
+        return self.validate_command(value=value, data=data)
+
+
 class MessageSchema(Schema):
     """Represent a message schema."""
 
     node_id = NODE_ID_FIELD
     child_id = fields.Int(required=True)
-    command = fields.Int(required=True)
-    ack = fields.Int(required=True)
+    command = CommandField(required=True)
+    ack = fields.Int(required=True, validate=validate.OneOf((0, 1)))
     message_type = fields.Int(required=True)
     payload = fields.Str(required=True)
 
