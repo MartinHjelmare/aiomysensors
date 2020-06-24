@@ -5,7 +5,7 @@ from marshmallow import Schema, fields, post_load, validate
 from marshmallow.exceptions import ValidationError
 
 from ..exceptions import AIOMySensorsInvalidMessageError, AIOMySensorsMissingChildError
-from .const import NODE_ID_FIELD
+from .const import NODE_ID_FIELD, SYSTEM_CHILD_ID
 from .message import Message, MessageSchema
 
 
@@ -119,7 +119,12 @@ class Child:
 class ChildSchema(Schema):
     """Represent a child sensor schema."""
 
-    child_id = fields.Int(required=True)
+    child_id = fields.Int(
+        required=True,
+        validate=validate.Range(
+            min=0, max=SYSTEM_CHILD_ID, error="Not valid child_id: {input}"
+        ),
+    )
     child_type = fields.Int(required=True)
     description = fields.Str()
     values = fields.Dict(keys=fields.Int(), values=fields.Str())
