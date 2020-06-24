@@ -1,4 +1,4 @@
-"""Provide a mysensors message abstraction."""
+"""Provide a MySensors message abstraction."""
 from typing import Any, Dict, Union
 
 from marshmallow import Schema, fields, post_dump, post_load, pre_load
