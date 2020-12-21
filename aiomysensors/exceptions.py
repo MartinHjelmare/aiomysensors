@@ -5,6 +5,15 @@ class AIOMySensorsError(Exception):
     """Represent a base exception for aiomysensors."""
 
 
+class MissingNode(AIOMySensorsError):
+    """Represent a missing node exception."""
+
+    def __init__(self, node_id: int) -> None:
+        """Set up error."""
+        super().__init__(f"Node {node_id} not found.")
+        self.node_id = node_id
+
+
 class AIOMySensorsMissingChildError(AIOMySensorsError):
     """Represent a missing child exception."""
 

@@ -1,5 +1,37 @@
 """Provide the protocol for MySensors version 1.4."""
 from enum import IntEnum
+from typing import TYPE_CHECKING
+
+from aiomysensors.exceptions import MissingNode
+from aiomysensors.model.const import SYSTEM_CHILD_ID
+from aiomysensors.model.message import Message
+from aiomysensors.model.node import Node
+
+if TYPE_CHECKING:
+    from aiomysensors.gateway import Gateway
+
+
+class MessageHandler:
+    """Represent a message handler."""
+
+    @classmethod
+    async def handle_presentation(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process a presentation message."""
+        if message.child_id == SYSTEM_CHILD_ID:
+            # this is a presentation of the sensor platform
+            node = Node(message.node_id, message.message_type, message.payload)
+            gateway.nodes[node.node_id] = node
+            return message
+
+        # this is a presentation of a child sensor
+        if message.node_id not in gateway.nodes:
+            raise MissingNode(message.node_id)
+
+        gateway.nodes[message.node_id].add_child(
+            message.child_id, message.message_type, description=message.payload
+        )
+
+        return message
 
 
 class Command(IntEnum):
