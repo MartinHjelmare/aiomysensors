@@ -5,7 +5,10 @@ from typing import AsyncGenerator
 
 
 class Transport(ABC):
-    """Represent a MySensors transport."""
+    """Represent a MySensors transport.
+
+    Method callers should handle TransportError.
+    """
 
     @abstractmethod
     async def connect(self) -> None:

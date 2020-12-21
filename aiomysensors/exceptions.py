@@ -16,3 +16,11 @@ class AIOMySensorsMissingChildError(AIOMySensorsError):
 
 class AIOMySensorsInvalidMessageError(AIOMySensorsError):
     """Represent an invalid message exception."""
+
+
+class TransportError(AIOMySensorsError):
+    """Represent a transport error."""
+
+
+class TransportFailedError(TransportError):
+    """The transport failed."""
