@@ -7,9 +7,10 @@ from aiomysensors.exceptions import AIOMySensorsInvalidMessageError
 pytestmark = pytest.mark.asyncio
 
 
-async def test_listen(gateway, message, message_schema):
+async def test_listen(gateway, message, message_schema, transport):
     """Test gateway listen."""
     cmd = message_schema.dump(message)
+    transport.messages.append(cmd)
 
     async with gateway.transport:
         async for msg in gateway.listen():
@@ -17,15 +18,14 @@ async def test_listen(gateway, message, message_schema):
             break
 
 
-async def test_listen_invalid_message(gateway, message, message_schema):
+async def test_listen_invalid_message(gateway):
     """Test gateway listen for invalid message."""
-    cmd = message_schema.dump(message)
     gateway.transport.messages.append("invalid")
 
     async with gateway.transport:
         with pytest.raises(AIOMySensorsInvalidMessageError):
-            async for msg in gateway.listen():
-                assert message_schema.dump(msg) == cmd
+            async for _ in gateway.listen():
+                raise Exception  # This line should not be reached.
 
 
 async def test_send(gateway, message, message_schema):

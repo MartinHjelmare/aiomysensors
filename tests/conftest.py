@@ -75,9 +75,7 @@ def message_fixture():
 
 
 @pytest.fixture(name="gateway")
-def gateway_fixture(message, message_schema, transport):
+def gateway_fixture(transport):
     """Mock a gateway."""
-    cmd = message_schema.dump(message)
-    transport.messages.append(cmd)
     gateway = Gateway(transport)
     return gateway
