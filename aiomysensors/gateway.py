@@ -34,7 +34,10 @@ class Gateway:
 
     async def send(self, message: Message) -> None:
         """Send a message."""
-        decoded_message = self.message_schema.dump(message)
+        try:
+            decoded_message = self.message_schema.dump(message)
+        except ValidationError as err:
+            raise AIOMySensorsInvalidMessageError from err
         await self.transport.write(decoded_message)
 
     async def _handle_incoming(self, message: Message) -> Message:

@@ -36,3 +36,10 @@ async def test_send(gateway, message, message_schema):
         await gateway.send(message)
 
     assert gateway.transport.writes == [cmd]
+
+
+async def test_send_invalid_message(gateway):
+    """Test gateway send invalid message."""
+    async with gateway.transport:
+        with pytest.raises(AIOMySensorsInvalidMessageError):
+            await gateway.send("invalid")
