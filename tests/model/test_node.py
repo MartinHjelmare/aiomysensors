@@ -6,7 +6,7 @@ from aiomysensors.exceptions import (
     AIOMySensorsInvalidMessageError,
     AIOMySensorsMissingChildError,
 )
-from aiomysensors.model.node import Child, Node, NodeSchema
+from aiomysensors.model.node import Node
 
 NODE_SERIALIZED_FIXTURE = {
     "children": {
@@ -26,31 +26,8 @@ NODE_SERIALIZED_FIXTURE = {
     "battery_level": 100,
 }
 
-CHILD_FIXTURE = Child(0, 6, description="test child 0", values={0: "20.0"})
 
-
-@pytest.fixture(name="node")
-def node_fixture():
-    """Return a node."""
-    return Node(0, 17, "2.0")
-
-
-@pytest.fixture(name="child")
-def child_fixture(node):
-    """Return a child on a node."""
-    child = node.children[0] = Child(
-        0, 6, description="test child 0", values={0: "20.0"}
-    )
-    return child
-
-
-@pytest.fixture(name="node_schema")
-def node_schema_fixture():
-    """Return a node schema."""
-    return NodeSchema()
-
-
-def test_dump(node_schema):
+def test_dump(child, node_schema):
     """Test dump of node."""
     node = Node(0, 17, "2.0")
 
@@ -71,7 +48,7 @@ def test_dump(node_schema):
         0,
         17,
         "2.0",
-        children={0: CHILD_FIXTURE},
+        children={0: child},
         sketch_name="test node 0",
         sketch_version="1.0.0",
         battery_level=100,
