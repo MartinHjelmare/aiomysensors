@@ -7,7 +7,7 @@ from aiomysensors.model.const import SYSTEM_CHILD_ID
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Node
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from aiomysensors.gateway import Gateway
 
 
