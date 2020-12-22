@@ -1,5 +1,5 @@
 """Provide common fixtures."""
-from unittest.mock import AsyncMock
+from typing import List
 
 import pytest
 
@@ -39,11 +39,10 @@ def child_fixture(node):
 class MockTransport(Transport):
     """Represent a mock transport."""
 
-    def __init__(self, messages=None):
+    def __init__(self, messages: List[str]):
         """Set up a mock transport."""
-        if messages is None:
-            messages = []
         self.messages = messages
+        self.writes: List[str] = []
 
     async def connect(self) -> None:
         """Connect the transport."""
@@ -57,13 +56,14 @@ class MockTransport(Transport):
 
     async def write(self, decoded_message: str) -> None:
         """Write a decoded message to the transport."""
+        self.writes.append(decoded_message)
 
 
 @pytest.fixture(name="transport")
 def transport_fixture():
     """Mock a transport."""
     messages = []
-    transport = AsyncMock(wraps=MockTransport(messages), messages=messages)
+    transport = MockTransport(messages)
     return transport
 
 
