@@ -5,7 +5,7 @@ class AIOMySensorsError(Exception):
     """Represent a base exception for aiomysensors."""
 
 
-class MissingNode(AIOMySensorsError):
+class MissingNodeError(AIOMySensorsError):
     """Represent a missing node exception."""
 
     def __init__(self, node_id: int) -> None:
