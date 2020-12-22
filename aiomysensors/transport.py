@@ -1,7 +1,6 @@
 """Provide a MySensors transport."""
 from abc import ABC, abstractmethod
 from types import TracebackType
-from typing import AsyncGenerator
 
 
 class Transport(ABC):
@@ -18,15 +17,9 @@ class Transport(ABC):
     async def disconnect(self) -> None:
         """Disconnect the transport."""
 
-    async def listen(self) -> AsyncGenerator[str, None]:
-        """Listen and yield a decoded message."""
-        while True:
-            decoded_message = await self._listen()
-            yield decoded_message
-
     @abstractmethod
-    async def _listen(self) -> str:
-        """Return the received message."""
+    async def listen(self) -> str:
+        """Return a decoded message."""
 
     @abstractmethod
     async def write(self, decoded_message: str) -> None:

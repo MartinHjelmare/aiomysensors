@@ -21,7 +21,8 @@ class Gateway:
 
     async def listen(self) -> AsyncGenerator[Message, None]:
         """Listen and yield a message."""
-        async for decoded_message in self.transport.listen():
+        while True:
+            decoded_message = await self.transport.listen()
             try:
                 message = self.message_schema.load(decoded_message)  # type: ignore
             except ValidationError as err:
@@ -42,7 +43,7 @@ class Gateway:
 
         command = protocol.Command(message.command)  # type: ignore
         message_handler = getattr(
-            protocol.MessageHandler, f"handle_{command}"  # type: ignore
+            protocol.MessageHandler, f"handle_{command.name}"  # type: ignore
         )
         message = await message_handler(self, message)
 
