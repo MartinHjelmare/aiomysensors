@@ -70,7 +70,7 @@ def transport_fixture():
 @pytest.fixture(name="message")
 def message_fixture():
     """Mock a message."""
-    message = Message(1, 255, 0, 0, 17, "node 1")
+    message = Message(1, 255, 0, 0, 17, "2.0")
     return message
 
 
