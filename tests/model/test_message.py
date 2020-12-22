@@ -25,6 +25,15 @@ def test_dump(message_schema):
     assert cmd == "1;255;3;0;0;57\n"
 
 
+def test_dump_bad_message(message_schema):
+    """Test dump of bad message."""
+    with pytest.raises(ValidationError):
+        message_schema.dump(None)
+
+    with pytest.raises(ValidationError):
+        message_schema.dump("bad")
+
+
 def test_load(message_schema):
     """Test load of message."""
     msg = message_schema.load("1;255;3;0;0;57\n")
