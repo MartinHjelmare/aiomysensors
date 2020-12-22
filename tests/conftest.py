@@ -22,9 +22,11 @@ def node_schema_fixture():
 
 
 @pytest.fixture(name="node")
-def node_fixture():
+def node_fixture(gateway):
     """Return a node."""
-    return Node(0, 17, "2.0")
+    node = Node(0, 17, "2.0")
+    gateway.nodes[node.node_id] = node
+    return node
 
 
 @pytest.fixture(name="child")
@@ -68,9 +70,11 @@ def transport_fixture():
 
 
 @pytest.fixture(name="message")
-def message_fixture():
+def message_fixture(message_schema, transport):
     """Mock a message."""
     message = Message(1, 255, 0, 0, 17, "2.0")
+    cmd = message_schema.dump(message)
+    transport.messages.append(cmd)
     return message
 
 

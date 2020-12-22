@@ -7,10 +7,9 @@ from aiomysensors.exceptions import AIOMySensorsInvalidMessageError
 pytestmark = pytest.mark.asyncio
 
 
-async def test_listen(gateway, message, message_schema, transport):
+async def test_listen(gateway, message, message_schema):
     """Test gateway listen."""
     cmd = message_schema.dump(message)
-    transport.messages.append(cmd)
 
     async with gateway.transport:
         async for msg in gateway.listen():
