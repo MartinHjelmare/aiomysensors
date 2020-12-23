@@ -8,23 +8,7 @@ from aiomysensors.exceptions import (
 )
 from aiomysensors.model.node import Node
 
-NODE_SERIALIZED_FIXTURE = {
-    "children": {
-        0: {
-            "values": {0: "20.0"},
-            "child_id": 0,
-            "child_type": 6,
-            "description": "test child 0",
-        }
-    },
-    "protocol_version": "2.0",
-    "sketch_version": "1.0.0",
-    "node_type": 17,
-    "sketch_name": "test node 0",
-    "node_id": 0,
-    "heartbeat": 10,
-    "battery_level": 100,
-}
+from tests.common import NODE_SERIALIZED, NODE_CHILD_SERIALIZED
 
 
 def test_dump(child, node_schema):
@@ -33,16 +17,7 @@ def test_dump(child, node_schema):
 
     node_dump = node_schema.dump(node)
 
-    assert node_dump == {
-        "children": {},
-        "protocol_version": "2.0",
-        "sketch_version": "",
-        "node_type": 17,
-        "sketch_name": "",
-        "node_id": 0,
-        "heartbeat": 0,
-        "battery_level": 0,
-    }
+    assert node_dump == NODE_SERIALIZED
 
     node = Node(
         0,
@@ -57,12 +32,12 @@ def test_dump(child, node_schema):
 
     node_dump = node_schema.dump(node)
 
-    assert node_dump == NODE_SERIALIZED_FIXTURE
+    assert node_dump == NODE_CHILD_SERIALIZED
 
 
 def test_load(node_schema):
     """Test load of message."""
-    node = node_schema.load(NODE_SERIALIZED_FIXTURE)
+    node = node_schema.load(NODE_CHILD_SERIALIZED)
     assert node.node_id == 0
     assert node.node_type == 17
     assert node.protocol_version == "2.0"
