@@ -27,6 +27,10 @@ class AIOMySensorsInvalidMessageError(AIOMySensorsError):
     """Represent an invalid message exception."""
 
 
+class UnsupportedMessageError(AIOMySensorsError):
+    """Represent an unsupported message exception."""
+
+
 class TransportError(AIOMySensorsError):
     """Represent a transport error."""
 

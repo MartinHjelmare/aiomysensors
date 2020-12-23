@@ -1,11 +1,12 @@
 """Provide a gateway."""
-from typing import AsyncGenerator, Dict
+from typing import AsyncGenerator, Dict, Optional
 
 from marshmallow import ValidationError
 
 from .exceptions import AIOMySensorsInvalidMessageError
 from .model.message import Message, MessageSchema
 from .model.node import Node
+from .model.const import SYSTEM_CHILD_ID
 from .model.protocol import get_protocol
 from .transport import Transport
 
@@ -18,6 +19,7 @@ class Gateway:
         self.transport = transport
         self.message_schema = MessageSchema()
         self.nodes: Dict[int, Node] = {}
+        self.protocol_version: Optional[str] = None
 
     async def listen(self) -> AsyncGenerator[Message, None]:
         """Listen and yield a message."""
@@ -42,12 +44,21 @@ class Gateway:
 
     async def _handle_incoming(self, message: Message) -> Message:
         """Handle incoming message."""
-        protocol = get_protocol("1.4")  # TODO: Get the correct protocol
+        protocol_version = self.protocol_version or "1.4"
+        protocol = get_protocol(protocol_version)
 
         command = protocol.Command(message.command)  # type: ignore
         message_handler = getattr(
             protocol.MessageHandler, f"handle_{command.name}"  # type: ignore
         )
         message = await message_handler(self, message)
+
+        if self.protocol_version is None:
+            version_message = Message(
+                child_id=SYSTEM_CHILD_ID,
+                command=protocol.Command.internal,  # type: ignore
+                message_type=protocol.Internal.I_VERSION,  # type: ignore
+            )
+            await self.send(version_message)
 
         return message

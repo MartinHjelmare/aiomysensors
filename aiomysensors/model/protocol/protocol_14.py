@@ -2,7 +2,7 @@
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
-from aiomysensors.exceptions import MissingNodeError
+from aiomysensors.exceptions import MissingNodeError, UnsupportedMessageError
 from aiomysensors.model.const import SYSTEM_CHILD_ID
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Node
@@ -31,6 +31,24 @@ class MessageHandler:
             message.child_id, message.message_type, description=message.payload
         )
 
+        return message
+
+    @classmethod
+    async def handle_internal(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process an internal message."""
+        internal = Internal(message.message_type)
+        message_handler = getattr(cls, f"handle_{internal.name.lower()}", None)
+        if message_handler is None:
+            raise UnsupportedMessageError
+
+        message = await message_handler(gateway, message)
+
+        return message
+
+    @classmethod
+    async def handle_i_version(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process an internal version message."""
+        gateway.protocol_version = message.payload
         return message
 
 
