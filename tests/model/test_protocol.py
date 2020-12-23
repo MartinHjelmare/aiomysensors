@@ -13,22 +13,10 @@ from tests.common import NODE_SERIALIZED
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
 
-CHILD_PRESENTATION = {
-    "children": {
-        0: {
-            "values": {},
-            "child_id": 0,
-            "child_type": 6,
-            "description": "test child 0",
-        }
-    },
-    "protocol_version": "2.0",
-    "sketch_version": "",
-    "node_type": 17,
-    "sketch_name": "",
-    "node_id": 0,
-    "heartbeat": 0,
-    "battery_level": 0,
+
+CHILD_PRESENTATION = dict(NODE_SERIALIZED)
+CHILD_PRESENTATION["children"] = {
+    0: {"values": {}, "child_id": 0, "child_type": 6, "description": "test child 0",}
 }
 
 
