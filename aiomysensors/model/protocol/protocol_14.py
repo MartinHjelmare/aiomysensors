@@ -36,10 +36,17 @@ class MessageHandler:
     @classmethod
     async def handle_internal(cls, gateway: "Gateway", message: Message) -> Message:
         """Process an internal message."""
-        internal = Internal(message.message_type)
+        try:
+            internal = Internal(message.message_type)
+        except ValueError as err:
+            raise UnsupportedMessageError(
+                f"Message type is not supported: {message.message_type}"
+            ) from err
         message_handler = getattr(cls, f"handle_{internal.name.lower()}", None)
         if message_handler is None:
-            raise UnsupportedMessageError
+            raise UnsupportedMessageError(
+                f"Message type is not supported: {internal.name}"
+            )
 
         message = await message_handler(gateway, message)
 
