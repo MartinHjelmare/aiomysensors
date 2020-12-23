@@ -52,7 +52,7 @@ class MockTransport(Transport):
     async def disconnect(self) -> None:
         """Disconnect the transport."""
 
-    async def listen(self) -> str:
+    async def read(self) -> str:
         """Return the received message."""
         return self.messages.pop(0)
 

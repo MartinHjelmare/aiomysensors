@@ -18,7 +18,7 @@ class Transport(ABC):
         """Disconnect the transport."""
 
     @abstractmethod
-    async def listen(self) -> str:
+    async def read(self) -> str:
         """Return a decoded message."""
 
     @abstractmethod
