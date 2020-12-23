@@ -4,7 +4,7 @@ from marshmallow.exceptions import ValidationError
 
 from aiomysensors.exceptions import (
     AIOMySensorsInvalidMessageError,
-    AIOMySensorsMissingChildError,
+    MissingChildError,
 )
 from aiomysensors.model.node import Node
 
@@ -90,7 +90,7 @@ def test_remove_child(node, child):
 
     assert child.child_id not in node.children
 
-    with pytest.raises(AIOMySensorsMissingChildError) as exc:
+    with pytest.raises(MissingChildError) as exc:
         node.remove_child(child.child_id)
 
         assert exc.child_id == child.child_id
@@ -120,7 +120,7 @@ def test_set_child_value_no_child(node):
 
     assert not node.children
 
-    with pytest.raises(AIOMySensorsMissingChildError) as exc:
+    with pytest.raises(MissingChildError) as exc:
         node.set_child_value(child_id, value_type, value)
 
         assert exc.child_id == child_id

@@ -14,7 +14,7 @@ class MissingNodeError(AIOMySensorsError):
         self.node_id = node_id
 
 
-class AIOMySensorsMissingChildError(AIOMySensorsError):
+class MissingChildError(AIOMySensorsError):
     """Represent a missing child exception."""
 
     def __init__(self, child_id: int) -> None:
