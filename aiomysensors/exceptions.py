@@ -23,7 +23,7 @@ class MissingChildError(AIOMySensorsError):
         self.child_id = child_id
 
 
-class AIOMySensorsInvalidMessageError(AIOMySensorsError):
+class InvalidMessageError(AIOMySensorsError):
     """Represent an invalid message exception."""
 
 

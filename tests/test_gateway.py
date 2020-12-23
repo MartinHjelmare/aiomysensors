@@ -1,7 +1,7 @@
 """Test the gateway."""
 import pytest
 
-from aiomysensors.exceptions import AIOMySensorsInvalidMessageError
+from aiomysensors.exceptions import InvalidMessageError
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
@@ -22,7 +22,7 @@ async def test_listen_invalid_message(gateway):
     gateway.transport.messages.append("invalid")
 
     async with gateway.transport:
-        with pytest.raises(AIOMySensorsInvalidMessageError):
+        with pytest.raises(InvalidMessageError):
             async for _ in gateway.listen():
                 raise Exception  # This line should not be reached.
 
@@ -40,5 +40,5 @@ async def test_send(gateway, message, message_schema):
 async def test_send_invalid_message(gateway):
     """Test gateway send invalid message."""
     async with gateway.transport:
-        with pytest.raises(AIOMySensorsInvalidMessageError):
+        with pytest.raises(InvalidMessageError):
             await gateway.send("invalid")

@@ -3,7 +3,7 @@ from typing import AsyncGenerator, Dict, Optional
 
 from marshmallow import ValidationError
 
-from .exceptions import AIOMySensorsInvalidMessageError
+from .exceptions import InvalidMessageError
 from .model.message import Message, MessageSchema
 from .model.node import Node
 from .model.const import SYSTEM_CHILD_ID
@@ -28,7 +28,7 @@ class Gateway:
             try:
                 message = self.message_schema.load(decoded_message)  # type: ignore
             except ValidationError as err:
-                raise AIOMySensorsInvalidMessageError from err
+                raise InvalidMessageError from err
 
             message = await self._handle_incoming(message)
 
@@ -39,7 +39,7 @@ class Gateway:
         try:
             decoded_message = self.message_schema.dump(message)
         except ValidationError as err:
-            raise AIOMySensorsInvalidMessageError from err
+            raise InvalidMessageError from err
         await self.transport.write(decoded_message)
 
     async def _handle_incoming(self, message: Message) -> Message:
