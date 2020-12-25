@@ -44,9 +44,8 @@ class MessageHandler:
             ) from err
         message_handler = getattr(cls, f"handle_{internal.name.lower()}", None)
         if message_handler is None:
-            raise UnsupportedMessageError(
-                f"Message type is not supported: {internal.name}"
-            )
+            # No special handling required.
+            return message
 
         message = await message_handler(gateway, message)
 

@@ -3,7 +3,7 @@ from contextlib import ExitStack as default_context
 
 import pytest
 
-from aiomysensors.exceptions import MissingNodeError
+from aiomysensors.exceptions import MissingNodeError, UnsupportedMessageError
 from aiomysensors.model.message import Message
 
 from tests.common import NODE_SERIALIZED
@@ -67,7 +67,7 @@ def node_fixture(gateway, node_schema, request):
 async def test_presentation(
     command, context, node, node_serialized, gateway, message_schema, node_schema,
 ):
-    """Test presentation."""
+    """Test presentation command."""
     with context:
         async for msg in gateway.listen():
             assert message_schema.dump(msg) == command
@@ -75,3 +75,43 @@ async def test_presentation(
 
     for _node in gateway.nodes.values():
         assert node_schema.dump(_node) == node_serialized
+
+
+@pytest.mark.parametrize(
+    "command, context",
+    [
+        (
+            Message(0, 255, 3, 0, 2, "2.0"),  # command
+            default_context(),  # context
+        ),  # gateway version
+        (
+            Message(0, 255, 3, 0, 9999999, ""),  # command
+            pytest.raises(UnsupportedMessageError),  # context
+        ),  # Unsupported message
+        (
+            Message(0, 255, 3, 0, 10, ""),  # command
+            default_context(),  # context
+        ),  # Message without special handler
+    ],
+    indirect=["command"],
+)
+async def test_internal(command, context, gateway, message_schema):
+    """Test internal command."""
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+
+@pytest.mark.parametrize(
+    "command", [Message(0, 255, 3, 0, 2, "2.0")], indirect=["command"],
+)
+async def test_internal_version(command, gateway, message_schema):
+    """Test internal version command."""
+    assert gateway.protocol_version is None
+
+    async for msg in gateway.listen():
+        assert message_schema.dump(msg) == command
+        break
+
+    assert gateway.protocol_version == "2.0"
