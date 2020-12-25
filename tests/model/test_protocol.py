@@ -11,7 +11,12 @@ from aiomysensors.exceptions import (
 from aiomysensors.model.message import Message
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
-from tests.common import DEFAULT_CHILD, NODE_SERIALIZED, NODE_CHILD_SERIALIZED
+from tests.common import (
+    DEFAULT_CHILD,
+    DEFAULT_NODE_CHILD_SERIALIZED,
+    NODE_SERIALIZED,
+    NODE_CHILD_SERIALIZED,
+)
 
 # pylint: disable=too-many-arguments,unused-argument
 
@@ -136,7 +141,6 @@ async def test_set(
     gateway,
     message_schema,
     node_schema,
-    transport,
 ):
     """Test set command."""
     if reboot:
@@ -152,7 +156,65 @@ async def test_set(
         for child in node.children.values():
             assert child.values == values_after
 
-    assert transport.writes == writes
+    assert gateway.transport.writes == writes
+
+
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize(
+    "command, context, node_before, values_after, writes",
+    [
+        (
+            Message(0, 0, 2, 0, 0),  # command
+            default_context(),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+            {0: "20.0"},  # values_after
+            ["0;0;1;0;0;20.0\n"],  # writes
+        ),  # Req message
+        (
+            Message(0, 0, 2, 0, 0),  # command
+            default_context(),  # context
+            DEFAULT_NODE_CHILD_SERIALIZED,  # node_before
+            {},  # values_after
+            [],  # writes
+        ),  # Req message, with missing child value
+        (
+            Message(0, 0, 2, 0, 0),  # command
+            pytest.raises(MissingNodeError),  # context
+            None,  # node_before
+            None,  # values_after
+            [],  # writes
+        ),  # Missing node
+        (
+            Message(0, 0, 2, 0, 0),  # command
+            pytest.raises(MissingChildError),  # context
+            NODE_SERIALIZED,  # node_before
+            None,  # values_after
+            [],  # writes
+        ),  # Missing child
+    ],
+    indirect=["command", "node_before"],
+)
+async def test_req(
+    command,
+    context,
+    node_before,
+    values_after,
+    writes,
+    gateway,
+    message_schema,
+    node_schema,
+):
+    """Test req command."""
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    for node in gateway.nodes.values():
+        for child in node.children.values():
+            assert child.values == values_after
+
+    assert gateway.transport.writes == writes
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
