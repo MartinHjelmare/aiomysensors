@@ -3,11 +3,15 @@ from contextlib import ExitStack as default_context
 
 import pytest
 
-from aiomysensors.exceptions import MissingNodeError, UnsupportedMessageError
+from aiomysensors.exceptions import (
+    MissingChildError,
+    MissingNodeError,
+    UnsupportedMessageError,
+)
 from aiomysensors.model.message import Message
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
-from tests.common import DEFAULT_CHILD, NODE_SERIALIZED
+from tests.common import DEFAULT_CHILD, NODE_SERIALIZED, NODE_CHILD_SERIALIZED
 
 # pylint: disable=unused-argument
 
@@ -28,7 +32,7 @@ def command_fixture(message_schema, transport, request):
     return cmd
 
 
-@pytest.fixture(name="node")
+@pytest.fixture(name="node_before")
 def node_fixture(gateway, node_schema, request):
     """Populate a node in the gateway from node data."""
     node_data = request.param
@@ -41,34 +45,34 @@ def node_fixture(gateway, node_schema, request):
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node, node_serialized",
+    "command, context, node_before, node_after",
     [
         (
             Message(0, 255, 0, 0, 17, "2.0"),  # command
             default_context(),  # context
-            None,  # node
-            NODE_SERIALIZED,  # node_serialized
+            None,  # node_before
+            NODE_SERIALIZED,  # node_after
         ),  # Node presentation
         (
             Message(0, 0, 0, 0, 6, "test child 0"),  # command
             default_context(),  # context
-            NODE_SERIALIZED,  # node
-            CHILD_PRESENTATION,  # node_serialized
+            NODE_SERIALIZED,  # node_before
+            CHILD_PRESENTATION,  # node_after
         ),  # Node presentation
         (
             Message(0, 1, 0, 0, 0, "child 1"),  # command
             pytest.raises(MissingNodeError),  # context
-            None,  # node
-            None,  # node_serialized
+            None,  # node_before
+            None,  # node_after
         ),  # Child presentation, missing node
     ],
-    indirect=["command", "node"],
+    indirect=["command", "node_before"],
 )
 async def test_presentation(
     command,
     context,
-    node,
-    node_serialized,
+    node_before,
+    node_after,
     gateway,
     message_schema,
     node_schema,
@@ -80,7 +84,66 @@ async def test_presentation(
             break
 
     for _node in gateway.nodes.values():
-        assert node_schema.dump(_node) == node_serialized
+        assert node_schema.dump(_node) == node_after
+
+
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize(
+    "command, context, node_before, values_after, writes",
+    [
+        (
+            Message(0, 0, 1, 0, 0, "25.0"),  # command
+            default_context(),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+            {0: "25.0"},  # values_after
+            [],  # writes
+        ),  # Set message
+        (
+            Message(0, 0, 1, 0, 0, "25.0"),  # command
+            default_context(),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+            {0: "25.0"},  # values_after
+            [],  # writes
+        ),  # Set message, with node reboot true
+        (
+            Message(0, 0, 1, 0, 0, "25.0"),  # command
+            pytest.raises(MissingNodeError),  # context
+            None,  # node_before
+            None,  # values_after
+            [],  # writes
+        ),  # Missing node
+        (
+            Message(0, 0, 1, 0, 0, "25.0"),  # command
+            pytest.raises(MissingChildError),  # context
+            NODE_SERIALIZED,  # node_before
+            None,  # values_after
+            [],  # writes
+        ),  # Missing child
+    ],
+    indirect=["command", "node_before"],
+)
+async def test_set(
+    command,
+    context,
+    node_before,
+    values_after,
+    writes,
+    gateway,
+    message_schema,
+    node_schema,
+    transport,
+):
+    """Test set command."""
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    for node in gateway.nodes.values():
+        for child in node.children.values():
+            assert child.values == values_after
+
+    assert transport.writes == writes
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
@@ -118,7 +181,7 @@ async def test_internal(command, context, gateway, message_schema):
 )
 async def test_internal_version(command, gateway, message_schema):
     """Test internal version command."""
-    assert gateway.protocol_version is None
+    gateway.protocol_version = None
 
     async for msg in gateway.listen():
         assert message_schema.dump(msg) == command

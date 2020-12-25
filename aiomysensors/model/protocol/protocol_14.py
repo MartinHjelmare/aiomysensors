@@ -2,7 +2,7 @@
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
-from ...exceptions import MissingNodeError, UnsupportedMessageError
+from ...exceptions import MissingChildError, MissingNodeError, UnsupportedMessageError
 from ..message import Message
 from ..node import Node
 from . import SYSTEM_CHILD_ID
@@ -30,6 +30,34 @@ class MessageHandler:
         gateway.nodes[message.node_id].add_child(
             message.child_id, message.message_type, description=message.payload
         )
+
+        return message
+
+    @classmethod
+    async def handle_set(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process a set message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        if message.child_id not in gateway.nodes[message.node_id].children:
+            raise MissingChildError(message.node_id)
+
+        gateway.nodes[message.node_id].set_child_value(
+            message.child_id, message.message_type, message.payload
+        )
+
+        # Check if reboot is true
+        if gateway.nodes[message.node_id].reboot:
+            # Send a reboot command.
+            reboot_message = Message(
+                node_id=message.node_id,
+                child_id=SYSTEM_CHILD_ID,
+                command=Command.internal,
+                ack=0,
+                message_type=Internal.I_REBOOT,
+                payload="",
+            )
+            await gateway.send(reboot_message)
 
         return message
 

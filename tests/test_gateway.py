@@ -2,6 +2,7 @@
 import pytest
 
 from aiomysensors.exceptions import InvalidMessageError
+from aiomysensors.model.message import Message
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
 # All test coroutines will be treated as marked.
@@ -45,3 +46,19 @@ async def test_send_invalid_message(gateway):
     async with gateway.transport:
         with pytest.raises(InvalidMessageError):
             await gateway.send("invalid")
+
+
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+async def test_unset_protocol_version(gateway, message, message_schema):
+    """Test gateway listen."""
+    gateway.protocol_version = None
+    cmd = message_schema.dump(message)
+
+    async with gateway.transport:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == cmd
+            break
+
+    assert gateway.transport.writes == [
+        message_schema.dump(Message(0, 255, 3, 0, 2, ""))
+    ]
