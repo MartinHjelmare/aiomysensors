@@ -13,7 +13,7 @@ from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
 from tests.common import DEFAULT_CHILD, NODE_SERIALIZED, NODE_CHILD_SERIALIZED
 
-# pylint: disable=unused-argument
+# pylint: disable=too-many-arguments,unused-argument
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
