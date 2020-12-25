@@ -2,11 +2,9 @@
 from typing import Any, Dict, Optional
 
 from marshmallow import Schema, fields, post_load, validate
-from marshmallow.exceptions import ValidationError
 
-from ..exceptions import InvalidMessageError, MissingChildError
+from ..exceptions import MissingChildError
 from .const import NODE_ID_FIELD
-from .message import Message, MessageSchema
 
 
 class Node:
@@ -63,31 +61,13 @@ class Node:
             raise MissingChildError(child_id)
         self.children.pop(child_id)
 
-    def set_child_value(
-        self, child_id: int, value_type: int, value: str, ack: int = 0
-    ) -> None:
+    def set_child_value(self, child_id: int, value_type: int, value: str) -> None:
         """Set a child sensor's value."""
         if child_id not in self.children:
             raise MissingChildError(child_id)
 
-        command = 1
-        msg = Message(
-            node_id=self.node_id,
-            child_id=child_id,
-            command=command,
-            ack=ack,
-            message_type=value_type,
-            payload=value,
-        )
-        msg_schema = MessageSchema(context={"protocol_version": self.protocol_version})
-        try:  # Do roundtrip to validate message
-            msg_dump = msg_schema.dump(msg)
-            msg = msg_schema.load(msg_dump)
-        except (ValueError, ValidationError) as exc:
-            raise InvalidMessageError from exc
-
-        child = self.children[msg.child_id]
-        child.values[msg.message_type] = msg.payload
+        child = self.children[child_id]
+        child.values[value_type] = value
 
 
 class Child:
