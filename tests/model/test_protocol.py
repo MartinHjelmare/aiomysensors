@@ -5,6 +5,7 @@ import pytest
 
 from aiomysensors.exceptions import MissingNodeError, UnsupportedMessageError
 from aiomysensors.model.message import Message
+from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
 from tests.common import DEFAULT_CHILD, NODE_SERIALIZED
 
@@ -38,6 +39,7 @@ def node_fixture(gateway, node_schema, request):
     return node
 
 
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
     "command, context, node, node_serialized",
     [
@@ -81,6 +83,7 @@ async def test_presentation(
         assert node_schema.dump(_node) == node_serialized
 
 
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
     "command, context",
     [
@@ -107,6 +110,7 @@ async def test_internal(command, context, gateway, message_schema):
             break
 
 
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
     "command",
     [Message(0, 255, 3, 0, 2, "2.0")],

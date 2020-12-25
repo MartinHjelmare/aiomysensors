@@ -2,11 +2,13 @@
 import pytest
 
 from aiomysensors.exceptions import InvalidMessageError
+from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
 
 
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 async def test_listen(gateway, message, message_schema):
     """Test gateway listen."""
     cmd = message_schema.dump(message)
@@ -27,6 +29,7 @@ async def test_listen_invalid_message(gateway):
                 raise Exception  # This line should not be reached.
 
 
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 async def test_send(gateway, message, message_schema):
     """Test gateway send."""
     cmd = message_schema.dump(message)

@@ -3,8 +3,10 @@ import pytest
 from marshmallow.exceptions import ValidationError
 
 from aiomysensors.model.message import Message
+from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
 
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 def test_dump(message_schema):
     """Test dump of message."""
     msg = Message()
@@ -25,6 +27,7 @@ def test_dump(message_schema):
     assert cmd == "1;255;3;0;0;57\n"
 
 
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 def test_dump_bad_message(message_schema):
     """Test dump of bad message."""
     with pytest.raises(ValidationError):
@@ -34,6 +37,7 @@ def test_dump_bad_message(message_schema):
         message_schema.dump("bad")
 
 
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 def test_load(message_schema):
     """Test load of message."""
     msg = message_schema.load("1;255;3;0;0;57\n")
@@ -45,6 +49,7 @@ def test_load(message_schema):
     assert msg.payload == "57"
 
 
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 def test_load_internal_id_request(message_schema):
     """Test load internal id request message."""
     msg = message_schema.load("1;5;3;0;3;\n")
@@ -56,6 +61,7 @@ def test_load_internal_id_request(message_schema):
     assert msg.payload == ""
 
 
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 def test_load_bad_message(message_schema):
     """Test load of bad message."""
     # Message that fails on bad node id

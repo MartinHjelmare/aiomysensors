@@ -10,9 +10,15 @@ from aiomysensors.transport import Transport
 
 
 @pytest.fixture(name="message_schema")
-def message_schema_fixture():
-    """Return a schema."""
-    return MessageSchema()
+def message_schema_fixture(request):
+    """Apply protocol version to schema."""
+    message_schema = MessageSchema()
+    protocol_version = getattr(request, "param", None)
+    if not protocol_version:
+        return message_schema
+
+    message_schema.context["protocol_version"] = protocol_version
+    return message_schema
 
 
 @pytest.fixture(name="node_schema")

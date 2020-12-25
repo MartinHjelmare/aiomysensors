@@ -79,7 +79,7 @@ class Node:
             message_type=value_type,
             payload=value,
         )
-        msg_schema = MessageSchema()
+        msg_schema = MessageSchema(context={"protocol_version": self.protocol_version})
         try:  # Do roundtrip to validate message
             msg_dump = msg_schema.dump(msg)
             msg = msg_schema.load(msg_dump)
