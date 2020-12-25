@@ -26,7 +26,7 @@ class Gateway:
         while True:
             decoded_message = await self.transport.read()
             try:
-                message = self.message_schema.load(decoded_message)  # type: ignore
+                message = self.message_schema.load(decoded_message)
             except ValidationError as err:
                 raise InvalidMessageError from err
 
