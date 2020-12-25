@@ -6,7 +6,7 @@ import pytest
 from aiomysensors.exceptions import MissingNodeError, UnsupportedMessageError
 from aiomysensors.model.message import Message
 
-from tests.common import NODE_SERIALIZED
+from tests.common import DEFAULT_CHILD, NODE_SERIALIZED
 
 # pylint: disable=unused-argument
 
@@ -15,9 +15,7 @@ pytestmark = pytest.mark.asyncio
 
 
 CHILD_PRESENTATION = dict(NODE_SERIALIZED)
-CHILD_PRESENTATION["children"] = {
-    0: {"values": {}, "child_id": 0, "child_type": 6, "description": "test child 0",}
-}
+CHILD_PRESENTATION["children"] = {0: DEFAULT_CHILD}
 
 
 @pytest.fixture(name="command")
@@ -65,7 +63,13 @@ def node_fixture(gateway, node_schema, request):
     indirect=["command", "node"],
 )
 async def test_presentation(
-    command, context, node, node_serialized, gateway, message_schema, node_schema,
+    command,
+    context,
+    node,
+    node_serialized,
+    gateway,
+    message_schema,
+    node_schema,
 ):
     """Test presentation command."""
     with context:
@@ -104,7 +108,9 @@ async def test_internal(command, context, gateway, message_schema):
 
 
 @pytest.mark.parametrize(
-    "command", [Message(0, 255, 3, 0, 2, "2.0")], indirect=["command"],
+    "command",
+    [Message(0, 255, 3, 0, 2, "2.0")],
+    indirect=["command"],
 )
 async def test_internal_version(command, gateway, message_schema):
     """Test internal version command."""
