@@ -2,13 +2,13 @@
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
-from aiomysensors.exceptions import MissingNodeError, UnsupportedMessageError
-from aiomysensors.model.const import SYSTEM_CHILD_ID
-from aiomysensors.model.message import Message
-from aiomysensors.model.node import Node
+from ...exceptions import MissingNodeError, UnsupportedMessageError
+from ..const import SYSTEM_CHILD_ID
+from ..message import Message
+from ..node import Node
 
 if TYPE_CHECKING:  # pragma: no cover
-    from aiomysensors.gateway import Gateway
+    from ...gateway import Gateway
 
 
 class MessageHandler:
