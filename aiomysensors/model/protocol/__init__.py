@@ -4,12 +4,13 @@ from types import ModuleType
 
 from packaging import version
 
-
+BROADCAST_ID = 255
 DEFAULT_PROTOCOL_VERSION = "1.4"
 DEFAULT_PROTOCOL_PATH = "aiomysensors.model.protocol.protocol_14"
 PROTOCOL_VERSIONS = {
     DEFAULT_PROTOCOL_VERSION: DEFAULT_PROTOCOL_PATH,
 }
+SYSTEM_CHILD_ID = 255
 
 
 def get_protocol(protocol_version: str) -> ModuleType:

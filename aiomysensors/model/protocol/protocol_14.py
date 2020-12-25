@@ -3,9 +3,9 @@ from enum import IntEnum
 from typing import TYPE_CHECKING
 
 from ...exceptions import MissingNodeError, UnsupportedMessageError
-from ..const import SYSTEM_CHILD_ID
 from ..message import Message
 from ..node import Node
+from . import SYSTEM_CHILD_ID
 
 if TYPE_CHECKING:  # pragma: no cover
     from ...gateway import Gateway

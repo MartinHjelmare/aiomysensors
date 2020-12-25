@@ -12,8 +12,8 @@ from marshmallow import (
     validate,
 )
 
-from .const import NODE_ID_FIELD, SYSTEM_CHILD_ID
-from .protocol import DEFAULT_PROTOCOL_VERSION, get_protocol
+from .const import NODE_ID_FIELD
+from .protocol import DEFAULT_PROTOCOL_VERSION, SYSTEM_CHILD_ID, get_protocol
 
 DELIMITER = ";"
 

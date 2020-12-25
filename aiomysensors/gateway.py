@@ -6,8 +6,7 @@ from marshmallow import ValidationError
 from .exceptions import InvalidMessageError
 from .model.message import Message, MessageSchema
 from .model.node import Node
-from .model.const import SYSTEM_CHILD_ID
-from .model.protocol import DEFAULT_PROTOCOL_VERSION, get_protocol
+from .model.protocol import DEFAULT_PROTOCOL_VERSION, SYSTEM_CHILD_ID, get_protocol
 from .transport import Transport
 
 
