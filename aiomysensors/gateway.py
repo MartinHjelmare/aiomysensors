@@ -7,7 +7,7 @@ from .exceptions import InvalidMessageError
 from .model.message import Message, MessageSchema
 from .model.node import Node
 from .model.const import SYSTEM_CHILD_ID
-from .model.protocol import get_protocol
+from .model.protocol import DEFAULT_PROTOCOL_VERSION, get_protocol
 from .transport import Transport
 
 
@@ -44,7 +44,7 @@ class Gateway:
 
     async def _handle_incoming(self, message: Message) -> Message:
         """Handle incoming message."""
-        protocol_version = self.protocol_version or "1.4"
+        protocol_version = self.protocol_version or DEFAULT_PROTOCOL_VERSION
         protocol = get_protocol(protocol_version)
 
         command = protocol.Command(message.command)  # type: ignore
