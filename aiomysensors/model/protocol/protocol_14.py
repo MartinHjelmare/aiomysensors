@@ -54,7 +54,9 @@ class MessageHandler:
     @classmethod
     async def handle_i_version(cls, gateway: "Gateway", message: Message) -> Message:
         """Process an internal version message."""
-        gateway.protocol_version = message.payload
+        gateway.message_schema.context[
+            "protocol_version"
+        ] = gateway.protocol_version = message.payload
         return message
 
 
