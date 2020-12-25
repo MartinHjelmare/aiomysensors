@@ -2,20 +2,14 @@
 import pytest
 from marshmallow.exceptions import ValidationError
 
-from aiomysensors.model.message import Message, MessageSchema
+from aiomysensors.model.message import Message
 
 
-@pytest.fixture(name="schema")
-def schema_fixture():
-    """Return a schema."""
-    return MessageSchema()
-
-
-def test_dump(schema):
+def test_dump(message_schema):
     """Test dump of message."""
     msg = Message()
 
-    cmd = schema.dump(msg)
+    cmd = message_schema.dump(msg)
 
     assert cmd == "0;0;0;0;0;\n"
 
@@ -26,14 +20,23 @@ def test_dump(schema):
     msg.message_type = 0
     msg.payload = 57
 
-    cmd = schema.dump(msg)
+    cmd = message_schema.dump(msg)
 
     assert cmd == "1;255;3;0;0;57\n"
 
 
-def test_load(schema):
+def test_dump_bad_message(message_schema):
+    """Test dump of bad message."""
+    with pytest.raises(ValidationError):
+        message_schema.dump(None)
+
+    with pytest.raises(ValidationError):
+        message_schema.dump("bad")
+
+
+def test_load(message_schema):
     """Test load of message."""
-    msg = schema.load("1;255;3;0;0;57\n")
+    msg = message_schema.load("1;255;3;0;0;57\n")
     assert msg.node_id == 1
     assert msg.child_id == 255
     assert msg.command == 3
@@ -42,9 +45,9 @@ def test_load(schema):
     assert msg.payload == "57"
 
 
-def test_load_internal_id_request(schema):
+def test_load_internal_id_request(message_schema):
     """Test load internal id request message."""
-    msg = schema.load("1;5;3;0;3;\n")
+    msg = message_schema.load("1;5;3;0;3;\n")
     assert msg.node_id == 1
     assert msg.child_id == 5
     assert msg.command == 3
@@ -53,44 +56,44 @@ def test_load_internal_id_request(schema):
     assert msg.payload == ""
 
 
-def test_load_bad_message(schema):
+def test_load_bad_message(message_schema):
     """Test load of bad message."""
     # Message that fails on bad node id
     with pytest.raises(ValidationError):
-        schema.load("bad;0;0;0;0;0\n")
+        message_schema.load("bad;0;0;0;0;0\n")
 
     # Message that fails on bad child id
     with pytest.raises(ValidationError):
-        schema.load("0;bad;0;0;0;0\n")
+        message_schema.load("0;bad;0;0;0;0\n")
 
     # Message that fails on bad command type
     with pytest.raises(ValidationError):
-        schema.load("0;0;bad;0;0;0\n")
+        message_schema.load("0;0;bad;0;0;0\n")
 
     # Message that fails on bad ack flag
     with pytest.raises(ValidationError):
-        schema.load("0;0;0;bad;0;0\n")
+        message_schema.load("0;0;0;bad;0;0\n")
 
     # Message that fails on bad message type
     with pytest.raises(ValidationError):
-        schema.load("0;0;0;0;bad;0\n")
+        message_schema.load("0;0;0;0;bad;0\n")
 
     # Message that fails on range of child id
     with pytest.raises(ValidationError):
-        schema.load("0;300;0;0;0;0\n")
+        message_schema.load("0;300;0;0;0;0\n")
 
     # Message that fails on range of command type
     with pytest.raises(ValidationError):
-        schema.load("0;0;-1;0;0;0\n")
+        message_schema.load("0;0;-1;0;0;0\n")
 
     # Message that fails on range of ack flag
     with pytest.raises(ValidationError):
-        schema.load("0;0;0;3;0;0\n")
+        message_schema.load("0;0;0;3;0;0\n")
 
     # Message with incorrect child id and command type combination
     with pytest.raises(ValidationError):
-        schema.load("1;5;3;0;0;0\n")
+        message_schema.load("1;5;3;0;0;0\n")
 
     # Message with incorrect child id and command type combination
     with pytest.raises(ValidationError):
-        schema.load("1;255;1;0;0;0\n")
+        message_schema.load("1;255;1;0;0;0\n")

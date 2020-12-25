@@ -1,5 +1,61 @@
 """Provide the protocol for MySensors version 1.4."""
 from enum import IntEnum
+from typing import TYPE_CHECKING
+
+from aiomysensors.exceptions import MissingNodeError, UnsupportedMessageError
+from aiomysensors.model.const import SYSTEM_CHILD_ID
+from aiomysensors.model.message import Message
+from aiomysensors.model.node import Node
+
+if TYPE_CHECKING:  # pragma: no cover
+    from aiomysensors.gateway import Gateway
+
+
+class MessageHandler:
+    """Represent a message handler."""
+
+    @classmethod
+    async def handle_presentation(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process a presentation message."""
+        if message.child_id == SYSTEM_CHILD_ID:
+            # this is a presentation of a node
+            node = Node(message.node_id, message.message_type, message.payload)
+            gateway.nodes[node.node_id] = node
+            return message
+
+        # this is a presentation of a child sensor
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        gateway.nodes[message.node_id].add_child(
+            message.child_id, message.message_type, description=message.payload
+        )
+
+        return message
+
+    @classmethod
+    async def handle_internal(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process an internal message."""
+        try:
+            internal = Internal(message.message_type)
+        except ValueError as err:
+            raise UnsupportedMessageError(
+                f"Message type is not supported: {message.message_type}"
+            ) from err
+        message_handler = getattr(cls, f"handle_{internal.name.lower()}", None)
+        if message_handler is None:
+            # No special handling required.
+            return message
+
+        message = await message_handler(gateway, message)
+
+        return message
+
+    @classmethod
+    async def handle_i_version(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process an internal version message."""
+        gateway.protocol_version = message.payload
+        return message
 
 
 class Command(IntEnum):

@@ -143,7 +143,11 @@ class MessageSchema(Schema):
     def to_string(self, data: Dict[str, Union[int, str]], **kwargs: Any) -> str:
         """Serialize message from a dict to a MySensors message string."""
         # pylint: disable=unused-argument
-        return f"{DELIMITER.join([str(data[field]) for field in self.fields])}\n"
+        try:
+            string = f"{DELIMITER.join([str(data[field]) for field in self.fields])}\n"
+        except KeyError as err:
+            raise ValidationError("Not a valid Message instance") from err
+        return string
 
 
 def validate_child_id(

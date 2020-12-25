@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from marshmallow import Schema, fields, post_load, validate
 from marshmallow.exceptions import ValidationError
 
-from ..exceptions import AIOMySensorsInvalidMessageError, AIOMySensorsMissingChildError
+from ..exceptions import InvalidMessageError, MissingChildError
 from .const import NODE_ID_FIELD
 from .message import Message, MessageSchema
 
@@ -60,7 +60,7 @@ class Node:
     def remove_child(self, child_id: int) -> None:
         """Remove a child sensor."""
         if child_id not in self.children:
-            raise AIOMySensorsMissingChildError(child_id)
+            raise MissingChildError(child_id)
         self.children.pop(child_id)
 
     def set_child_value(
@@ -68,7 +68,7 @@ class Node:
     ) -> None:
         """Set a child sensor's value."""
         if child_id not in self.children:
-            raise AIOMySensorsMissingChildError(child_id)
+            raise MissingChildError(child_id)
 
         command = 1
         msg = Message(
@@ -84,7 +84,7 @@ class Node:
             msg_dump = msg_schema.dump(msg)
             msg = msg_schema.load(msg_dump)
         except (ValueError, ValidationError) as exc:
-            raise AIOMySensorsInvalidMessageError from exc
+            raise InvalidMessageError from exc
 
         child = self.children[msg.child_id]
         child.values[msg.message_type] = msg.payload
