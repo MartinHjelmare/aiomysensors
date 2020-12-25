@@ -31,11 +31,11 @@ class Message:
         payload: str = "",
     ) -> None:
         """Set up message."""
-        self.node_id = node_id
-        self.child_id = child_id
-        self.command = command
+        self.node_id = int(node_id)  # handle IntEnum
+        self.child_id = int(child_id)
+        self.command = int(command)
         self.ack = ack
-        self.message_type = message_type
+        self.message_type = int(message_type)
         self.payload = payload
 
     def __repr__(self) -> str:
