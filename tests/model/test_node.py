@@ -2,10 +2,7 @@
 import pytest
 from marshmallow.exceptions import ValidationError
 
-from aiomysensors.exceptions import (
-    InvalidMessageError,
-    MissingChildError,
-)
+from aiomysensors.exceptions import MissingChildError
 from aiomysensors.model.node import Node
 
 from tests.common import NODE_SERIALIZED, NODE_CHILD_SERIALIZED
@@ -126,20 +123,3 @@ def test_set_child_value_no_child(node):
         assert exc.child_id == child_id
 
     assert not node.children
-
-
-def test_set_child_bad_value(node, child):
-    """Test set child value with bad value."""
-    child_id = child.child_id
-    value_type = 0
-    value = "25.0"
-
-    assert child.values[value_type] == "20.0"
-
-    with pytest.raises(InvalidMessageError):
-        node.set_child_value(child_id, "bad", value)
-
-    assert len(node.children) == 1
-    child = node.children[child_id]
-    assert child.child_id == child_id
-    assert child.values[value_type] == "20.0"

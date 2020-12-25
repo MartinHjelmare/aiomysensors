@@ -88,4 +88,5 @@ def message_fixture(message_schema, transport):
 def gateway_fixture(transport):
     """Mock a gateway."""
     gateway = Gateway(transport)
+    gateway.protocol_version = "1.4"
     return gateway
