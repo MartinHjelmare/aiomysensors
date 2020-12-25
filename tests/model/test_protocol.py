@@ -89,7 +89,7 @@ async def test_presentation(
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, values_after, writes",
+    "command, context, node_before, values_after, writes, reboot",
     [
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -97,13 +97,15 @@ async def test_presentation(
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "25.0"},  # values_after
             [],  # writes
+            False,  # reboot
         ),  # Set message
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
             default_context(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "25.0"},  # values_after
-            [],  # writes
+            ["0;255;3;0;13;\n"],  # writes
+            True,  # reboot
         ),  # Set message, with node reboot true
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -111,6 +113,7 @@ async def test_presentation(
             None,  # node_before
             None,  # values_after
             [],  # writes
+            False,  # reboot
         ),  # Missing node
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -118,6 +121,7 @@ async def test_presentation(
             NODE_SERIALIZED,  # node_before
             None,  # values_after
             [],  # writes
+            False,  # reboot
         ),  # Missing child
     ],
     indirect=["command", "node_before"],
@@ -128,12 +132,17 @@ async def test_set(
     node_before,
     values_after,
     writes,
+    reboot,
     gateway,
     message_schema,
     node_schema,
     transport,
 ):
     """Test set command."""
+    if reboot:
+        for node in gateway.nodes.values():
+            node.reboot = True
+
     with context:
         async for msg in gateway.listen():
             assert message_schema.dump(msg) == command
