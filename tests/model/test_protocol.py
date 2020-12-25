@@ -6,7 +6,7 @@ import pytest
 from aiomysensors.exceptions import MissingNodeError, UnsupportedMessageError
 from aiomysensors.model.message import Message
 
-from tests.common import NODE_SERIALIZED
+from tests.common import DEFAULT_CHILD, NODE_SERIALIZED
 
 # pylint: disable=unused-argument
 
@@ -15,14 +15,7 @@ pytestmark = pytest.mark.asyncio
 
 
 CHILD_PRESENTATION = dict(NODE_SERIALIZED)
-CHILD_PRESENTATION["children"] = {
-    0: {
-        "values": {},
-        "child_id": 0,
-        "child_type": 6,
-        "description": "test child 0",
-    }
-}
+CHILD_PRESENTATION["children"] = {0: DEFAULT_CHILD}
 
 
 @pytest.fixture(name="command")
