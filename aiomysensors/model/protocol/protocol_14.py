@@ -62,6 +62,33 @@ class MessageHandler:
         return message
 
     @classmethod
+    async def handle_req(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process a req message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        if message.child_id not in gateway.nodes[message.node_id].children:
+            raise MissingChildError(message.node_id)
+
+        value = (
+            gateway.nodes[message.node_id]
+            .children[message.child_id]
+            .values.get(message.message_type)
+        )
+
+        if value is not None:
+            set_message = Message(
+                node_id=message.node_id,
+                child_id=message.child_id,
+                command=Command.set,
+                message_type=message.message_type,
+                payload=value,
+            )
+            await gateway.send(set_message)
+
+        return message
+
+    @classmethod
     async def handle_internal(cls, gateway: "Gateway", message: Message) -> Message:
         """Process an internal message."""
         try:

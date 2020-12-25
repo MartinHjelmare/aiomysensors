@@ -1,4 +1,7 @@
-"""Provide a MySensors message abstraction."""
+"""Provide a MySensors message abstraction.
+
+Validation should be done on a protocol level, i.e. not with gateway state.
+"""
 from types import ModuleType
 from typing import Any, Dict, Mapping, Optional, Union
 
