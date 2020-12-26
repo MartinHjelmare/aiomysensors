@@ -15,26 +15,22 @@ def run_gateway(handler: Callable, gateway: Gateway) -> None:
     try:
         asyncio.run(start_gateway(handler, gateway))
     except KeyboardInterrupt:
+        pass
+    finally:
         LOGGER.info("Exiting CLI")
 
 
 async def start_gateway(handler: Callable, gateway: Gateway) -> None:
     """Start the gateway."""
-    reconnect_interval = 3
-
-    while True:
-        try:
-            await handler(gateway)
-        except AIOMySensorsError as err:
-            LOGGER.error(
-                "Error '%s'. Reconnecting in %s seconds", err, reconnect_interval
-            )
-            await asyncio.sleep(reconnect_interval)
+    try:
+        await handler(gateway)
+    except AIOMySensorsError as err:
+        LOGGER.error("Error '%s'", err)
 
 
 async def handle_gateway(gateway: Gateway) -> None:
     """Handle the gateway calls."""
-    async with gateway.transport:
+    async with gateway.transport:  # pragma: no cover
         async for msg in gateway.listen():
             level = logging.DEBUG if msg.message_type == 9 else logging.INFO
             LOGGER.log(level, "Received message: %s", msg)
