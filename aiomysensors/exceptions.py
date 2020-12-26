@@ -1,4 +1,5 @@
 """Provide aiomysensors exceptions."""
+from typing import Optional
 
 
 class AIOMySensorsError(Exception):
@@ -37,6 +38,20 @@ class UnsupportedMessageError(AIOMySensorsError):
 
 class TransportError(AIOMySensorsError):
     """Represent a transport error."""
+
+
+class TransportReadError(TransportError):
+    """The transport failed to read."""
+
+    def __init__(self, partial_bytes: Optional[bytes] = None) -> None:
+        """Set up error."""
+        message = ""
+
+        if partial_bytes is not None:
+            message = f"Partial bytes read: {partial_bytes!r}"
+
+        super().__init__(message)
+        self.partial_bytes = partial_bytes
 
 
 class TransportFailedError(TransportError):

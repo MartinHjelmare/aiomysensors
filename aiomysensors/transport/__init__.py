@@ -2,6 +2,8 @@
 from abc import ABC, abstractmethod
 from types import TracebackType
 
+TERMINATOR = b"\n"
+
 
 class Transport(ABC):
     """Represent a MySensors transport.
