@@ -10,7 +10,7 @@ VERSION = (PROJECT_DIR / "aiomysensors" / "VERSION").read_text().strip()
 GITHUB_URL = "https://github.com/MartinHjelmare/aiomysensors"
 DOWNLOAD_URL = f"{GITHUB_URL}/archive/master.zip"
 
-REQUIRES = ["click", "marshmallow", "pyserial", "pyserial-asyncio"]
+REQUIRES = ["click", "marshmallow", "pyserial-asyncio"]
 
 
 setup(
