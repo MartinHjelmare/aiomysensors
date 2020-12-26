@@ -246,6 +246,36 @@ async def test_internal(command, context, gateway, message_schema):
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
+    "command, context, node_before",
+    [
+        (
+            Message(0, 255, 4, 0, 5),  # command
+            pytest.raises(MissingNodeError),  # context
+            None,  # node_before
+        ),  # Missing node
+        (
+            Message(0, 255, 4, 0, 9999999),  # command
+            pytest.raises(UnsupportedMessageError),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+        ),  # Unsupported message
+        (
+            Message(0, 255, 4, 0, 5),  # command
+            default_context(),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+        ),  # Message without special handler
+    ],
+    indirect=["command", "node_before"],
+)
+async def test_stream(command, context, node_before, gateway, message_schema):
+    """Test stream command."""
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize(
     "command",
     [Message(0, 255, 3, 0, 2, "2.0")],
     indirect=["command"],
