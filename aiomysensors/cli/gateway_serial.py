@@ -1,6 +1,4 @@
 """Provide a serial gateway."""
-from typing import Any
-
 import click
 
 from aiomysensors.gateway import Gateway
@@ -19,8 +17,8 @@ from .helper import handle_gateway, run_gateway
     help="Baud rate of the serial connection.",
 )
 @click.option("-p", "--port", required=True, help="Serial port of the gateway.")
-def serial_gateway(**kwargs: Any) -> None:
+def serial_gateway(port: str, baud: int) -> None:
     """Start a serial gateway."""
-    transport = SerialTransport(**kwargs)
+    transport = SerialTransport(port, baud)
     gateway = Gateway(transport)
     run_gateway(handle_gateway, gateway)
