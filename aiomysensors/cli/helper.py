@@ -20,7 +20,7 @@ def run_gateway(handler: Callable, gateway: Gateway) -> None:
 
 async def start_gateway(handler: Callable, gateway: Gateway) -> None:
     """Start the gateway."""
-    reconnect_interval = 3  # [seconds]
+    reconnect_interval = 3
 
     while True:
         try:
