@@ -25,7 +25,9 @@ class SerialTransport(Transport):
                 url=self.port, baudrate=self.baud
             )
         except OSError as err:
-            raise TransportError from err
+            raise TransportError(
+                f"Failed to connect to serial transport: {err}"
+            ) from err
 
     async def disconnect(self) -> None:
         """Disconnect the transport."""
@@ -43,11 +45,13 @@ class SerialTransport(Transport):
         try:
             read = await self.reader.readuntil(TERMINATOR)
         except asyncio.LimitOverrunError as err:
-            raise TransportReadError() from err
+            raise TransportReadError(err) from err
         except asyncio.IncompleteReadError as err:
-            raise TransportReadError(err.partial) from err
+            raise TransportReadError(err, err.partial) from err
         except OSError as err:
-            raise TransportFailedError from err
+            raise TransportFailedError(
+                f"Failed reading from serial transport: {err}"
+            ) from err
 
         return read.decode()
 
@@ -59,4 +63,6 @@ class SerialTransport(Transport):
             self.writer.write(decoded_message.encode())
             await self.writer.drain()
         except OSError as err:
-            raise TransportFailedError from err
+            raise TransportFailedError(
+                f"Failed writing to serial transport: {err}"
+            ) from err
