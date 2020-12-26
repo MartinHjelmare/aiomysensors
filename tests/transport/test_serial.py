@@ -9,7 +9,6 @@ from aiomysensors.exceptions import (
     TransportFailedError,
     TransportReadError,
 )
-from aiomysensors.gateway import Gateway
 from aiomysensors.transport.serial import SerialTransport
 
 # All test coroutines will be treated as marked.
@@ -28,10 +27,9 @@ def serial_fixture():
 
 async def test_connect_disconnect(serial):
     """Test serial transport connect and disconnect."""
-    serial_transport = SerialTransport("/test", 123456)
-    gateway = Gateway(serial_transport)
+    transport = SerialTransport("/test", 123456)
 
-    async with gateway.transport:
+    async with transport:
         assert serial.call_count == 1
         assert serial.call_args == call(url="/test", baudrate=123456)
 
@@ -43,11 +41,10 @@ async def test_connect_disconnect(serial):
 async def test_connect_failure(serial):
     """Test serial transport connect failure."""
     serial.side_effect = OSError("Boom")
-    serial_transport = SerialTransport("/test", 123456)
-    gateway = Gateway(serial_transport)
+    transport = SerialTransport("/test", 123456)
 
     with pytest.raises(TransportError):
-        async with gateway.transport:
+        async with transport:
             pass
 
 
@@ -55,10 +52,9 @@ async def test_disconnect_failure(serial):
     """Test serial transport disconnect failure."""
     _, mock_writer = serial.return_value
     mock_writer.wait_closed.side_effect = OSError("Boom")
-    serial_transport = SerialTransport("/test", 123456)
-    gateway = Gateway(serial_transport)
+    transport = SerialTransport("/test", 123456)
 
-    async with gateway.transport:
+    async with transport:
         assert serial.call_count == 1
         assert serial.call_args == call(url="/test", baudrate=123456)
         # Disconnect error should be caught.
@@ -72,10 +68,9 @@ async def test_read_write(serial):
     mock_reader, mock_writer = serial.return_value
     bytes_message = b"0;0;0;0;0;test\n"
     mock_reader.readuntil.return_value = bytes_message
-    serial_transport = SerialTransport("/test", 123456)
-    gateway = Gateway(serial_transport)
+    transport = SerialTransport("/test", 123456)
 
-    async with gateway.transport as transport:
+    async with transport as transport:
         assert serial.call_count == 1
         assert serial.call_args == call(url="/test", baudrate=123456)
 
@@ -93,10 +88,9 @@ async def test_read_write(serial):
 async def test_read_failure(serial):
     """Test serial transport read failure."""
     mock_reader, mock_writer = serial.return_value
-    serial_transport = SerialTransport("/test", 123456)
-    gateway = Gateway(serial_transport)
+    transport = SerialTransport("/test", 123456)
 
-    async with gateway.transport as transport:
+    async with transport as transport:
         assert serial.call_count == 1
         assert serial.call_args == call(url="/test", baudrate=123456)
 
@@ -130,10 +124,9 @@ async def test_write_failure(serial):
     mock_reader, mock_writer = serial.return_value
     bytes_message = b"0;0;0;0;0;test\n"
     mock_reader.readuntil.return_value = bytes_message
-    serial_transport = SerialTransport("/test", 123456)
-    gateway = Gateway(serial_transport)
+    transport = SerialTransport("/test", 123456)
 
-    async with gateway.transport as transport:
+    async with transport as transport:
         assert serial.call_count == 1
         assert serial.call_args == call(url="/test", baudrate=123456)
 
