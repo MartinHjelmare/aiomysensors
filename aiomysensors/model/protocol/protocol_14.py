@@ -1,6 +1,6 @@
 """Provide the protocol for MySensors version 1.4."""
 from enum import IntEnum
-from typing import TYPE_CHECKING
+from typing import Callable, Optional, TYPE_CHECKING
 
 from ...exceptions import MissingChildError, MissingNodeError, UnsupportedMessageError
 from ..message import Message
@@ -13,6 +13,19 @@ if TYPE_CHECKING:  # pragma: no cover
 
 class MessageHandler:
     """Represent a message handler."""
+
+    @classmethod
+    async def _handle_message(
+        cls, gateway: "Gateway", message: Message, message_handler: Optional[Callable]
+    ) -> Message:
+        """Handle a message."""
+        if message_handler is None:
+            # No special handling required.
+            return message
+
+        message = await message_handler(gateway, message)
+
+        return message
 
     @classmethod
     async def handle_presentation(cls, gateway: "Gateway", message: Message) -> Message:
@@ -97,14 +110,27 @@ class MessageHandler:
             raise UnsupportedMessageError(
                 f"Message type is not supported: {message.message_type}"
             ) from err
+
         message_handler = getattr(cls, f"handle_{internal.name.lower()}", None)
-        if message_handler is None:
-            # No special handling required.
-            return message
 
-        message = await message_handler(gateway, message)
+        return await cls._handle_message(gateway, message, message_handler)
 
-        return message
+    @classmethod
+    async def handle_stream(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process a stream message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        try:
+            stream = Stream(message.message_type)
+        except ValueError as err:
+            raise UnsupportedMessageError(
+                f"Message type is not supported: {message.message_type}"
+            ) from err
+
+        message_handler = getattr(cls, f"handle_{stream.name.lower()}", None)
+
+        return await cls._handle_message(gateway, message, message_handler)
 
     @classmethod
     async def handle_i_version(cls, gateway: "Gateway", message: Message) -> Message:
