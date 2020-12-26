@@ -29,7 +29,6 @@ async def start_gateway(handler: Callable, gateway: Gateway) -> None:
             LOGGER.error(
                 "Error '%s'. Reconnecting in %s seconds", err, reconnect_interval
             )
-        finally:
             await asyncio.sleep(reconnect_interval)
 
 
@@ -37,4 +36,5 @@ async def handle_gateway(gateway: Gateway) -> None:
     """Handle the gateway calls."""
     async with gateway.transport:
         async for msg in gateway.listen():
-            LOGGER.debug("Received message: %s", msg)
+            level = logging.DEBUG if msg.message_type == 9 else logging.INFO
+            LOGGER.log(level, "Received message: %s", msg)
