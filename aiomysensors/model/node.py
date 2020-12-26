@@ -24,7 +24,7 @@ class Node:
     ) -> None:
         """Set up the node."""
         self.node_id = node_id
-        self.node_type = node_type
+        self.node_type = int(node_type)
         self.protocol_version = protocol_version
         self.children = children or {}
         self.sketch_name = sketch_name

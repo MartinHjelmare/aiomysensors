@@ -5,6 +5,7 @@ reports=no
 
 disable=
   bad-continuation,
+  duplicate-code,
   locally-disabled,
   too-few-public-methods
 

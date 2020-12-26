@@ -2,10 +2,15 @@
 from enum import IntEnum
 from typing import Callable, Optional, TYPE_CHECKING
 
-from ...exceptions import MissingChildError, MissingNodeError, UnsupportedMessageError
+from ...exceptions import (
+    MissingChildError,
+    MissingNodeError,
+    TooManyNodesError,
+    UnsupportedMessageError,
+)
 from ..message import Message
 from ..node import Node
-from . import SYSTEM_CHILD_ID
+from . import DEFAULT_PROTOCOL_VERSION, MAX_NODE_ID, SYSTEM_CHILD_ID
 
 if TYPE_CHECKING:  # pragma: no cover
     from ...gateway import Gateway
@@ -138,6 +143,32 @@ class MessageHandler:
         gateway.message_schema.context[
             "protocol_version"
         ] = gateway.protocol_version = message.payload
+        return message
+
+    @classmethod
+    async def handle_i_id_request(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process an internal id request message."""
+        if gateway.nodes:
+            next_id = max(gateway.nodes) + 1
+        else:
+            next_id = 1
+
+        if next_id > MAX_NODE_ID:
+            raise TooManyNodesError
+
+        # Use temporary default values for the node until node sends presentation.
+        gateway.nodes[next_id] = Node(
+            next_id, Presentation.S_ARDUINO_NODE, DEFAULT_PROTOCOL_VERSION
+        )
+        id_response_message = Message(
+            node_id=message.node_id,
+            child_id=message.child_id,
+            command=message.command,
+            message_type=Internal.I_ID_RESPONSE,
+            payload=str(next_id),
+        )
+        await gateway.send(id_response_message)
+
         return message
 
 
