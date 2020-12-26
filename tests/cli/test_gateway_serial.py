@@ -1,4 +1,4 @@
-"""The the CLI for the serial gateway."""
+"""Test the CLI for the serial gateway."""
 import asyncio
 from unittest.mock import AsyncMock, patch
 
