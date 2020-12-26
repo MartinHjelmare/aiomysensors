@@ -23,6 +23,10 @@ class MissingChildError(AIOMySensorsError):
         self.child_id = child_id
 
 
+class TooManyNodesError(AIOMySensorsError):
+    """Represent too many nodes in the network."""
+
+
 class InvalidMessageError(AIOMySensorsError):
     """Represent an invalid message exception."""
 

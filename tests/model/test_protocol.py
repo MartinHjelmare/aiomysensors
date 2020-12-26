@@ -6,9 +6,11 @@ import pytest
 from aiomysensors.exceptions import (
     MissingChildError,
     MissingNodeError,
+    TooManyNodesError,
     UnsupportedMessageError,
 )
 from aiomysensors.model.message import Message
+from aiomysensors.model.node import Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
 from tests.common import (
@@ -289,3 +291,42 @@ async def test_internal_version(command, gateway, message_schema):
         break
 
     assert gateway.protocol_version == "2.0"
+
+
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize(
+    "command, context, nodes_before, writes",
+    [
+        (
+            Message(255, 255, 3, 0, 3),  # command
+            default_context(),  # context
+            0,  # nodes_before
+            ["255;255;3;0;4;1\n"],  # writes
+        ),  # Valid id request message
+        (
+            Message(255, 255, 3, 0, 3),  # command
+            pytest.raises(TooManyNodesError),  # context
+            255,  # nodes_before
+            [],  # writes
+        ),  # Too many nodes
+    ],
+    indirect=["command"],
+)
+async def test_internal_id_request(
+    command,
+    context,
+    nodes_before,
+    writes,
+    gateway,
+    message_schema,
+):
+    """Test internal id request command."""
+    for node_id in range(nodes_before):
+        gateway.nodes[node_id] = Node(node_id, 17, "1.4")
+
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    assert gateway.transport.writes == writes

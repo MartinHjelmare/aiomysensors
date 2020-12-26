@@ -7,6 +7,7 @@ from packaging import version
 BROADCAST_ID = 255
 DEFAULT_PROTOCOL_VERSION = "1.4"
 DEFAULT_PROTOCOL_PATH = "aiomysensors.model.protocol.protocol_14"
+MAX_NODE_ID = 254
 PROTOCOL_VERSIONS = {
     DEFAULT_PROTOCOL_VERSION: DEFAULT_PROTOCOL_PATH,
 }
