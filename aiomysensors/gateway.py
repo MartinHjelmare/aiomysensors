@@ -27,7 +27,7 @@ class Gateway:
             try:
                 message = self.message_schema.load(decoded_message)
             except ValidationError as err:
-                raise InvalidMessageError from err
+                raise InvalidMessageError(err, decoded_message) from err
 
             message = await self._handle_incoming(message)
 
@@ -38,7 +38,7 @@ class Gateway:
         try:
             decoded_message = self.message_schema.dump(message)
         except ValidationError as err:
-            raise InvalidMessageError from err
+            raise InvalidMessageError(err, message) from err
         await self.transport.write(decoded_message)
 
     async def _handle_incoming(self, message: Message) -> Message:

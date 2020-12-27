@@ -10,7 +10,7 @@ VERSION = (PROJECT_DIR / "aiomysensors" / "VERSION").read_text().strip()
 GITHUB_URL = "https://github.com/MartinHjelmare/aiomysensors"
 DOWNLOAD_URL = f"{GITHUB_URL}/archive/master.zip"
 
-REQUIRES = ["marshmallow"]
+REQUIRES = ["click", "marshmallow", "pyserial-asyncio"]
 
 
 setup(
@@ -26,6 +26,7 @@ setup(
     packages=find_packages(exclude=["contrib", "docs", "tests*"]),
     python_requires=">=3.8",
     install_requires=REQUIRES,
+    entry_points={"console_scripts": ["aiomysensors = aiomysensors.cli:cli"]},
     include_package_data=True,
     license="Apache-2.0",
     zip_safe=False,
