@@ -1,6 +1,8 @@
 """Provide the protocol for MySensors version 1.4."""
+import calendar
+import time
 from enum import IntEnum
-from typing import Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Optional
 
 from ...exceptions import (
     MissingChildError,
@@ -182,6 +184,19 @@ class MessageHandler:
             payload="M" if gateway.config.metric else "I",
         )
         await gateway.send(config_message)
+        return message
+
+    @classmethod
+    async def handle_i_time(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process an internal time message."""
+        time_message = Message(
+            node_id=message.node_id,
+            child_id=message.child_id,
+            command=message.command,
+            message_type=message.message_type,
+            payload=str(calendar.timegm(time.localtime())),
+        )
+        await gateway.send(time_message)
         return message
 
 
