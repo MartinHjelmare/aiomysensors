@@ -1,4 +1,5 @@
 """Provide a gateway."""
+from dataclasses import dataclass
 from typing import AsyncGenerator, Dict, Optional
 
 from marshmallow import ValidationError
@@ -13,9 +14,10 @@ from .transport import Transport
 class Gateway:
     """Represent a MySensors gateway."""
 
-    def __init__(self, transport: Transport) -> None:
+    def __init__(self, transport: Transport, config: Optional["Config"] = None) -> None:
         """Set up gateway."""
         self.transport = transport
+        self.config = config or Config()
         self.message_schema = MessageSchema()
         self.nodes: Dict[int, Node] = {}
         self.protocol_version: Optional[str] = None
@@ -61,3 +63,10 @@ class Gateway:
             await self.send(version_message)
 
         return message
+
+
+@dataclass
+class Config:
+    """Represent the gateway config."""
+
+    metric: bool = True
