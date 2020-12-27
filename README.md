@@ -2,6 +2,51 @@
 
 Python asyncio package to connect to MySensors gateways.
 
+## MySensors version support
+
+The following versions are supported:
+
+- 1.4
+
+## Example
+
+```py
+"""Show a minimal example using aiomysensors."""
+import asyncio
+
+from aiomysensors import AIOMySensorsError, Gateway, SerialTransport
+
+
+async def run_gateway() -> None:
+    """Run a serial gateway."""
+    port = "/dev/ttyACM0"
+    baud = 115200
+    transport = SerialTransport(port, baud)
+    gateway = Gateway(transport)
+
+    try:
+        async with gateway.transport:
+            async for message in gateway.listen():
+                print("Message received:", message)
+    except AIOMySensorsError as err:
+        print("Error:", err)
+
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(run_gateway())
+    except KeyboardInterrupt:
+        pass
+```
+
+## Command Line Interface
+
+There's a CLI for testing purposes.
+
+```sh
+aiomysensors --debug serial-gateway -p /dev/ttyACM0
+```
+
 ## Development
 
 - Install and set up development environment.
