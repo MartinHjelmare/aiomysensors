@@ -1,4 +1,4 @@
-"""Test the protocol."""
+"""Test protocol 1.4."""
 import time
 from contextlib import ExitStack as default_context
 from unittest.mock import patch
@@ -29,15 +29,6 @@ pytestmark = pytest.mark.asyncio
 
 CHILD_PRESENTATION = dict(NODE_SERIALIZED)
 CHILD_PRESENTATION["children"] = {0: DEFAULT_CHILD}
-
-
-@pytest.fixture(name="command")
-def command_fixture(message_schema, transport, request):
-    """Add a MySensors command to the transport."""
-    message = request.param
-    cmd = message_schema.dump(message)
-    transport.messages.append(cmd)
-    return cmd
 
 
 @pytest.fixture(name="node_before")
