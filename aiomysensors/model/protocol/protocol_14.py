@@ -199,6 +199,17 @@ class MessageHandler:
         await gateway.send(time_message)
         return message
 
+    @classmethod
+    async def handle_i_battery_level(
+        cls, gateway: "Gateway", message: Message
+    ) -> Message:
+        """Process an internal battery level message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        gateway.nodes[message.node_id].battery_level = round(float(message.payload))
+        return message
+
 
 class Command(IntEnum):
     """MySensors command types."""

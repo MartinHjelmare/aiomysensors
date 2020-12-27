@@ -399,3 +399,40 @@ async def test_internal_time(
         break
 
     assert gateway.transport.writes == writes
+
+
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize(
+    "command, context, node_before, battery_level",
+    [
+        (
+            Message(0, 255, 3, 0, 0, "55"),  # command
+            pytest.raises(MissingNodeError),  # context
+            None,  # node_before
+            100,  # battery level
+        ),  # Missing node
+        (
+            Message(0, 255, 3, 0, 0, "55"),  # command
+            default_context(),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+            55,  # battery level
+        ),  # battery level
+    ],
+    indirect=["command", "node_before"],
+)
+async def test_internal_battery_level(
+    command,
+    context,
+    node_before,
+    battery_level,
+    gateway,
+    message_schema,
+):
+    """Test internal battery level command."""
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    for node in gateway.nodes.values():
+        assert node.battery_level == battery_level
