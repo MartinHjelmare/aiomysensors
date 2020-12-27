@@ -446,7 +446,7 @@ async def test_internal_battery_level(
             Message(0, 255, 3, 0, 11, "sketch name set ok"),  # command
             pytest.raises(MissingNodeError),  # context
             None,  # node_before
-            "test node 0",  # sketch_name
+            None,  # sketch_name
         ),  # Missing node
         (
             Message(0, 255, 3, 0, 11, "sketch name set ok"),  # command
