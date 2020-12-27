@@ -1,5 +1,8 @@
 """Provide the protocol for MySensors version 2.0."""
 from enum import IntEnum
+from typing import TYPE_CHECKING
+
+from ..message import Message
 
 # pylint: disable=unused-import
 from .protocol_15 import (  # noqa: F401
@@ -8,9 +11,26 @@ from .protocol_15 import (  # noqa: F401
     Stream,
 )
 
+if TYPE_CHECKING:  # pragma: no cover
+    from ...gateway import Gateway
+
 
 class MessageHandler(MessageHandler15):
     """Represent a message handler."""
+
+    @classmethod
+    async def handle_i_gateway_ready(
+        cls, gateway: "Gateway", message: Message
+    ) -> Message:
+        """Process an internal gateway ready message."""
+        gateway_ready_message = Message(
+            node_id=255,
+            child_id=message.child_id,
+            command=message.command,
+            message_type=Internal.I_DISCOVER,
+        )
+        await gateway.send(gateway_ready_message)
+        return message
 
 
 class Presentation(IntEnum):
