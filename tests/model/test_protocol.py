@@ -465,7 +465,7 @@ async def test_internal_sketch_name(
     gateway,
     message_schema,
 ):
-    """Test internal battery level command."""
+    """Test internal sketch name command."""
     with context:
         async for msg in gateway.listen():
             assert message_schema.dump(msg) == command
@@ -473,3 +473,40 @@ async def test_internal_sketch_name(
 
     for node in gateway.nodes.values():
         assert node.sketch_name == sketch_name
+
+
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize(
+    "command, context, node_before, sketch_version",
+    [
+        (
+            Message(0, 255, 3, 0, 12, "1.2.3"),  # command
+            pytest.raises(MissingNodeError),  # context
+            None,  # node_before
+            None,  # sketch_version
+        ),  # Missing node
+        (
+            Message(0, 255, 3, 0, 12, "1.2.3"),  # command
+            default_context(),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+            "1.2.3",  # sketch_version
+        ),  # sketch version ok
+    ],
+    indirect=["command", "node_before"],
+)
+async def test_internal_sketch_version(
+    command,
+    context,
+    node_before,
+    sketch_version,
+    gateway,
+    message_schema,
+):
+    """Test internal sketch version command."""
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    for node in gateway.nodes.values():
+        assert node.sketch_version == sketch_version

@@ -221,6 +221,17 @@ class MessageHandler:
         gateway.nodes[message.node_id].sketch_name = message.payload
         return message
 
+    @classmethod
+    async def handle_i_sketch_version(
+        cls, gateway: "Gateway", message: Message
+    ) -> Message:
+        """Process an internal sketch version message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        gateway.nodes[message.node_id].sketch_version = message.payload
+        return message
+
 
 class Command(IntEnum):
     """MySensors command types."""
