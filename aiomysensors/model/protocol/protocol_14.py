@@ -171,6 +171,19 @@ class MessageHandler:
 
         return message
 
+    @classmethod
+    async def handle_i_config(cls, gateway: "Gateway", message: Message) -> Message:
+        """Process an internal config message."""
+        config_message = Message(
+            node_id=message.node_id,
+            child_id=message.child_id,
+            command=message.command,
+            message_type=message.message_type,
+            payload="M" if gateway.config.metric else "I",
+        )
+        await gateway.send(config_message)
+        return message
+
 
 class Command(IntEnum):
     """MySensors command types."""

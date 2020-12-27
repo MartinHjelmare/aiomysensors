@@ -330,3 +330,37 @@ async def test_internal_id_request(
             break
 
     assert gateway.transport.writes == writes
+
+
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize(
+    "command, metric, writes",
+    [
+        (
+            Message(0, 255, 3, 0, 6),  # command
+            True,  # metric
+            ["0;255;3;0;6;M\n"],  # writes
+        ),  # metric config message
+        (
+            Message(0, 255, 3, 0, 6),  # command
+            False,  # metric
+            ["0;255;3;0;6;I\n"],  # writes
+        ),  # imperial config message
+    ],
+    indirect=["command"],
+)
+async def test_internal_config(
+    command,
+    metric,
+    writes,
+    gateway,
+    message_schema,
+):
+    """Test internal config command."""
+    gateway.config.metric = metric
+
+    async for msg in gateway.listen():
+        assert message_schema.dump(msg) == command
+        break
+
+    assert gateway.transport.writes == writes
