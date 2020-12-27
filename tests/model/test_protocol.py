@@ -1,5 +1,7 @@
 """Test the protocol."""
+import time
 from contextlib import ExitStack as default_context
+from unittest.mock import patch
 
 import pytest
 
@@ -12,12 +14,11 @@ from aiomysensors.exceptions import (
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
-
 from tests.common import (
     DEFAULT_CHILD,
     DEFAULT_NODE_CHILD_SERIALIZED,
-    NODE_SERIALIZED,
     NODE_CHILD_SERIALIZED,
+    NODE_SERIALIZED,
 )
 
 # pylint: disable=too-many-arguments,unused-argument
@@ -48,6 +49,14 @@ def node_fixture(gateway, node_schema, request):
     node = node_schema.load(node_data)
     gateway.nodes[node.node_id] = node
     return node
+
+
+@pytest.fixture(name="mock_time")
+def mock_time_fixture():
+    """Mock time."""
+    with patch("aiomysensors.model.protocol.protocol_14.time") as mock_time:
+        mock_time.localtime.return_value = time.gmtime(123456789)
+        yield mock_time
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
@@ -359,6 +368,32 @@ async def test_internal_config(
     """Test internal config command."""
     gateway.config.metric = metric
 
+    async for msg in gateway.listen():
+        assert message_schema.dump(msg) == command
+        break
+
+    assert gateway.transport.writes == writes
+
+
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize(
+    "command, writes",
+    [
+        (
+            Message(0, 255, 3, 0, 1),  # command
+            ["0;255;3;0;1;123456789\n"],  # writes
+        ),  # time message
+    ],
+    indirect=["command"],
+)
+async def test_internal_time(
+    command,
+    writes,
+    gateway,
+    message_schema,
+    mock_time,
+):
+    """Test internal time command."""
     async for msg in gateway.listen():
         assert message_schema.dump(msg) == command
         break
