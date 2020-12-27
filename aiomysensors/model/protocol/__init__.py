@@ -11,6 +11,7 @@ MAX_NODE_ID = 254
 PROTOCOL_VERSIONS = {
     DEFAULT_PROTOCOL_VERSION: DEFAULT_PROTOCOL_PATH,
     "1.5": "aiomysensors.model.protocol.protocol_15",
+    "2.0": "aiomysensors.model.protocol.protocol_20",
 }
 SYSTEM_CHILD_ID = 255
 
