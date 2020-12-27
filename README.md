@@ -7,6 +7,7 @@ Python asyncio package to connect to MySensors gateways.
 The following versions are supported:
 
 - 1.4
+- 1.5
 
 ## Example
 
