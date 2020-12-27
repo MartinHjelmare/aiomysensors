@@ -436,3 +436,40 @@ async def test_internal_battery_level(
 
     for node in gateway.nodes.values():
         assert node.battery_level == battery_level
+
+
+@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize(
+    "command, context, node_before, sketch_name",
+    [
+        (
+            Message(0, 255, 3, 0, 11, "sketch name set ok"),  # command
+            pytest.raises(MissingNodeError),  # context
+            None,  # node_before
+            "test node 0",  # sketch_name
+        ),  # Missing node
+        (
+            Message(0, 255, 3, 0, 11, "sketch name set ok"),  # command
+            default_context(),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+            "sketch name set ok",  # sketch_name
+        ),  # sketch name
+    ],
+    indirect=["command", "node_before"],
+)
+async def test_internal_sketch_name(
+    command,
+    context,
+    node_before,
+    sketch_name,
+    gateway,
+    message_schema,
+):
+    """Test internal battery level command."""
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    for node in gateway.nodes.values():
+        assert node.sketch_name == sketch_name
