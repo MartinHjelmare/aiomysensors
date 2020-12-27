@@ -340,12 +340,12 @@ async def test_internal_id_request(
             Message(0, 255, 3, 0, 6),  # command
             True,  # metric
             ["0;255;3;0;6;M\n"],  # writes
-        ),  # config message
+        ),  # metric config message
         (
             Message(0, 255, 3, 0, 6),  # command
             False,  # metric
             ["0;255;3;0;6;I\n"],  # writes
-        ),  # Too many nodes
+        ),  # imperial config message
     ],
     indirect=["command"],
 )
