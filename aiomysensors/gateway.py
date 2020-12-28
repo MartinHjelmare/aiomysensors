@@ -53,7 +53,11 @@ class Gateway:
         message_handler = getattr(message_handlers, f"handle_{command.name}")
         message = await message_handler(self, message)
 
-        if self.protocol_version is None:
+        if self.protocol_version is None and (
+            message.command != protocol.Command.internal
+            or message.message_type
+            not in (protocol.Internal.I_LOG_MESSAGE, protocol.Internal.I_GATEWAY_READY)
+        ):
             version_message = Message(
                 child_id=SYSTEM_CHILD_ID,
                 command=protocol.Command.internal,
