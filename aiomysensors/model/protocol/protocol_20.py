@@ -28,13 +28,13 @@ def handle_missing_node_child(func: F) -> F:
         try:
             message = await func(message_handlers, gateway, message)
         except (MissingNodeError, MissingChildError):
-            discover_message = Message(
+            presentation_message = Message(
                 node_id=message.node_id,
                 child_id=SYSTEM_CHILD_ID,
-                command=Command.internal,
-                message_type=Internal.I_PRESENTATION,
+                command=message_handlers.protocol.Command.internal,
+                message_type=message_handlers.protocol.Internal.I_PRESENTATION,
             )
-            await gateway.send(discover_message)
+            await gateway.send(presentation_message)
 
             raise
 
@@ -45,6 +45,49 @@ def handle_missing_node_child(func: F) -> F:
 
 class MessageHandler(MessageHandler15):
     """Represent a message handler."""
+
+    @handle_missing_node_child
+    async def handle_presentation(
+        self, gateway: "Gateway", message: Message
+    ) -> Message:
+        """Process a presentation message."""
+        return await super().handle_presentation(gateway, message)
+
+    @handle_missing_node_child
+    async def handle_set(self, gateway: "Gateway", message: Message) -> Message:
+        """Process a set message."""
+        return await super().handle_set(gateway, message)
+
+    @handle_missing_node_child
+    async def handle_req(self, gateway: "Gateway", message: Message) -> Message:
+        """Process a req message."""
+        return await super().handle_req(gateway, message)
+
+    @handle_missing_node_child
+    async def handle_stream(self, gateway: "Gateway", message: Message) -> Message:
+        """Process a stream message."""
+        return await super().handle_stream(gateway, message)
+
+    @handle_missing_node_child
+    async def handle_i_battery_level(
+        self, gateway: "Gateway", message: Message
+    ) -> Message:
+        """Process an internal battery level message."""
+        return await super().handle_i_battery_level(gateway, message)
+
+    @handle_missing_node_child
+    async def handle_i_sketch_name(
+        self, gateway: "Gateway", message: Message
+    ) -> Message:
+        """Process an internal sketch name message."""
+        return await super().handle_i_sketch_name(gateway, message)
+
+    @handle_missing_node_child
+    async def handle_i_sketch_version(
+        self, gateway: "Gateway", message: Message
+    ) -> Message:
+        """Process an internal sketch version message."""
+        return await super().handle_i_sketch_version(gateway, message)
 
     async def handle_i_gateway_ready(
         self, gateway: "Gateway", message: Message

@@ -83,7 +83,7 @@ async def test_presentation(
         assert node_schema.dump(_node) == node_after
 
 
-@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize("message_schema", ["1.4", "1.5"], indirect=True)
 @pytest.mark.parametrize(
     "command, context, node_before, values_after, writes, reboot",
     [
@@ -150,7 +150,7 @@ async def test_set(
     assert gateway.transport.writes == writes
 
 
-@pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
+@pytest.mark.parametrize("message_schema", ["1.4", "1.5"], indirect=True)
 @pytest.mark.parametrize(
     "command, context, node_before, values_after, writes",
     [
