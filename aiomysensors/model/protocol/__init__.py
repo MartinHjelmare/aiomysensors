@@ -1,6 +1,6 @@
 """Provide MySensors protocols."""
 from importlib import import_module
-from types import ModuleType
+from typing import Any, Protocol, cast
 
 from packaging import version
 
@@ -16,7 +16,18 @@ PROTOCOL_VERSIONS = {
 SYSTEM_CHILD_ID = 255
 
 
-def get_protocol(protocol_version: str) -> ModuleType:
+class ProtocolType(Protocol):
+    """Represent a protocol module type."""
+
+    MessageHandler: Any
+    Command: Any
+    Presentation: Any
+    SetReq: Any
+    Internal: Any
+    Stream: Any
+
+
+def get_protocol(protocol_version: str) -> ProtocolType:
     """Return the protocol module for the protocol_version."""
     path = next(
         (
@@ -26,4 +37,4 @@ def get_protocol(protocol_version: str) -> ModuleType:
         ),
         DEFAULT_PROTOCOL_PATH,
     )
-    return import_module(path)
+    return cast(ProtocolType, import_module(path))

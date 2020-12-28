@@ -18,16 +18,15 @@ if TYPE_CHECKING:  # pragma: no cover
 class MessageHandler(MessageHandler15):
     """Represent a message handler."""
 
-    @classmethod
     async def handle_i_gateway_ready(
-        cls, gateway: "Gateway", message: Message
+        self, gateway: "Gateway", message: Message
     ) -> Message:
         """Process an internal gateway ready message."""
         gateway_ready_message = Message(
             node_id=255,
             child_id=message.child_id,
             command=message.command,
-            message_type=Internal.I_DISCOVER,
+            message_type=self.protocol.Internal.I_DISCOVER,
         )
         await gateway.send(gateway_ready_message)
         return message
