@@ -28,13 +28,13 @@ def handle_missing_node_child(func: F) -> F:
         try:
             message = await func(message_handlers, gateway, message)
         except (MissingNodeError, MissingChildError):
-            discover_message = Message(
+            presentation_message = Message(
                 node_id=message.node_id,
                 child_id=SYSTEM_CHILD_ID,
                 command=Command.internal,
                 message_type=Internal.I_PRESENTATION,
             )
-            await gateway.send(discover_message)
+            await gateway.send(presentation_message)
 
             raise
 
