@@ -45,6 +45,9 @@ class MessageHandler:
             # this is a presentation of a node
             node = Node(message.node_id, message.message_type, message.payload)
             gateway.nodes[node.node_id] = node
+            if message.node_id == 0:
+                # Set the gateway protocol version.
+                message = await self.handle_i_version(gateway, message)
             return message
 
         # this is a presentation of a child sensor
