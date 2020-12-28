@@ -21,6 +21,7 @@ class Node:
         sketch_version: str = "",
         battery_level: int = 0,
         heartbeat: int = 0,
+        sleeping: bool = False,
     ) -> None:
         """Set up the node."""
         self.node_id = node_id
@@ -32,6 +33,7 @@ class Node:
         self.battery_level = battery_level
         self.heartbeat = heartbeat
         self.reboot = False
+        self.sleeping = sleeping
 
     def __repr__(self) -> str:
         """Return the representation."""
@@ -40,7 +42,8 @@ class Node:
             f"node_type={self.node_type}, protocol_version={self.protocol_version}, "
             f"children={self.children}, sketch_name={self.sketch_name}, "
             f"sketch_version={self.sketch_version}, "
-            f"battery_level={self.battery_level}, heartbeat={self.heartbeat})"
+            f"battery_level={self.battery_level}, heartbeat={self.heartbeat}, "
+            f"sleeping={self.sleeping})"
         )
 
     def add_child(
@@ -122,6 +125,7 @@ class NodeSchema(Schema):
     sketch_version = fields.Str()
     battery_level = fields.Int(validate=validate.Range(min=0, max=100))
     heartbeat = fields.Int()
+    sleeping = fields.Bool()
 
     @post_load
     def make_node(self, data: dict, **kwargs: Any) -> Node:

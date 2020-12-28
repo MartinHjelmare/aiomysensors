@@ -46,6 +46,17 @@ def handle_missing_node_child(func: F) -> F:
 class MessageHandler(MessageHandler15):
     """Represent a message handler."""
 
+    async def _handle_sleep_buffer(
+        self, gateway: "Gateway", message: Message
+    ) -> Message:
+        """Process the sleep buffer and send it to the woken node."""
+        for buffer_message in gateway.sleep_buffer.set_messages.values():
+            await gateway.send(buffer_message)
+
+        # clear the sleep buffer
+        gateway.sleep_buffer.set_messages.clear()
+        return message
+
     @handle_missing_node_child
     async def handle_presentation(
         self, gateway: "Gateway", message: Message
@@ -93,23 +104,36 @@ class MessageHandler(MessageHandler15):
         self, gateway: "Gateway", message: Message
     ) -> Message:
         """Process an internal gateway ready message."""
-        gateway_ready_message = Message(
+        discover_message = Message(
             node_id=255,
             child_id=message.child_id,
             command=message.command,
             message_type=self.protocol.Internal.I_DISCOVER,
         )
-        await gateway.send(gateway_ready_message)
+        await gateway.send(discover_message)
         return message
 
     @handle_missing_node_child
     async def handle_i_discover_response(
         self, gateway: "Gateway", message: Message
     ) -> Message:
-        """Process and internal discover response message."""
+        """Process an internal discover response message."""
         if message.node_id not in gateway.nodes:
             raise MissingNodeError(message.node_id)
 
+        return message
+
+    @handle_missing_node_child
+    async def handle_i_heartbeat_response(
+        self, gateway: "Gateway", message: Message
+    ) -> Message:
+        """Process an internal hearbeat response message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        message = await self._handle_sleep_buffer(gateway, message)
+
+        gateway.nodes[message.node_id].heartbeat = int(message.payload)
         return message
 
 
