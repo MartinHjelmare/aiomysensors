@@ -11,6 +11,7 @@ from aiomysensors.exceptions import (
     TooManyNodesError,
     UnsupportedMessageError,
 )
+from aiomysensors.gateway import Gateway
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
@@ -81,6 +82,24 @@ async def test_presentation(
 
     for _node in gateway.nodes.values():
         assert node_schema.dump(_node) == node_after
+
+
+@pytest.mark.parametrize("protocol_version", list(PROTOCOL_VERSIONS))
+async def test_presentation_gateway_protocol_version(
+    protocol_version, message_schema, transport
+):
+    """Test that gateway presentation sets protocol version."""
+    gateway = Gateway(transport)
+    message = Message(0, 255, 0, 0, 17, protocol_version)
+    command = message_schema.dump(message)
+    transport.messages.append(command)
+    assert gateway.protocol_version is None
+
+    async for msg in gateway.listen():
+        assert message_schema.dump(msg) == command
+        break
+
+    assert gateway.protocol_version == protocol_version
 
 
 @pytest.mark.parametrize("message_schema", ["1.4", "1.5"], indirect=True)
