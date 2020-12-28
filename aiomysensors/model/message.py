@@ -16,9 +16,9 @@ from marshmallow import (
 
 from .const import NODE_ID_FIELD
 from .protocol import (
-    ProtocolType,
     DEFAULT_PROTOCOL_VERSION,
     SYSTEM_CHILD_ID,
+    ProtocolType,
     get_protocol,
 )
 
