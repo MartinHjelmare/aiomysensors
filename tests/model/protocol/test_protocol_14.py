@@ -54,7 +54,7 @@ def mock_time_fixture():
             default_context(),  # context
             NODE_SERIALIZED,  # node_before
             CHILD_PRESENTATION,  # node_after
-        ),  # Node presentation
+        ),  # Child presentation
         (
             Message(0, 1, 0, 0, 0, "child 1"),  # command
             pytest.raises(MissingNodeError),  # context
