@@ -1,8 +1,11 @@
 """Provide the protocol for MySensors version 2.0."""
 from enum import IntEnum
-from typing import TYPE_CHECKING
+from typing import Any, Callable, TypeVar, TYPE_CHECKING, cast
 
+from ...exceptions import MissingChildError, MissingNodeError
 from ..message import Message
+
+from . import SYSTEM_CHILD_ID
 
 # pylint: disable=unused-import
 from .protocol_15 import (  # noqa: F401
@@ -13,6 +16,31 @@ from .protocol_15 import (  # noqa: F401
 
 if TYPE_CHECKING:  # pragma: no cover
     from ...gateway import Gateway
+
+F = TypeVar("F", bound=Callable[..., Any])  # pylint: disable=invalid-name
+
+
+def handle_missing_node_child(func: F) -> F:
+    """Handle a missing node or child."""
+
+    async def wrapper(message_handlers, gateway, message):  # type: ignore
+        """Wrap a message handler."""
+        try:
+            message = await func(message_handlers, gateway, message)
+        except (MissingNodeError, MissingChildError):
+            discover_message = Message(
+                node_id=message.node_id,
+                child_id=SYSTEM_CHILD_ID,
+                command=Command.internal,
+                message_type=Internal.I_PRESENTATION,
+            )
+            await gateway.send(discover_message)
+
+            raise
+
+        return message
+
+    return cast(F, wrapper)
 
 
 class MessageHandler(MessageHandler15):
@@ -29,6 +57,16 @@ class MessageHandler(MessageHandler15):
             message_type=self.protocol.Internal.I_DISCOVER,
         )
         await gateway.send(gateway_ready_message)
+        return message
+
+    @handle_missing_node_child
+    async def handle_i_discover_response(
+        self, gateway: "Gateway", message: Message
+    ) -> Message:
+        """Process and internal discover response message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
         return message
 
 
