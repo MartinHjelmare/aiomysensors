@@ -48,17 +48,16 @@ class Gateway:
         protocol_version = self.protocol_version or DEFAULT_PROTOCOL_VERSION
         protocol = get_protocol(protocol_version)
 
-        command = protocol.Command(message.command)  # type: ignore
-        message_handler = getattr(
-            protocol.MessageHandler, f"handle_{command.name}"  # type: ignore
-        )
+        command = protocol.Command(message.command)
+        message_handlers = protocol.MessageHandler(protocol)
+        message_handler = getattr(message_handlers, f"handle_{command.name}")
         message = await message_handler(self, message)
 
         if self.protocol_version is None:
             version_message = Message(
                 child_id=SYSTEM_CHILD_ID,
-                command=protocol.Command.internal,  # type: ignore
-                message_type=protocol.Internal.I_VERSION,  # type: ignore
+                command=protocol.Command.internal,
+                message_type=protocol.Internal.I_VERSION,
             )
             await self.send(version_message)
 

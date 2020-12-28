@@ -31,17 +31,6 @@ CHILD_PRESENTATION = dict(NODE_SERIALIZED)
 CHILD_PRESENTATION["children"] = {0: DEFAULT_CHILD}
 
 
-@pytest.fixture(name="node_before")
-def node_fixture(gateway, node_schema, request):
-    """Populate a node in the gateway from node data."""
-    node_data = request.param
-    if not node_data:
-        return node_data
-    node = node_schema.load(node_data)
-    gateway.nodes[node.node_id] = node
-    return node
-
-
 @pytest.fixture(name="mock_time")
 def mock_time_fixture():
     """Mock time."""

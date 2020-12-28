@@ -2,7 +2,6 @@
 
 Validation should be done on a protocol level, i.e. not with gateway state.
 """
-from types import ModuleType
 from typing import Any, Dict, Mapping, Optional, Union
 
 from marshmallow import (
@@ -16,7 +15,12 @@ from marshmallow import (
 )
 
 from .const import NODE_ID_FIELD
-from .protocol import DEFAULT_PROTOCOL_VERSION, SYSTEM_CHILD_ID, get_protocol
+from .protocol import (
+    DEFAULT_PROTOCOL_VERSION,
+    SYSTEM_CHILD_ID,
+    ProtocolType,
+    get_protocol,
+)
 
 DELIMITER = ";"
 
@@ -80,8 +84,7 @@ class CommandField(fields.Field):
             "protocol_version", DEFAULT_PROTOCOL_VERSION
         )
         protocol = get_protocol(protocol_version)
-        # Dynamic import of the protocol makes typing hard.
-        command_type = protocol.Command  # type: ignore
+        command_type = protocol.Command
 
         valid_commands = [member.value for member in tuple(command_type)]
         child_id = validate_child_id(
@@ -154,7 +157,7 @@ class MessageSchema(Schema):
 
 
 def validate_child_id(
-    *, value: str, data: Mapping[str, Any], protocol: ModuleType
+    *, value: str, data: Mapping[str, Any], protocol: ProtocolType
 ) -> int:
     """Validate the child id field."""
     try:
@@ -168,10 +171,10 @@ def validate_child_id(
     child_range(child_id)
 
     # Dynamic import of the protocol makes typing hard.
-    command_type = protocol.Command  # type: ignore
+    command_type = protocol.Command
     command = validate_command(data["command"])
     message_type = validate_message_type(data["message_type"])
-    internal_type = protocol.Internal  # type: ignore
+    internal_type = protocol.Internal
 
     if command == command_type.internal and message_type in [
         internal_type.I_ID_REQUEST,
