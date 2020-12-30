@@ -31,6 +31,7 @@ class Gateway:
         self.config = config or Config()
         self.message_schema = message_schema or MessageSchema()
         self.nodes = nodes or {}
+        # Try to make protocol_version, sleep_buffer and message_schema private.
         self.protocol_version: Optional[str] = None
         self.sleep_buffer = sleep_buffer or SleepBuffer()
         self.transport = transport
@@ -66,6 +67,9 @@ class Gateway:
         except ValidationError as err:
             raise InvalidMessageError(err, message) from err
 
+        # Investigate using an outgoing message handler class.
+        # Move this code there.
+        # Decide in the message handler if the message should be sent or buffered.
         node = self.nodes.get(message.node_id)
         if node and node.sleeping and message.command == self.protocol.Command.set:
             self.sleep_buffer.set_messages[
@@ -83,6 +87,7 @@ class Gateway:
         message_handler = getattr(message_handlers, f"handle_{command.name}")
         message = await message_handler(self, message)
 
+        # Move this to the protocol instead. Probably as a decorator.
         if self.protocol_version is None and (
             message.command != self.protocol.Command.internal
             or message.message_type
