@@ -12,7 +12,7 @@ from ...exceptions import (
 )
 from ..message import Message
 from ..node import Node
-from . import DEFAULT_PROTOCOL_VERSION, MAX_NODE_ID, SYSTEM_CHILD_ID, ProtocolType
+from . import DEFAULT_PROTOCOL_VERSION, MAX_NODE_ID, SYSTEM_CHILD_ID
 
 if TYPE_CHECKING:  # pragma: no cover
     from ...gateway import Gateway
