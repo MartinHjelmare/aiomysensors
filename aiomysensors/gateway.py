@@ -59,7 +59,7 @@ class Gateway:
 
             yield message
 
-    async def send(self, message: Message) -> None:
+    async def send(self, message: Message, sleep_buffer: bool = True) -> None:
         """Send a message."""
         # Check valid message first.
         try:
@@ -67,23 +67,19 @@ class Gateway:
         except ValidationError as err:
             raise InvalidMessageError(err, message) from err
 
-        # Investigate using an outgoing message handler class.
-        # Move this code there.
-        # Decide in the message handler if the message should be sent or buffered.
-        node = self.nodes.get(message.node_id)
-        if node and node.sleeping and message.command == self.protocol.Command.set:
-            self.sleep_buffer.set_messages[
-                (message.node_id, message.child_id, message.message_type)
-            ] = message
-
+        if not sleep_buffer:
+            await self.transport.write(decoded_message)
             return
 
-        await self.transport.write(decoded_message)
+        command = self.protocol.Command(message.command)
+        message_handlers = self.protocol.OutgoingMessageHandler
+        message_handler = getattr(message_handlers, f"handle_{command.name}")
+        await message_handler(self, message, decoded_message, self.sleep_buffer)
 
     async def _handle_incoming(self, message: Message) -> Message:
         """Handle incoming message."""
         command = self.protocol.Command(message.command)
-        message_handlers = self.protocol.MessageHandler()
+        message_handlers = self.protocol.IncomingMessageHandler()
         message_handler = getattr(message_handlers, f"handle_{command.name}")
         message = await message_handler(self, message)
 

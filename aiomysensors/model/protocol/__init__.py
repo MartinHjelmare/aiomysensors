@@ -19,7 +19,8 @@ SYSTEM_CHILD_ID = 255
 class ProtocolType(Protocol):
     """Represent a protocol module type."""
 
-    MessageHandler: Any
+    IncomingMessageHandler: Any
+    OutgoingMessageHandler: Any
     Command: Any
     Presentation: Any
     SetReq: Any

@@ -4,13 +4,18 @@ from enum import IntEnum
 # pylint: disable=unused-import
 from .protocol_14 import (  # noqa: F401
     Command,
-    MessageHandler as MessageHandler14,
+    IncomingMessageHandler as IncomingMessageHandler14,
+    OutgoingMessageHandler as OutgoingMessageHandler14,
     Stream,
 )
 
 
-class MessageHandler(MessageHandler14):
+class IncomingMessageHandler(IncomingMessageHandler14):
     """Represent a message handler."""
+
+
+class OutgoingMessageHandler(OutgoingMessageHandler14):
+    """Represent a handler for outgoing messages."""
 
 
 class Presentation(IntEnum):

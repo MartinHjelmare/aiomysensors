@@ -1,8 +1,9 @@
 """Provide the protocol for MySensors version 2.0."""
 from enum import IntEnum
-from typing import Any, Callable, TypeVar, TYPE_CHECKING, cast
+from typing import Any, Callable, TypeVar, cast
 
 from ...exceptions import MissingChildError, MissingNodeError
+from ...gateway import Gateway
 from ..message import Message
 
 from . import SYSTEM_CHILD_ID
@@ -10,12 +11,10 @@ from . import SYSTEM_CHILD_ID
 # pylint: disable=unused-import
 from .protocol_15 import (  # noqa: F401
     Command,
-    MessageHandler as MessageHandler15,
+    IncomingMessageHandler as IncomingMessageHandler15,
+    OutgoingMessageHandler as OutgoingMessageHandler15,
     Stream,
 )
-
-if TYPE_CHECKING:  # pragma: no cover
-    from ...gateway import Gateway
 
 F = TypeVar("F", bound=Callable[..., Any])  # pylint: disable=invalid-name
 
@@ -43,12 +42,10 @@ def handle_missing_node_child(func: F) -> F:
     return cast(F, wrapper)
 
 
-class MessageHandler(MessageHandler15):
+class IncomingMessageHandler(IncomingMessageHandler15):
     """Represent a message handler."""
 
-    async def _handle_sleep_buffer(
-        self, gateway: "Gateway", message: Message
-    ) -> Message:
+    async def _handle_sleep_buffer(self, gateway: Gateway, message: Message) -> Message:
         """Process the sleep buffer and send it to the woken node."""
         node_messages = {
             key: buffer_message
@@ -56,58 +53,53 @@ class MessageHandler(MessageHandler15):
             if buffer_message.node_id == message.node_id
         }
         for key, buffer_message in node_messages.items():
-            # FIXME: Need to avoid hitting the sleep buffer again.
-            await gateway.send(buffer_message)
+            await gateway.send(buffer_message, sleep_buffer=False)
             gateway.sleep_buffer.set_messages.pop(key)
 
         # clear the sleep buffer for this node
         return message
 
     @handle_missing_node_child
-    async def handle_presentation(
-        self, gateway: "Gateway", message: Message
-    ) -> Message:
+    async def handle_presentation(self, gateway: Gateway, message: Message) -> Message:
         """Process a presentation message."""
         return await super().handle_presentation(gateway, message)
 
     @handle_missing_node_child
-    async def handle_set(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_set(self, gateway: Gateway, message: Message) -> Message:
         """Process a set message."""
         return await super().handle_set(gateway, message)
 
     @handle_missing_node_child
-    async def handle_req(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_req(self, gateway: Gateway, message: Message) -> Message:
         """Process a req message."""
         return await super().handle_req(gateway, message)
 
     @handle_missing_node_child
-    async def handle_stream(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_stream(self, gateway: Gateway, message: Message) -> Message:
         """Process a stream message."""
         return await super().handle_stream(gateway, message)
 
     @handle_missing_node_child
     async def handle_i_battery_level(
-        self, gateway: "Gateway", message: Message
+        self, gateway: Gateway, message: Message
     ) -> Message:
         """Process an internal battery level message."""
         return await super().handle_i_battery_level(gateway, message)
 
     @handle_missing_node_child
-    async def handle_i_sketch_name(
-        self, gateway: "Gateway", message: Message
-    ) -> Message:
+    async def handle_i_sketch_name(self, gateway: Gateway, message: Message) -> Message:
         """Process an internal sketch name message."""
         return await super().handle_i_sketch_name(gateway, message)
 
     @handle_missing_node_child
     async def handle_i_sketch_version(
-        self, gateway: "Gateway", message: Message
+        self, gateway: Gateway, message: Message
     ) -> Message:
         """Process an internal sketch version message."""
         return await super().handle_i_sketch_version(gateway, message)
 
     async def handle_i_gateway_ready(
-        self, gateway: "Gateway", message: Message
+        self, gateway: Gateway, message: Message
     ) -> Message:
         """Process an internal gateway ready message."""
         discover_message = Message(
@@ -121,7 +113,7 @@ class MessageHandler(MessageHandler15):
 
     @handle_missing_node_child
     async def handle_i_discover_response(
-        self, gateway: "Gateway", message: Message
+        self, gateway: Gateway, message: Message
     ) -> Message:
         """Process an internal discover response message."""
         if message.node_id not in gateway.nodes:
@@ -131,7 +123,7 @@ class MessageHandler(MessageHandler15):
 
     @handle_missing_node_child
     async def handle_i_heartbeat_response(
-        self, gateway: "Gateway", message: Message
+        self, gateway: Gateway, message: Message
     ) -> Message:
         """Process an internal hearbeat response message."""
         if message.node_id not in gateway.nodes:
@@ -141,6 +133,10 @@ class MessageHandler(MessageHandler15):
 
         gateway.nodes[message.node_id].heartbeat = int(message.payload)
         return message
+
+
+class OutgoingMessageHandler(OutgoingMessageHandler15):
+    """Represent a handler for outgoing messages."""
 
 
 class Presentation(IntEnum):

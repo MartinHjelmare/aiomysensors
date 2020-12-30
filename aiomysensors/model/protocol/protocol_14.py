@@ -2,7 +2,7 @@
 import calendar
 import time
 from enum import IntEnum
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import Callable, Optional
 
 from ...exceptions import (
     MissingChildError,
@@ -10,19 +10,17 @@ from ...exceptions import (
     TooManyNodesError,
     UnsupportedMessageError,
 )
+from ...gateway import Gateway, SleepBuffer
 from ..message import Message
 from ..node import Node
 from . import DEFAULT_PROTOCOL_VERSION, MAX_NODE_ID, SYSTEM_CHILD_ID
 
-if TYPE_CHECKING:  # pragma: no cover
-    from ...gateway import Gateway
 
-
-class MessageHandler:
-    """Represent a message handler."""
+class IncomingMessageHandler:
+    """Represent a handler for incoming messages."""
 
     async def _handle_message(
-        self, gateway: "Gateway", message: Message, message_handler: Optional[Callable]
+        self, gateway: Gateway, message: Message, message_handler: Optional[Callable]
     ) -> Message:
         """Handle a message."""
         if message_handler is None:
@@ -33,9 +31,7 @@ class MessageHandler:
 
         return message
 
-    async def handle_presentation(
-        self, gateway: "Gateway", message: Message
-    ) -> Message:
+    async def handle_presentation(self, gateway: Gateway, message: Message) -> Message:
         """Process a presentation message."""
         if message.child_id == SYSTEM_CHILD_ID:
             # this is a presentation of a node
@@ -56,7 +52,7 @@ class MessageHandler:
 
         return message
 
-    async def handle_set(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_set(self, gateway: Gateway, message: Message) -> Message:
         """Process a set message."""
         if message.node_id not in gateway.nodes:
             raise MissingNodeError(message.node_id)
@@ -83,7 +79,7 @@ class MessageHandler:
 
         return message
 
-    async def handle_req(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_req(self, gateway: Gateway, message: Message) -> Message:
         """Process a req message."""
         if message.node_id not in gateway.nodes:
             raise MissingNodeError(message.node_id)
@@ -109,7 +105,7 @@ class MessageHandler:
 
         return message
 
-    async def handle_internal(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_internal(self, gateway: Gateway, message: Message) -> Message:
         """Process an internal message."""
         try:
             internal = gateway.protocol.Internal(message.message_type)
@@ -122,7 +118,7 @@ class MessageHandler:
 
         return await self._handle_message(gateway, message, message_handler)
 
-    async def handle_stream(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_stream(self, gateway: Gateway, message: Message) -> Message:
         """Process a stream message."""
         if message.node_id not in gateway.nodes:
             raise MissingNodeError(message.node_id)
@@ -138,16 +134,14 @@ class MessageHandler:
 
         return await self._handle_message(gateway, message, message_handler)
 
-    async def handle_i_version(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_i_version(self, gateway: Gateway, message: Message) -> Message:
         """Process an internal version message."""
         gateway.message_schema.context[
             "protocol_version"
         ] = gateway.protocol_version = message.payload
         return message
 
-    async def handle_i_id_request(
-        self, gateway: "Gateway", message: Message
-    ) -> Message:
+    async def handle_i_id_request(self, gateway: Gateway, message: Message) -> Message:
         """Process an internal id request message."""
         if gateway.nodes:
             next_id = max(gateway.nodes) + 1
@@ -174,7 +168,7 @@ class MessageHandler:
 
         return message
 
-    async def handle_i_config(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_i_config(self, gateway: Gateway, message: Message) -> Message:
         """Process an internal config message."""
         config_message = Message(
             node_id=message.node_id,
@@ -186,7 +180,7 @@ class MessageHandler:
         await gateway.send(config_message)
         return message
 
-    async def handle_i_time(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_i_time(self, gateway: Gateway, message: Message) -> Message:
         """Process an internal time message."""
         time_message = Message(
             node_id=message.node_id,
@@ -199,7 +193,7 @@ class MessageHandler:
         return message
 
     async def handle_i_battery_level(
-        self, gateway: "Gateway", message: Message
+        self, gateway: Gateway, message: Message
     ) -> Message:
         """Process an internal battery level message."""
         if message.node_id not in gateway.nodes:
@@ -208,9 +202,7 @@ class MessageHandler:
         gateway.nodes[message.node_id].battery_level = round(float(message.payload))
         return message
 
-    async def handle_i_sketch_name(
-        self, gateway: "Gateway", message: Message
-    ) -> Message:
+    async def handle_i_sketch_name(self, gateway: Gateway, message: Message) -> Message:
         """Process an internal sketch name message."""
         if message.node_id not in gateway.nodes:
             raise MissingNodeError(message.node_id)
@@ -219,7 +211,7 @@ class MessageHandler:
         return message
 
     async def handle_i_sketch_version(
-        self, gateway: "Gateway", message: Message
+        self, gateway: Gateway, message: Message
     ) -> Message:
         """Process an internal sketch version message."""
         if message.node_id not in gateway.nodes:
@@ -227,6 +219,42 @@ class MessageHandler:
 
         gateway.nodes[message.node_id].sketch_version = message.payload
         return message
+
+
+class OutgoingMessageHandler:
+    """Represent a handler for outgoing messages."""
+
+    # pylint: disable=unused-argument
+
+    @classmethod
+    async def handle_set(
+        cls,
+        gateway: Gateway,
+        message: Message,
+        decoded_message: str,
+        sleep_buffer: SleepBuffer,
+    ) -> None:
+        """Process outgoing set messages."""
+        node = gateway.nodes.get(message.node_id)
+        if node and node.sleeping:
+            sleep_buffer.set_messages[
+                (message.node_id, message.child_id, message.message_type)
+            ] = message
+
+            return
+
+        await gateway.transport.write(decoded_message)
+
+    @classmethod
+    async def handle_internal(
+        cls,
+        gateway: Gateway,
+        message: Message,
+        decoded_message: str,
+        sleep_buffer: SleepBuffer,
+    ) -> None:
+        """Process outgoing internal messages."""
+        await gateway.transport.write(decoded_message)
 
 
 class Command(IntEnum):
