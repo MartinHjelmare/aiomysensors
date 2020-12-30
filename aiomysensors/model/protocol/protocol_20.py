@@ -31,8 +31,8 @@ def handle_missing_node_child(func: F) -> F:
             presentation_message = Message(
                 node_id=message.node_id,
                 child_id=SYSTEM_CHILD_ID,
-                command=message_handlers.protocol.Command.internal,
-                message_type=message_handlers.protocol.Internal.I_PRESENTATION,
+                command=gateway.protocol.Command.internal,
+                message_type=gateway.protocol.Internal.I_PRESENTATION,
             )
             await gateway.send(presentation_message)
 
@@ -108,7 +108,7 @@ class MessageHandler(MessageHandler15):
             node_id=255,
             child_id=message.child_id,
             command=message.command,
-            message_type=self.protocol.Internal.I_DISCOVER,
+            message_type=gateway.protocol.Internal.I_DISCOVER,
         )
         await gateway.send(discover_message)
         return message

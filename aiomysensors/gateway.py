@@ -79,7 +79,7 @@ class Gateway:
     async def _handle_incoming(self, message: Message) -> Message:
         """Handle incoming message."""
         command = self.protocol.Command(message.command)
-        message_handlers = self.protocol.MessageHandler(self.protocol)
+        message_handlers = self.protocol.MessageHandler()
         message_handler = getattr(message_handlers, f"handle_{command.name}")
         message = await message_handler(self, message)
 

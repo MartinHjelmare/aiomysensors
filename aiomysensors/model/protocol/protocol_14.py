@@ -21,10 +21,6 @@ if TYPE_CHECKING:  # pragma: no cover
 class MessageHandler:
     """Represent a message handler."""
 
-    def __init__(self, protocol: ProtocolType):
-        """Set up message handler."""
-        self.protocol = protocol
-
     async def _handle_message(
         self, gateway: "Gateway", message: Message, message_handler: Optional[Callable]
     ) -> Message:
@@ -80,7 +76,7 @@ class MessageHandler:
                 child_id=SYSTEM_CHILD_ID,
                 command=Command.internal,
                 ack=0,
-                message_type=self.protocol.Internal.I_REBOOT,
+                message_type=gateway.protocol.Internal.I_REBOOT,
                 payload="",
             )
             await gateway.send(reboot_message)
@@ -105,7 +101,7 @@ class MessageHandler:
             set_message = Message(
                 node_id=message.node_id,
                 child_id=message.child_id,
-                command=self.protocol.Command.set,
+                command=gateway.protocol.Command.set,
                 message_type=message.message_type,
                 payload=value,
             )
@@ -116,7 +112,7 @@ class MessageHandler:
     async def handle_internal(self, gateway: "Gateway", message: Message) -> Message:
         """Process an internal message."""
         try:
-            internal = self.protocol.Internal(message.message_type)
+            internal = gateway.protocol.Internal(message.message_type)
         except ValueError as err:
             raise UnsupportedMessageError(
                 f"Message type is not supported: {message.message_type}"
@@ -132,7 +128,7 @@ class MessageHandler:
             raise MissingNodeError(message.node_id)
 
         try:
-            stream = self.protocol.Stream(message.message_type)
+            stream = gateway.protocol.Stream(message.message_type)
         except ValueError as err:
             raise UnsupportedMessageError(
                 f"Message type is not supported: {message.message_type}"
@@ -163,13 +159,15 @@ class MessageHandler:
 
         # Use temporary default values for the node until node sends presentation.
         gateway.nodes[next_id] = Node(
-            next_id, self.protocol.Presentation.S_ARDUINO_NODE, DEFAULT_PROTOCOL_VERSION
+            next_id,
+            gateway.protocol.Presentation.S_ARDUINO_NODE,
+            DEFAULT_PROTOCOL_VERSION,
         )
         id_response_message = Message(
             node_id=message.node_id,
             child_id=message.child_id,
             command=message.command,
-            message_type=self.protocol.Internal.I_ID_RESPONSE,
+            message_type=gateway.protocol.Internal.I_ID_RESPONSE,
             payload=str(next_id),
         )
         await gateway.send(id_response_message)
