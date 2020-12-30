@@ -1,6 +1,6 @@
 """Provide a gateway."""
 from dataclasses import dataclass, field
-from typing import AsyncGenerator, Dict, Optional, Tuple
+from typing import AsyncGenerator, Callable, Dict, Optional, Tuple
 
 from marshmallow import ValidationError
 
@@ -29,13 +29,13 @@ class Gateway:
     ) -> None:
         """Set up gateway."""
         self.config = config or Config()
+        # Try to make message_schema private.
         self.message_schema = message_schema or MessageSchema()
         self.nodes = nodes or {}
-        # Try to make protocol_version, sleep_buffer and message_schema private.
         self.protocol_version: Optional[str] = None
-        self.sleep_buffer = sleep_buffer or SleepBuffer()
         self.transport = transport
         self._protocol: Optional[ProtocolType] = None
+        self._sleep_buffer = sleep_buffer or SleepBuffer()
 
     @property
     def protocol(self) -> ProtocolType:
@@ -71,17 +71,22 @@ class Gateway:
             await self.transport.write(decoded_message)
             return
 
+        message_handler = self._get_message_handler(message, "OutgoingMessageHandler")
+        await message_handler(self, message, decoded_message, self._sleep_buffer)
+
+    def _get_message_handler(self, message: Message, handler_name: str) -> Callable:
+        """Return the correct message handler."""
         command = self.protocol.Command(message.command)
-        message_handlers = self.protocol.OutgoingMessageHandler
-        message_handler = getattr(message_handlers, f"handle_{command.name}")
-        await message_handler(self, message, decoded_message, self.sleep_buffer)
+        message_handlers = getattr(self.protocol, handler_name)
+        message_handler: Callable = getattr(message_handlers, f"handle_{command.name}")
+        return message_handler
 
     async def _handle_incoming(self, message: Message) -> Message:
         """Handle incoming message."""
         command = self.protocol.Command(message.command)
-        message_handlers = self.protocol.IncomingMessageHandler()
+        message_handlers = self.protocol.IncomingMessageHandler
         message_handler = getattr(message_handlers, f"handle_{command.name}")
-        message = await message_handler(self, message)
+        message = await message_handler(self, message, self._sleep_buffer)
 
         # Move this to the protocol instead. Probably as a decorator.
         if self.protocol_version is None and (
