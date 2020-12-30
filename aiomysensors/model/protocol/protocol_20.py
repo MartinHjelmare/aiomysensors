@@ -50,11 +50,17 @@ class MessageHandler(MessageHandler15):
         self, gateway: "Gateway", message: Message
     ) -> Message:
         """Process the sleep buffer and send it to the woken node."""
-        for buffer_message in gateway.sleep_buffer.set_messages.values():
+        node_messages = {
+            key: buffer_message
+            for key, buffer_message in gateway.sleep_buffer.set_messages.items()
+            if buffer_message.node_id == message.node_id
+        }
+        for key, buffer_message in node_messages.items():
+            # FIXME: Need to avoid hitting the sleep buffer again.
             await gateway.send(buffer_message)
+            gateway.sleep_buffer.set_messages.pop(key)
 
-        # clear the sleep buffer
-        gateway.sleep_buffer.set_messages.clear()
+        # clear the sleep buffer for this node
         return message
 
     @handle_missing_node_child
