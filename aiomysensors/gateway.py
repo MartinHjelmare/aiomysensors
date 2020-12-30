@@ -67,12 +67,10 @@ class Gateway:
         except ValidationError as err:
             raise InvalidMessageError(err, message) from err
 
-        if not sleep_buffer:
-            await self.transport.write(decoded_message)
-            return
+        _sleep_buffer = self._sleep_buffer if sleep_buffer else None
 
         message_handler = self._get_message_handler(message, "OutgoingMessageHandler")
-        await message_handler(self, message, self._sleep_buffer, decoded_message)
+        await message_handler(self, message, _sleep_buffer, decoded_message)
 
     def _get_message_handler(self, message: Message, handler_name: str) -> Callable:
         """Return the correct message handler."""

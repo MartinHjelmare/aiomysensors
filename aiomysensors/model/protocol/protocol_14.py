@@ -274,12 +274,12 @@ class OutgoingMessageHandler:
         cls,
         gateway: Gateway,
         message: Message,
-        sleep_buffer: SleepBuffer,
+        sleep_buffer: Optional[SleepBuffer],
         decoded_message: str,
     ) -> None:
         """Process outgoing set messages."""
         node = gateway.nodes.get(message.node_id)
-        if node and node.sleeping:
+        if sleep_buffer and node and node.sleeping:
             sleep_buffer.set_messages[
                 (message.node_id, message.child_id, message.message_type)
             ] = message
@@ -293,7 +293,7 @@ class OutgoingMessageHandler:
         cls,
         gateway: Gateway,
         message: Message,
-        sleep_buffer: SleepBuffer,
+        sleep_buffer: Optional[SleepBuffer],
         decoded_message: str,
     ) -> None:
         """Process outgoing internal messages."""
