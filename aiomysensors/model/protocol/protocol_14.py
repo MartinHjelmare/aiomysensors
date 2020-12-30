@@ -274,8 +274,8 @@ class OutgoingMessageHandler:
         cls,
         gateway: Gateway,
         message: Message,
-        decoded_message: str,
         sleep_buffer: SleepBuffer,
+        decoded_message: str,
     ) -> None:
         """Process outgoing set messages."""
         node = gateway.nodes.get(message.node_id)
@@ -293,8 +293,8 @@ class OutgoingMessageHandler:
         cls,
         gateway: Gateway,
         message: Message,
-        decoded_message: str,
         sleep_buffer: SleepBuffer,
+        decoded_message: str,
     ) -> None:
         """Process outgoing internal messages."""
         await gateway.transport.write(decoded_message)

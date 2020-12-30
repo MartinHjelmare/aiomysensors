@@ -72,7 +72,7 @@ class Gateway:
             return
 
         message_handler = self._get_message_handler(message, "OutgoingMessageHandler")
-        await message_handler(self, message, decoded_message, self._sleep_buffer)
+        await message_handler(self, message, self._sleep_buffer, decoded_message)
 
     def _get_message_handler(self, message: Message, handler_name: str) -> Callable:
         """Return the correct message handler."""
@@ -83,9 +83,7 @@ class Gateway:
 
     async def _handle_incoming(self, message: Message) -> Message:
         """Handle incoming message."""
-        command = self.protocol.Command(message.command)
-        message_handlers = self.protocol.IncomingMessageHandler
-        message_handler = getattr(message_handlers, f"handle_{command.name}")
+        message_handler = self._get_message_handler(message, "IncomingMessageHandler")
         message = await message_handler(self, message, self._sleep_buffer)
 
         # Move this to the protocol instead. Probably as a decorator.
