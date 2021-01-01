@@ -19,23 +19,16 @@ from .transport import Transport
 class Gateway:
     """Represent a MySensors gateway."""
 
-    def __init__(
-        self,
-        transport: Transport,
-        config: Optional["Config"] = None,
-        message_schema: Optional[MessageSchema] = None,
-        nodes: Optional[Dict[int, Node]] = None,
-        sleep_buffer: Optional["SleepBuffer"] = None,
-    ) -> None:
+    def __init__(self, transport: Transport, config: Optional["Config"] = None) -> None:
         """Set up gateway."""
         self.config = config or Config()
         # Try to make message_schema private.
-        self.message_schema = message_schema or MessageSchema()
-        self.nodes = nodes or {}
+        self.message_schema = MessageSchema()
+        self.nodes: Dict[int, Node] = {}
         self.protocol_version: Optional[str] = None
         self.transport = transport
         self._protocol: Optional[ProtocolType] = None
-        self._sleep_buffer = sleep_buffer or SleepBuffer()
+        self._sleep_buffer = SleepBuffer()
 
     @property
     def protocol(self) -> ProtocolType:
