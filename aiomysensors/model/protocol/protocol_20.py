@@ -154,9 +154,12 @@ class IncomingMessageHandler(IncomingMessageHandler15):
         if message.node_id not in gateway.nodes:
             raise MissingNodeError(message.node_id)
 
+        node = gateway.nodes[message.node_id]
+        node.sleeping = True
+        node.heartbeat = int(message.payload)
+
         message = await cls._handle_sleep_buffer(gateway, message, sleep_buffer)
 
-        gateway.nodes[message.node_id].heartbeat = int(message.payload)
         return message
 
 
