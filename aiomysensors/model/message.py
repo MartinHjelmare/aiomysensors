@@ -170,7 +170,6 @@ def validate_child_id(
     )
     child_range(child_id)
 
-    # Dynamic import of the protocol makes typing hard.
     command_type = protocol.Command
     command = validate_command(data["command"])
     message_type = validate_message_type(data["message_type"])

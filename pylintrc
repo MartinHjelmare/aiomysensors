@@ -6,6 +6,7 @@ reports=no
 disable=
   bad-continuation,
   duplicate-code,
+  fixme,
   locally-disabled,
   too-few-public-methods
 

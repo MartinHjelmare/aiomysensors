@@ -22,7 +22,7 @@ class Gateway:
     def __init__(self, transport: Transport, config: Optional["Config"] = None) -> None:
         """Set up gateway."""
         self.config = config or Config()
-        # Try to make message_schema private.
+        # TODO: Try to make message_schema private.
         self.message_schema = MessageSchema()
         self.nodes: Dict[int, Node] = {}
         self.protocol_version: Optional[str] = None
@@ -77,7 +77,7 @@ class Gateway:
         message_handler = self._get_message_handler(message, "IncomingMessageHandler")
         message = await message_handler(self, message, self._sleep_buffer)
 
-        # Move this to the protocol instead. Probably as a decorator.
+        # TODO: Move this to the protocol instead. Probably as a decorator.
         if self.protocol_version is None and (
             message.command != self.protocol.Command.internal
             or message.message_type
