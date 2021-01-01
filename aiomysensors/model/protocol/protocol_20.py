@@ -59,9 +59,9 @@ class IncomingMessageHandler(IncomingMessageHandler15):
         }
         for key, buffer_message in node_messages.items():
             await gateway.send(buffer_message, sleep_buffer=False)
+            # clear the sleep buffer for this node
             sleep_buffer.set_messages.pop(key)
 
-        # clear the sleep buffer for this node
         return message
 
     @classmethod
