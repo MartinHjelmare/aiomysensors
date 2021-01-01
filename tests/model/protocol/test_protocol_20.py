@@ -5,6 +5,7 @@ import pytest
 
 from aiomysensors.exceptions import MissingChildError, MissingNodeError
 from aiomysensors.model.message import Message
+from aiomysensors.model.node import Child, Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 from tests.common import (
     DEFAULT_NODE_CHILD_SERIALIZED,
@@ -216,8 +217,8 @@ async def test_discover_response(
             Message(0, 255, 3, 0, 22, "1"),  # command
             default_context(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
-            [Message(0, 0, 1, 0, 0, "25.0")],  # to_send
-            [],  # writes
+            [Message(0, 0, 1, 0, 0, "25.0"), Message(1, 0, 1, 0, 0, "25.0")],  # to_send
+            ["1;0;1;0;0;25.0\n"],  # writes
             ["0;0;1;0;0;25.0\n"],  # second writes
             [],  # third writes
         ),  # gateway ready message
@@ -263,6 +264,10 @@ async def test_heartbeat_response(
     message_schema,
 ):
     """Test internal heartbeat response command."""
+    # Set a node that won't send a heartbeat.
+    gateway.nodes[1] = node = Node(1, 17, "2.0")
+    node.children[0] = Child(0, 0)
+
     # Receive command.
     with context:
         async for msg in gateway.listen():
