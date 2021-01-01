@@ -1,8 +1,9 @@
 """Provide the protocol for MySensors version 2.0."""
 from enum import IntEnum
-from typing import Any, Callable, TypeVar, TYPE_CHECKING, cast
+from typing import Any, Callable, TypeVar, cast
 
 from ...exceptions import MissingChildError, MissingNodeError
+from ...gateway import Gateway, SleepBuffer
 from ..message import Message
 
 from . import SYSTEM_CHILD_ID
@@ -10,12 +11,10 @@ from . import SYSTEM_CHILD_ID
 # pylint: disable=unused-import
 from .protocol_15 import (  # noqa: F401
     Command,
-    MessageHandler as MessageHandler15,
+    IncomingMessageHandler as IncomingMessageHandler15,
+    OutgoingMessageHandler as OutgoingMessageHandler15,
     Stream,
 )
-
-if TYPE_CHECKING:  # pragma: no cover
-    from ...gateway import Gateway
 
 F = TypeVar("F", bound=Callable[..., Any])  # pylint: disable=invalid-name
 
@@ -23,16 +22,16 @@ F = TypeVar("F", bound=Callable[..., Any])  # pylint: disable=invalid-name
 def handle_missing_node_child(func: F) -> F:
     """Handle a missing node or child."""
 
-    async def wrapper(message_handlers, gateway, message):  # type: ignore
+    async def wrapper(message_handlers, gateway, message, sleep_buffer):  # type: ignore
         """Wrap a message handler."""
         try:
-            message = await func(message_handlers, gateway, message)
+            message = await func(message_handlers, gateway, message, sleep_buffer)
         except (MissingNodeError, MissingChildError):
             presentation_message = Message(
                 node_id=message.node_id,
                 child_id=SYSTEM_CHILD_ID,
-                command=message_handlers.protocol.Command.internal,
-                message_type=message_handlers.protocol.Internal.I_PRESENTATION,
+                command=gateway.protocol.Command.internal,
+                message_type=gateway.protocol.Internal.I_PRESENTATION,
             )
             await gateway.send(presentation_message)
 
@@ -43,74 +42,129 @@ def handle_missing_node_child(func: F) -> F:
     return cast(F, wrapper)
 
 
-class MessageHandler(MessageHandler15):
+class IncomingMessageHandler(IncomingMessageHandler15):
     """Represent a message handler."""
 
+    # pylint: disable=unused-argument
+
+    @classmethod
+    async def _handle_sleep_buffer(
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+    ) -> Message:
+        """Process the sleep buffer and send it to the woken node."""
+        node_messages = {
+            key: buffer_message
+            for key, buffer_message in sleep_buffer.set_messages.items()
+            if buffer_message.node_id == message.node_id
+        }
+        for key, buffer_message in node_messages.items():
+            await gateway.send(buffer_message, sleep_buffer=False)
+            # clear the sleep buffer for this node
+            sleep_buffer.set_messages.pop(key)
+
+        return message
+
+    @classmethod
     @handle_missing_node_child
     async def handle_presentation(
-        self, gateway: "Gateway", message: Message
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
         """Process a presentation message."""
-        return await super().handle_presentation(gateway, message)
+        return await super().handle_presentation(gateway, message, sleep_buffer)
 
+    @classmethod
     @handle_missing_node_child
-    async def handle_set(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_set(
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+    ) -> Message:
         """Process a set message."""
-        return await super().handle_set(gateway, message)
+        return await super().handle_set(gateway, message, sleep_buffer)
 
+    @classmethod
     @handle_missing_node_child
-    async def handle_req(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_req(
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+    ) -> Message:
         """Process a req message."""
-        return await super().handle_req(gateway, message)
+        return await super().handle_req(gateway, message, sleep_buffer)
 
+    @classmethod
     @handle_missing_node_child
-    async def handle_stream(self, gateway: "Gateway", message: Message) -> Message:
+    async def handle_stream(
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+    ) -> Message:
         """Process a stream message."""
-        return await super().handle_stream(gateway, message)
+        return await super().handle_stream(gateway, message, sleep_buffer)
 
+    @classmethod
     @handle_missing_node_child
     async def handle_i_battery_level(
-        self, gateway: "Gateway", message: Message
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
         """Process an internal battery level message."""
-        return await super().handle_i_battery_level(gateway, message)
+        return await super().handle_i_battery_level(gateway, message, sleep_buffer)
 
+    @classmethod
     @handle_missing_node_child
     async def handle_i_sketch_name(
-        self, gateway: "Gateway", message: Message
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
         """Process an internal sketch name message."""
-        return await super().handle_i_sketch_name(gateway, message)
+        return await super().handle_i_sketch_name(gateway, message, sleep_buffer)
 
+    @classmethod
     @handle_missing_node_child
     async def handle_i_sketch_version(
-        self, gateway: "Gateway", message: Message
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
         """Process an internal sketch version message."""
-        return await super().handle_i_sketch_version(gateway, message)
+        return await super().handle_i_sketch_version(gateway, message, sleep_buffer)
 
+    @classmethod
     async def handle_i_gateway_ready(
-        self, gateway: "Gateway", message: Message
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
         """Process an internal gateway ready message."""
-        gateway_ready_message = Message(
+        discover_message = Message(
             node_id=255,
             child_id=message.child_id,
             command=message.command,
-            message_type=self.protocol.Internal.I_DISCOVER,
+            message_type=gateway.protocol.Internal.I_DISCOVER,
         )
-        await gateway.send(gateway_ready_message)
+        await gateway.send(discover_message)
         return message
 
+    @classmethod
     @handle_missing_node_child
     async def handle_i_discover_response(
-        self, gateway: "Gateway", message: Message
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
-        """Process and internal discover response message."""
+        """Process an internal discover response message."""
         if message.node_id not in gateway.nodes:
             raise MissingNodeError(message.node_id)
 
         return message
+
+    @classmethod
+    @handle_missing_node_child
+    async def handle_i_heartbeat_response(
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+    ) -> Message:
+        """Process an internal hearbeat response message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        node = gateway.nodes[message.node_id]
+        node.sleeping = True
+        node.heartbeat = int(message.payload)
+
+        message = await cls._handle_sleep_buffer(gateway, message, sleep_buffer)
+
+        return message
+
+
+class OutgoingMessageHandler(OutgoingMessageHandler15):
+    """Represent a handler for outgoing messages."""
 
 
 class Presentation(IntEnum):

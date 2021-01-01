@@ -10,6 +10,7 @@ NODE_SERIALIZED = {
     "node_id": 0,
     "heartbeat": 0,
     "battery_level": 0,
+    "sleeping": False,
 }
 
 DEFAULT_CHILD = {

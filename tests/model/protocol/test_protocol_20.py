@@ -5,6 +5,7 @@ import pytest
 
 from aiomysensors.exceptions import MissingChildError, MissingNodeError
 from aiomysensors.model.message import Message
+from aiomysensors.model.node import Child, Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 from tests.common import (
     DEFAULT_NODE_CHILD_SERIALIZED,
@@ -206,3 +207,100 @@ async def test_discover_response(
             break
 
     assert gateway.transport.writes == writes
+
+
+@pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
+@pytest.mark.parametrize(
+    "command, context, node_before, to_send, writes, second_writes, third_writes",
+    [
+        (
+            Message(0, 255, 3, 0, 22, "1"),  # command
+            default_context(),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+            [Message(0, 0, 1, 0, 0, "25.0"), Message(1, 0, 1, 0, 0, "25.0")],  # to_send
+            ["1;0;1;0;0;25.0\n"],  # writes
+            ["0;0;1;0;0;25.0\n"],  # second writes
+            [],  # third writes
+        ),  # gateway ready message
+        (
+            Message(0, 255, 3, 0, 22, "1"),  # command
+            pytest.raises(MissingNodeError),  # context
+            None,  # node_before
+            [Message(0, 0, 1, 0, 0, "25.0")],  # to_send
+            ["0;255;3;0;19;\n", "0;0;1;0;0;25.0\n"],  # writes
+            ["0;255;3;0;19;\n"],  # second writes
+            ["0;255;3;0;19;\n"],  # third writes
+        ),  # gateway ready message
+        (
+            Message(0, 255, 3, 0, 22, "1"),  # command
+            default_context(),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+            [],  # to_send
+            [],  # writes
+            [],  # second writes
+            [],  # third writes
+        ),  # gateway ready message
+        (
+            Message(0, 255, 3, 0, 24, "1"),  # not heartbeat command
+            default_context(),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+            [Message(0, 0, 1, 0, 0, "25.0")],  # to_send
+            ["0;0;1;0;0;25.0\n"],  # writes
+            [],  # second writes
+            [],  # third writes
+        ),  # gateway ready message
+    ],
+    indirect=["command", "node_before"],
+)
+async def test_heartbeat_response(
+    command,
+    context,
+    node_before,
+    to_send,
+    writes,
+    second_writes,
+    third_writes,
+    gateway,
+    message_schema,
+):
+    """Test internal heartbeat response command."""
+    # Set a node that won't send a heartbeat.
+    gateway.nodes[1] = node = Node(1, 17, "2.0")
+    node.children[0] = Child(0, 0)
+
+    # Receive command.
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    # Send some messages.
+    for msg in to_send:
+        await gateway.send(msg)
+
+    # Check transport messages after first command and sends.
+    assert gateway.transport.writes == writes
+    gateway.transport.writes.clear()
+
+    # Receive command again.
+    gateway.transport.messages.append(command)
+
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    # Check transport messages after second command.
+    assert gateway.transport.writes == second_writes
+    gateway.transport.writes.clear()
+
+    # Receive command again.
+    gateway.transport.messages.append(command)
+
+    with context:
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    # Check transport messages after third command.
+    assert gateway.transport.writes == third_writes

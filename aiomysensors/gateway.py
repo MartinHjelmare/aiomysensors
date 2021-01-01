@@ -1,13 +1,18 @@
 """Provide a gateway."""
-from dataclasses import dataclass
-from typing import AsyncGenerator, Dict, Optional
+from dataclasses import dataclass, field
+from typing import AsyncGenerator, Callable, Dict, Optional, Tuple
 
 from marshmallow import ValidationError
 
 from .exceptions import InvalidMessageError
 from .model.message import Message, MessageSchema
 from .model.node import Node
-from .model.protocol import DEFAULT_PROTOCOL_VERSION, SYSTEM_CHILD_ID, get_protocol
+from .model.protocol import (
+    DEFAULT_PROTOCOL_VERSION,
+    ProtocolType,
+    SYSTEM_CHILD_ID,
+    get_protocol,
+)
 from .transport import Transport
 
 
@@ -16,11 +21,23 @@ class Gateway:
 
     def __init__(self, transport: Transport, config: Optional["Config"] = None) -> None:
         """Set up gateway."""
-        self.transport = transport
         self.config = config or Config()
+        # Try to make message_schema private.
         self.message_schema = MessageSchema()
         self.nodes: Dict[int, Node] = {}
         self.protocol_version: Optional[str] = None
+        self.transport = transport
+        self._protocol: Optional[ProtocolType] = None
+        self._sleep_buffer = SleepBuffer()
+
+    @property
+    def protocol(self) -> ProtocolType:
+        """Return the correct protocol."""
+        if not self._protocol or not self.protocol_version:
+            protocol_version = self.protocol_version or DEFAULT_PROTOCOL_VERSION
+            self._protocol = get_protocol(protocol_version)
+
+        return self._protocol
 
     async def listen(self) -> AsyncGenerator[Message, None]:
         """Listen and yield a message."""
@@ -35,33 +52,44 @@ class Gateway:
 
             yield message
 
-    async def send(self, message: Message) -> None:
+    async def send(self, message: Message, sleep_buffer: bool = True) -> None:
         """Send a message."""
+        # Check valid message first.
         try:
             decoded_message = self.message_schema.dump(message)
         except ValidationError as err:
             raise InvalidMessageError(err, message) from err
-        await self.transport.write(decoded_message)
+
+        _sleep_buffer = self._sleep_buffer if sleep_buffer else None
+
+        message_handler = self._get_message_handler(message, "OutgoingMessageHandler")
+        await message_handler(self, message, _sleep_buffer, decoded_message)
+
+    def _get_message_handler(self, message: Message, handler_name: str) -> Callable:
+        """Return the correct message handler."""
+        command = self.protocol.Command(message.command)
+        message_handlers = getattr(self.protocol, handler_name)
+        message_handler: Callable = getattr(message_handlers, f"handle_{command.name}")
+        return message_handler
 
     async def _handle_incoming(self, message: Message) -> Message:
         """Handle incoming message."""
-        protocol_version = self.protocol_version or DEFAULT_PROTOCOL_VERSION
-        protocol = get_protocol(protocol_version)
+        message_handler = self._get_message_handler(message, "IncomingMessageHandler")
+        message = await message_handler(self, message, self._sleep_buffer)
 
-        command = protocol.Command(message.command)
-        message_handlers = protocol.MessageHandler(protocol)
-        message_handler = getattr(message_handlers, f"handle_{command.name}")
-        message = await message_handler(self, message)
-
+        # Move this to the protocol instead. Probably as a decorator.
         if self.protocol_version is None and (
-            message.command != protocol.Command.internal
+            message.command != self.protocol.Command.internal
             or message.message_type
-            not in (protocol.Internal.I_LOG_MESSAGE, protocol.Internal.I_GATEWAY_READY)
+            not in (
+                self.protocol.Internal.I_LOG_MESSAGE,
+                self.protocol.Internal.I_GATEWAY_READY,
+            )
         ):
             version_message = Message(
                 child_id=SYSTEM_CHILD_ID,
-                command=protocol.Command.internal,
-                message_type=protocol.Internal.I_VERSION,
+                command=self.protocol.Command.internal,
+                message_type=self.protocol.Internal.I_VERSION,
             )
             await self.send(version_message)
 
@@ -73,3 +101,10 @@ class Config:
     """Represent the gateway config."""
 
     metric: bool = True
+
+
+@dataclass
+class SleepBuffer:
+    """Represent a sleep message buffer."""
+
+    set_messages: Dict[Tuple[int, int, int], Message] = field(default_factory=dict)

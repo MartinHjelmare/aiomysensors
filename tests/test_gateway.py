@@ -5,12 +5,14 @@ from aiomysensors.exceptions import InvalidMessageError
 from aiomysensors.model.message import Message
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
+# pylint: disable=unused-argument
+
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-async def test_listen(gateway, message, message_schema):
+async def test_listen(gateway, message, message_schema, node, child):
     """Test gateway listen."""
     cmd = message_schema.dump(message)
 
@@ -49,7 +51,7 @@ async def test_send_invalid_message(gateway):
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-async def test_unset_protocol_version(gateway, message, message_schema):
+async def test_unset_protocol_version(gateway, message, message_schema, node, child):
     """Test gateway listen."""
     gateway.protocol_version = None
     cmd = message_schema.dump(message)
