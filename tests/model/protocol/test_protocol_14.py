@@ -290,9 +290,9 @@ async def test_stream(command, context, node_before, gateway, message_schema):
     [Message(0, 255, 3, 0, 2, "2.0")],
     indirect=["command"],
 )
-async def test_internal_version(command, gateway, message_schema):
+async def test_internal_version(command, message_schema, transport):
     """Test internal version command."""
-    gateway.protocol_version = None
+    gateway = Gateway(transport)
 
     async for msg in gateway.listen():
         assert message_schema.dump(msg) == command

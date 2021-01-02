@@ -22,12 +22,11 @@ class Gateway:
     def __init__(self, transport: Transport, config: Optional["Config"] = None) -> None:
         """Set up gateway."""
         self.config = config or Config()
-        # Try to make message_schema private.
-        self.message_schema = MessageSchema()
         self.nodes: Dict[int, Node] = {}
-        self.protocol_version: Optional[str] = None
         self.transport = transport
+        self._message_schema = MessageSchema()
         self._protocol: Optional[ProtocolType] = None
+        self._protocol_version: Optional[str] = None
         self._sleep_buffer = SleepBuffer()
 
     @property
@@ -39,12 +38,24 @@ class Gateway:
 
         return self._protocol
 
+    @property
+    def protocol_version(self) -> Optional[str]:
+        """Return the protocol version."""
+        return self._protocol_version
+
+    @protocol_version.setter
+    def protocol_version(self, value: str) -> None:
+        """Return the protocol version."""
+        self._message_schema.context[
+            "protocol_version"
+        ] = self._protocol_version = value
+
     async def listen(self) -> AsyncGenerator[Message, None]:
         """Listen and yield a message."""
         while True:
             decoded_message = await self.transport.read()
             try:
-                message = self.message_schema.load(decoded_message)
+                message = self._message_schema.load(decoded_message)
             except ValidationError as err:
                 raise InvalidMessageError(err, decoded_message) from err
 
@@ -56,7 +67,7 @@ class Gateway:
         """Send a message."""
         # Check valid message first.
         try:
-            decoded_message = self.message_schema.dump(message)
+            decoded_message = self._message_schema.dump(message)
         except ValidationError as err:
             raise InvalidMessageError(err, message) from err
 
@@ -77,7 +88,7 @@ class Gateway:
         message_handler = self._get_message_handler(message, "IncomingMessageHandler")
         message = await message_handler(self, message, self._sleep_buffer)
 
-        # Move this to the protocol instead. Probably as a decorator.
+        # TODO: Move this to the protocol instead. Probably as a decorator.
         if self.protocol_version is None and (
             message.command != self.protocol.Command.internal
             or message.message_type

@@ -27,7 +27,7 @@ class Transport(ABC):
     async def write(self, decoded_message: str) -> None:
         """Write a decoded message to the transport."""
 
-    # Move the async context to the Gateway instead.
+    # TODO: Move the async context to the Gateway instead.
     async def __aenter__(self) -> "Transport":
         """Connect to the transport."""
         await self.connect()

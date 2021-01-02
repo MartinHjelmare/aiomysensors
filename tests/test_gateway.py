@@ -2,6 +2,7 @@
 import pytest
 
 from aiomysensors.exceptions import InvalidMessageError
+from aiomysensors.gateway import Gateway
 from aiomysensors.model.message import Message
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
@@ -51,9 +52,10 @@ async def test_send_invalid_message(gateway):
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-async def test_unset_protocol_version(gateway, message, message_schema, node, child):
+async def test_unset_protocol_version(message, message_schema, node, child, transport):
     """Test gateway listen."""
-    gateway.protocol_version = None
+    gateway = Gateway(transport)
+    gateway.nodes[0] = node
     cmd = message_schema.dump(message)
 
     async with gateway.transport:

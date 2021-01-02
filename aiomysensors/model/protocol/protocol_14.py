@@ -165,9 +165,7 @@ class IncomingMessageHandler:
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
         """Process an internal version message."""
-        gateway.message_schema.context[
-            "protocol_version"
-        ] = gateway.protocol_version = message.payload
+        gateway.protocol_version = message.payload
         return message
 
     @classmethod
