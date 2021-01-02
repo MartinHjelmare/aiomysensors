@@ -97,3 +97,7 @@ It will also install this package in development mode, so that code changes are 
   ```sh
   pytest --cov-report term-missing --cov=aiomysensors
   ```
+
+### Release
+
+See the [release instructions](RELEASE.md).
