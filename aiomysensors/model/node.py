@@ -38,12 +38,13 @@ class Node:
     def __repr__(self) -> str:
         """Return the representation."""
         return (
-            f"{type(self).__name__}(node_id={self.node_id}, "
-            f"node_type={self.node_type}, protocol_version={self.protocol_version}, "
-            f"children={self.children}, sketch_name={self.sketch_name}, "
-            f"sketch_version={self.sketch_version}, "
-            f"battery_level={self.battery_level}, heartbeat={self.heartbeat}, "
-            f"sleeping={self.sleeping})"
+            f"{type(self).__name__}(node_id={self.node_id!r}, "
+            f"node_type={self.node_type!r}, "
+            f"protocol_version={self.protocol_version!r}, "
+            f"children={self.children!r}, sketch_name={self.sketch_name!r}, "
+            f"sketch_version={self.sketch_version!r}, "
+            f"battery_level={self.battery_level!r}, heartbeat={self.heartbeat!r}, "
+            f"sleeping={self.sleeping!r})"
         )
 
     def add_child(
@@ -93,9 +94,9 @@ class Child:
     def __repr__(self) -> str:
         """Return the representation."""
         return (
-            f"{type(self).__name__}(child_id={self.child_id}, "
-            f"child_type={self.child_type}, description={self.description}, "
-            f"values={self.values})"
+            f"{type(self).__name__}(child_id={self.child_id!r}, "
+            f"child_type={self.child_type!r}, description={self.description!r}, "
+            f"values={self.values!r})"
         )
 
 
