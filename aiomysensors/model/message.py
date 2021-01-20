@@ -48,9 +48,9 @@ class Message:
     def __repr__(self) -> str:
         """Return the representation."""
         return (
-            f"{type(self).__name__}(node_id={self.node_id}, child_id={self.child_id}, "
-            f"command={self.command}, ack={self.ack}, "
-            f"message_type={self.message_type}, payload={self.payload})"
+            f"{type(self).__name__}(node_id={self.node_id!r}, "
+            f"child_id={self.child_id!r}, command={self.command!r}, ack={self.ack!r}, "
+            f"message_type={self.message_type!r}, payload={self.payload!r})"
         )
 
 
