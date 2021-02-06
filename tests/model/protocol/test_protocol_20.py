@@ -209,7 +209,7 @@ async def test_discover_response(
     assert gateway.transport.writes == writes
 
 
-@pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
+@pytest.mark.parametrize("message_schema", ["2.0", "2.1"], indirect=True)
 @pytest.mark.parametrize(
     "command, context, node_before, to_send, writes, second_writes, third_writes",
     [
@@ -221,7 +221,7 @@ async def test_discover_response(
             ["1;0;1;0;0;25.0\n"],  # writes
             ["0;0;1;0;0;25.0\n"],  # second writes
             [],  # third writes
-        ),  # gateway ready message
+        ),  # heartbeat
         (
             Message(0, 255, 3, 0, 22, "1"),  # command
             pytest.raises(MissingNodeError),  # context
@@ -230,7 +230,7 @@ async def test_discover_response(
             ["0;255;3;0;19;\n", "0;0;1;0;0;25.0\n"],  # writes
             ["0;255;3;0;19;\n"],  # second writes
             ["0;255;3;0;19;\n"],  # third writes
-        ),  # gateway ready message
+        ),  # missing node
         (
             Message(0, 255, 3, 0, 22, "1"),  # command
             default_context(),  # context
@@ -239,16 +239,16 @@ async def test_discover_response(
             [],  # writes
             [],  # second writes
             [],  # third writes
-        ),  # gateway ready message
+        ),  # nothing to send
         (
-            Message(0, 255, 3, 0, 24, "1"),  # not heartbeat command
+            Message(0, 255, 3, 0, 24, "1"),  # command
             default_context(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             [Message(0, 0, 1, 0, 0, "25.0")],  # to_send
             ["0;0;1;0;0;25.0\n"],  # writes
             [],  # second writes
             [],  # third writes
-        ),  # gateway ready message
+        ),  # not heartbeat command
     ],
     indirect=["command", "node_before"],
 )
