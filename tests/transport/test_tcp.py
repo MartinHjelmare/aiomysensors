@@ -1,4 +1,4 @@
-"""Test the serial transport."""
+"""Test the tcp transport."""
 import asyncio
 from unittest.mock import AsyncMock, call, patch
 
@@ -9,75 +9,75 @@ from aiomysensors.exceptions import (
     TransportFailedError,
     TransportReadError,
 )
-from aiomysensors.transport.serial import SerialTransport
+from aiomysensors.transport.tcp import TCPTransport
 
 # All test coroutines will be treated as marked.
 pytestmark = pytest.mark.asyncio
 
 
-@pytest.fixture(name="serial")
-def serial_fixture():
-    """Mock the serial connection."""
+@pytest.fixture(name="tcp")
+def tcp_fixture():
+    """Mock the tcp connection."""
     mock_reader = AsyncMock(spec=asyncio.StreamReader)
     mock_writer = AsyncMock(spec=asyncio.StreamWriter)
-    with patch("aiomysensors.transport.serial.open_serial_connection") as open_serial:
-        open_serial.return_value = (mock_reader, mock_writer)
-        yield open_serial
+    with patch("aiomysensors.transport.tcp.asyncio.open_connection") as open_tcp:
+        open_tcp.return_value = (mock_reader, mock_writer)
+        yield open_tcp
 
 
-async def test_connect_disconnect(serial):
-    """Test serial transport connect and disconnect."""
-    transport = SerialTransport("/test", 123456)
+async def test_connect_disconnect(tcp):
+    """Test TCP transport connect and disconnect."""
+    transport = TCPTransport("1.1.1.1", 9999)
 
     await transport.connect()
 
-    assert serial.call_count == 1
-    assert serial.call_args == call(url="/test", baudrate=123456)
+    assert tcp.call_count == 1
+    assert tcp.call_args == call(host="1.1.1.1", port=9999)
 
     await transport.disconnect()
 
-    _, mock_writer = serial.return_value
+    _, mock_writer = tcp.return_value
     assert mock_writer.close.call_count == 1
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_connect_failure(serial):
-    """Test serial transport connect failure."""
-    serial.side_effect = OSError("Boom")
-    transport = SerialTransport("/test", 123456)
+async def test_connect_failure(tcp):
+    """Test TCP transport connect failure."""
+    tcp.side_effect = OSError("Boom")
+    transport = TCPTransport("1.1.1.1", 9999)
 
     with pytest.raises(TransportError):
         await transport.connect()
 
 
-async def test_disconnect_failure(serial):
-    """Test serial transport disconnect failure."""
-    _, mock_writer = serial.return_value
+async def test_disconnect_failure(tcp):
+    """Test TCP transport disconnect failure."""
+    _, mock_writer = tcp.return_value
     mock_writer.wait_closed.side_effect = OSError("Boom")
-    transport = SerialTransport("/test", 123456)
+    transport = TCPTransport("1.1.1.1", 9999)
 
     await transport.connect()
     # Disconnect error should be caught.
     await transport.disconnect()
 
-    assert serial.call_count == 1
-    assert serial.call_args == call(url="/test", baudrate=123456)
+    assert tcp.call_count == 1
+    assert tcp.call_args == call(host="1.1.1.1", port=9999)
 
     assert mock_writer.close.call_count == 1
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_read_write(serial):
-    """Test serial transport read and write."""
-    mock_reader, mock_writer = serial.return_value
+async def test_read_write(tcp):
+    """Test TCP transport read and write."""
+    mock_reader, mock_writer = tcp.return_value
     bytes_message = b"0;0;0;0;0;test\n"
     mock_reader.readuntil.return_value = bytes_message
-    transport = SerialTransport("/test", 123456)
+    transport = TCPTransport("1.1.1.1", 9999)
 
     await transport.connect()
 
-    assert serial.call_count == 1
-    assert serial.call_args == call(url="/test", baudrate=123456)
+    assert tcp.call_count == 1
+    assert tcp.call_args == call(host="1.1.1.1", port=9999)
 
     read = await transport.read()
     assert read == "0;0;0;0;0;test\n"
@@ -92,15 +92,15 @@ async def test_read_write(serial):
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_read_failure(serial):
-    """Test serial transport read failure."""
-    mock_reader, mock_writer = serial.return_value
-    transport = SerialTransport("/test", 123456)
+async def test_read_failure(tcp):
+    """Test TCP transport read failure."""
+    mock_reader, mock_writer = tcp.return_value
+    transport = TCPTransport("1.1.1.1", 9999)
 
     await transport.connect()
 
-    assert serial.call_count == 1
-    assert serial.call_args == call(url="/test", baudrate=123456)
+    assert tcp.call_count == 1
+    assert tcp.call_args == call(host="1.1.1.1", port=9999)
 
     mock_reader.readuntil.side_effect = asyncio.LimitOverrunError("Boom", consumed=2)
 
@@ -127,17 +127,17 @@ async def test_read_failure(serial):
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_write_failure(serial):
-    """Test serial transport write failure."""
-    mock_reader, mock_writer = serial.return_value
+async def test_write_failure(tcp):
+    """Test TCP transport write failure."""
+    mock_reader, mock_writer = tcp.return_value
     bytes_message = b"0;0;0;0;0;test\n"
     mock_reader.readuntil.return_value = bytes_message
-    transport = SerialTransport("/test", 123456)
+    transport = TCPTransport("1.1.1.1", 9999)
 
     await transport.connect()
 
-    assert serial.call_count == 1
-    assert serial.call_args == call(url="/test", baudrate=123456)
+    assert tcp.call_count == 1
+    assert tcp.call_args == call(host="1.1.1.1", port=9999)
 
     read = await transport.read()
 
