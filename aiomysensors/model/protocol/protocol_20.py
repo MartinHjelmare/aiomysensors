@@ -150,7 +150,7 @@ class IncomingMessageHandler(IncomingMessageHandler15):
     async def handle_i_heartbeat_response(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
-        """Process an internal hearbeat response message."""
+        """Process an internal heartbeat response message."""
         if message.node_id not in gateway.nodes:
             raise MissingNodeError(message.node_id)
 
