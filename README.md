@@ -10,6 +10,7 @@ The following versions are supported:
 - 1.5
 - 2.0
 - 2.1
+- 2.2
 
 ## Example
 
