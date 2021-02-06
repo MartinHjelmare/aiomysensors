@@ -35,6 +35,22 @@ class IncomingMessageHandler(IncomingMessageHandler21):
 
         return message
 
+    @classmethod
+    @handle_missing_node_child
+    async def handle_i_pre_sleep_notification(
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+    ) -> Message:
+        """Process an internal pre sleep notification message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        node = gateway.nodes[message.node_id]
+        node.sleeping = True
+
+        message = await cls._handle_sleep_buffer(gateway, message, sleep_buffer)
+
+        return message
+
 
 class OutgoingMessageHandler(OutgoingMessageHandler21):
     """Represent a handler for outgoing messages."""
