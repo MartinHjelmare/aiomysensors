@@ -1,7 +1,12 @@
 """Provide the protocol for MySensors version 2.2."""
 from enum import IntEnum
 
+from ...exceptions import MissingNodeError
+from ...gateway import Gateway, SleepBuffer
+from ..message import Message
+
 # pylint: disable=unused-import
+from .protocol_20 import handle_missing_node_child
 from .protocol_21 import (  # noqa: F401
     VALID_MESSAGE_TYPES,
     Command,
@@ -15,6 +20,20 @@ from .protocol_21 import (  # noqa: F401
 
 class IncomingMessageHandler(IncomingMessageHandler21):
     """Represent a message handler."""
+
+    @classmethod
+    @handle_missing_node_child
+    async def handle_i_heartbeat_response(
+        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+    ) -> Message:
+        """Process an internal heartbeat response message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        node = gateway.nodes[message.node_id]
+        node.heartbeat = int(message.payload)
+
+        return message
 
 
 class OutgoingMessageHandler(OutgoingMessageHandler21):
