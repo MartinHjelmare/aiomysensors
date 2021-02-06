@@ -12,6 +12,7 @@ PROTOCOL_VERSIONS = {
     DEFAULT_PROTOCOL_VERSION: DEFAULT_PROTOCOL_PATH,
     "1.5": "aiomysensors.model.protocol.protocol_15",
     "2.0": "aiomysensors.model.protocol.protocol_20",
+    "2.1": "aiomysensors.model.protocol.protocol_21",
 }
 SYSTEM_CHILD_ID = 255
 
