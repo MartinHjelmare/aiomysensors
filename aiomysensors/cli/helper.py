@@ -30,7 +30,7 @@ async def start_gateway(handler: Callable, gateway: Gateway) -> None:
 
 async def handle_gateway(gateway: Gateway) -> None:
     """Handle the gateway calls."""
-    async with gateway.transport:  # pragma: no cover
+    async with gateway:  # pragma: no cover
         async for msg in gateway.listen():
             level = logging.DEBUG if msg.message_type == 9 else logging.INFO
             LOGGER.log(level, "Received message: %s", msg)

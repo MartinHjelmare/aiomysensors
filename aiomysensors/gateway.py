@@ -1,5 +1,6 @@
 """Provide a gateway."""
 from dataclasses import dataclass, field
+from types import TracebackType
 from typing import AsyncGenerator, Callable, Dict, Optional, Tuple
 
 from marshmallow import ValidationError
@@ -105,6 +106,17 @@ class Gateway:
             await self.send(version_message)
 
         return message
+
+    async def __aenter__(self) -> "Gateway":
+        """Connect to the transport."""
+        await self.transport.connect()
+        return self
+
+    async def __aexit__(
+        self, exc_type: Exception, exc_value: str, traceback: TracebackType
+    ) -> None:
+        """Disconnect from the transport."""
+        await self.transport.disconnect()
 
 
 @dataclass

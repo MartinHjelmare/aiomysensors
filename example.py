@@ -9,10 +9,9 @@ async def run_gateway() -> None:
     port = "/dev/ttyACM0"
     baud = 115200
     transport = SerialTransport(port, baud)
-    gateway = Gateway(transport)
 
     try:
-        async with gateway.transport:
+        async with Gateway(transport) as gateway:
             async for message in gateway.listen():
                 print("Message received:", message)
     except AIOMySensorsError as err:
