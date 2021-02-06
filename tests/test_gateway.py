@@ -17,7 +17,7 @@ async def test_listen(gateway, message, message_schema, node, child):
     """Test gateway listen."""
     cmd = message_schema.dump(message)
 
-    async with gateway.transport:
+    async with gateway:
         async for msg in gateway.listen():
             assert message_schema.dump(msg) == cmd
             break
@@ -27,7 +27,7 @@ async def test_listen_invalid_message(gateway):
     """Test gateway listen for invalid message."""
     gateway.transport.messages.append("invalid")
 
-    async with gateway.transport:
+    async with gateway:
         with pytest.raises(InvalidMessageError):
             async for _ in gateway.listen():
                 raise Exception  # This line should not be reached.
@@ -38,7 +38,7 @@ async def test_send(gateway, message, message_schema):
     """Test gateway send."""
     cmd = message_schema.dump(message)
 
-    async with gateway.transport:
+    async with gateway:
         await gateway.send(message)
 
     assert gateway.transport.writes == [cmd]
@@ -46,7 +46,7 @@ async def test_send(gateway, message, message_schema):
 
 async def test_send_invalid_message(gateway):
     """Test gateway send invalid message."""
-    async with gateway.transport:
+    async with gateway:
         with pytest.raises(InvalidMessageError):
             await gateway.send("invalid")
 
@@ -58,7 +58,7 @@ async def test_unset_protocol_version(message, message_schema, node, child, tran
     gateway.nodes[0] = node
     cmd = message_schema.dump(message)
 
-    async with gateway.transport:
+    async with gateway:
         async for msg in gateway.listen():
             assert message_schema.dump(msg) == cmd
             break
