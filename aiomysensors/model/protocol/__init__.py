@@ -13,6 +13,7 @@ PROTOCOL_VERSIONS = {
     "1.5": "aiomysensors.model.protocol.protocol_15",
     "2.0": "aiomysensors.model.protocol.protocol_20",
     "2.1": "aiomysensors.model.protocol.protocol_21",
+    "2.2": "aiomysensors.model.protocol.protocol_22",
 }
 SYSTEM_CHILD_ID = 255
 
