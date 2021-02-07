@@ -5,6 +5,7 @@ import click
 
 from aiomysensors import __version__
 
+from .gateway_mqtt import mqtt_gateway
 from .gateway_serial import serial_gateway
 
 SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -23,4 +24,5 @@ def cli(debug: bool) -> None:
         logging.basicConfig(level=logging.INFO)
 
 
+cli.add_command(mqtt_gateway)
 cli.add_command(serial_gateway)
