@@ -136,4 +136,7 @@ class Config:
 class SleepBuffer:
     """Represent a sleep message buffer."""
 
+    # TODO: Make this a general buffer for messages that should not be sent.
+    # Eg deduplicate I_PRESENTATION requests for the same node.
+
     set_messages: Dict[Tuple[int, int, int], Message] = field(default_factory=dict)
