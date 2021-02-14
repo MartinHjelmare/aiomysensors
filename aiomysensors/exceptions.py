@@ -1,5 +1,8 @@
 """Provide aiomysensors exceptions."""
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Optional, Union
+
+if TYPE_CHECKING:
+    from .model.message import Message
 
 
 class AIOMySensorsError(Exception):
@@ -35,7 +38,7 @@ class TooManyNodesError(AIOMySensorsError):
 class InvalidMessageError(AIOMySensorsError):
     """Represent an invalid message exception."""
 
-    def __init__(self, error: Exception, message: Any) -> None:
+    def __init__(self, error: Exception, message: Union["Message", str]) -> None:
         """Set up error."""
         super().__init__(f"Invalid message {message} received: {error}")
         self.message = message
@@ -43,6 +46,17 @@ class InvalidMessageError(AIOMySensorsError):
 
 class UnsupportedMessageError(AIOMySensorsError):
     """Represent an unsupported message exception."""
+
+    def __init__(
+        self, message: "Message", protocol_version: Optional[str] = None
+    ) -> None:
+        """Set up error."""
+        protocol_version = protocol_version or "1.4"
+        super().__init__(
+            f"Message type is not supported for protocol {protocol_version}: {message}"
+        )
+        self.message = message
+        self.protocol_version = protocol_version
 
 
 class TransportError(AIOMySensorsError):

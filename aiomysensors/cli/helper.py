@@ -3,7 +3,11 @@ import asyncio
 import logging
 from typing import Awaitable, Callable
 
-from aiomysensors.exceptions import AIOMySensorsError
+from aiomysensors.exceptions import (
+    AIOMySensorsError,
+    MissingNodeError,
+    UnsupportedMessageError,
+)
 from aiomysensors.gateway import Gateway
 
 LOGGER = logging.getLogger("aiomysensors")
@@ -24,17 +28,23 @@ def run_gateway(gateway_factory: GatewayFactory) -> None:
 
 async def start_gateway(gateway_factory: GatewayFactory) -> None:
     """Start the gateway."""
-    try:
-        await handle_gateway(gateway_factory)
-    except AIOMySensorsError as err:
-        LOGGER.error("Error '%s'", err)
-
-
-async def handle_gateway(gateway_factory: GatewayFactory) -> None:
-    """Handle the gateway calls."""
     gateway = await gateway_factory()
 
     async with gateway:  # pragma: no cover
-        async for msg in gateway.listen():
-            level = logging.DEBUG if msg.message_type == 9 else logging.INFO
-            LOGGER.log(level, "Received message: %s", msg)
+        while True:
+            try:
+                await handle_gateway(gateway)
+            except MissingNodeError as err:
+                LOGGER.debug("Missing node: %s", err.node_id)
+            except UnsupportedMessageError as err:
+                LOGGER.warning("Unsupported message: %s", err)
+            except AIOMySensorsError as err:
+                LOGGER.error("Error '%s'", err)
+                break
+
+
+async def handle_gateway(gateway: Gateway) -> None:
+    """Handle the gateway calls."""
+    async for msg in gateway.listen():
+        level = logging.DEBUG if msg.message_type == 9 else logging.INFO
+        LOGGER.log(level, "Received: %s", msg)
