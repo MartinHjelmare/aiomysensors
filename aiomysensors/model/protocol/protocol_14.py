@@ -301,6 +301,8 @@ class OutgoingMessageHandler:
 class Command(IntEnum):
     """MySensors command types."""
 
+    # pylint: disable=invalid-name
+
     presentation = 0
     set = 1
     req = 2
