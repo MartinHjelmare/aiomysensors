@@ -176,8 +176,8 @@ class MQTTClient(MQTTTransport):
         await self._incoming_task
         try:
             await self._client.disconnect(timeout=10)
-        except MqttError as err:
-            raise TransportError from err
+        except MqttError:
+            pass
 
     async def _publish(self, topic: str, payload: str, qos: int) -> None:
         """Publish to topic."""
