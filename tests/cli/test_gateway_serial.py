@@ -1,6 +1,5 @@
 """Test the CLI for the serial gateway."""
-import asyncio
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
@@ -9,21 +8,14 @@ from aiomysensors.cli import cli
 from aiomysensors.exceptions import AIOMySensorsError
 
 
-@pytest.fixture(name="gateway_handler", autouse=True)
-def gateway_handler_fixture():
+@pytest.fixture(name="gateway_cli", autouse=True)
+def gateway_cli_fixture():
     """Mock the CLI gateway handler."""
-    with patch("aiomysensors.cli.gateway_serial.handle_gateway") as handler:
-        yield handler
-
-
-@pytest.fixture(name="serial", autouse=True)
-def serial_fixture():
-    """Mock the serial connection."""
-    mock_reader = AsyncMock(spec=asyncio.StreamReader)
-    mock_writer = AsyncMock(spec=asyncio.StreamWriter)
-    with patch("aiomysensors.transport.serial.open_serial_connection") as open_serial:
-        open_serial.return_value = (mock_reader, mock_writer)
-        yield open_serial
+    with patch(
+        "aiomysensors.cli.gateway_serial.Gateway", autospec=True
+    ) as gateway_class:
+        gateway = gateway_class.return_value
+        yield gateway
 
 
 def test_serial_gateway():
