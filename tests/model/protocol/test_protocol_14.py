@@ -14,7 +14,7 @@ from aiomysensors.exceptions import (
 from aiomysensors.gateway import Gateway
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Node
-from aiomysensors.model.protocol import PROTOCOL_VERSIONS
+from aiomysensors.model.protocol import PROTOCOL_VERSIONS, get_protocol
 from tests.common import (
     DEFAULT_CHILD,
     DEFAULT_NODE_CHILD_SERIALIZED,
@@ -100,6 +100,7 @@ async def test_presentation_gateway_protocol_version(
         break
 
     assert gateway.protocol_version == protocol_version
+    assert gateway.protocol is get_protocol(protocol_version)
 
 
 @pytest.mark.parametrize("message_schema", ["1.4", "1.5"], indirect=True)
