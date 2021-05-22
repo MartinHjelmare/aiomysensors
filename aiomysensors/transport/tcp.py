@@ -1,20 +1,18 @@
-"""Provide a serial transport."""
+"""Provide a TCP transport."""
 import asyncio
 from typing import Tuple
-
-from serial_asyncio import open_serial_connection
 
 from . import StreamTransport
 
 
-class SerialTransport(StreamTransport):
-    """Represent a serial transport."""
+class TCPTransport(StreamTransport):
+    """Represent a TCP transport."""
 
-    def __init__(self, port: str, baud: int = 115200) -> None:
-        """Set up serial transport."""
+    def __init__(self, host: str, port: int = 5003) -> None:
+        """Set up TCP transport."""
         super().__init__()
+        self.host = host
         self.port = port
-        self.baud = baud
 
     async def _open_connection(
         self,
@@ -22,5 +20,5 @@ class SerialTransport(StreamTransport):
         """Open the stream connection."""
         reader_writer_pair: Tuple[
             asyncio.StreamReader, asyncio.StreamWriter
-        ] = await open_serial_connection(url=self.port, baudrate=self.baud)
+        ] = await asyncio.open_connection(host=self.host, port=self.port)
         return reader_writer_pair
