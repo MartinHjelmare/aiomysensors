@@ -138,20 +138,29 @@ class MQTTTransport(Transport):
 class MQTTClient(MQTTTransport):
     """Represent an MQTT client."""
 
-    def __init__(self, host: str, port: int, in_prefix: str, out_prefix: str) -> None:
+    def __init__(
+        self,
+        host: str,
+        port: int = 1883,
+        in_prefix: str = "mygateway1-out",
+        out_prefix: str = "mygateway1-in",
+    ) -> None:
         """Set up client."""
         super().__init__(in_prefix=in_prefix, out_prefix=out_prefix)
-        self._client = AsyncioClient(
-            host,
-            port,
-            client_id=mqtt.base62(uuid.uuid4().int, padding=22),
-            logger=PAHO_MQTT_LOGGER,
-            clean_session=True,
-        )
+        self._host = host
+        self._port = port
+        self._client: Optional[AsyncioClient] = None
         self._incoming_task: Optional[asyncio.Task] = None
 
     async def _connect(self) -> None:
         """Connect to the broker."""
+        self._client = AsyncioClient(
+            self._host,
+            self._port,
+            client_id=mqtt.base62(uuid.uuid4().int, padding=22),
+            logger=PAHO_MQTT_LOGGER,
+            clean_session=True,
+        )
         try:
             await self._client.connect(timeout=10)
         except MqttError as err:
@@ -161,6 +170,7 @@ class MQTTClient(MQTTTransport):
 
     async def _disconnect(self) -> None:
         """Disconnect from the broker."""
+        assert self._client
         assert self._incoming_task
         self._incoming_task.cancel()
         await self._incoming_task
@@ -171,6 +181,7 @@ class MQTTClient(MQTTTransport):
 
     async def _publish(self, topic: str, payload: str, qos: int) -> None:
         """Publish to topic."""
+        assert self._client
         params: dict = {"qos": qos, "retain": False, "timeout": 10.0}
         if payload:
             params["payload"] = payload
@@ -182,6 +193,7 @@ class MQTTClient(MQTTTransport):
 
     async def _subscribe(self, topic: str, qos: int) -> None:
         """Subscribe to topic."""
+        assert self._client
         try:
             await self._client.subscribe(topic, qos=qos, timeout=10)
         except MqttError as err:
@@ -189,6 +201,7 @@ class MQTTClient(MQTTTransport):
 
     async def _handle_incoming(self) -> None:
         """Handle incoming messages."""
+        assert self._client
         try:
             async with self._client.unfiltered_messages() as messages:
                 async for message in messages:
