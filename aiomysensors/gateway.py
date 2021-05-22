@@ -33,8 +33,8 @@ class Gateway:
     @property
     def protocol(self) -> ProtocolType:
         """Return the correct protocol."""
-        if not self._protocol or not self.protocol_version:
-            protocol_version = self.protocol_version or DEFAULT_PROTOCOL_VERSION
+        if not self._protocol:
+            protocol_version = self._protocol_version or DEFAULT_PROTOCOL_VERSION
             self._protocol = get_protocol(protocol_version)
 
         return self._protocol
@@ -50,6 +50,7 @@ class Gateway:
         self._message_schema.context[
             "protocol_version"
         ] = self._protocol_version = value
+        self._protocol = get_protocol(self._protocol_version)
 
     async def listen(self) -> AsyncGenerator[Message, None]:
         """Listen and yield a message."""
