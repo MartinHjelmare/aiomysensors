@@ -33,7 +33,7 @@ class Gateway:
     @property
     def protocol(self) -> ProtocolType:
         """Return the correct protocol."""
-        if not self._protocol or not self._protocol_version:
+        if not self._protocol:
             protocol_version = self._protocol_version or DEFAULT_PROTOCOL_VERSION
             self._protocol = get_protocol(protocol_version)
 
