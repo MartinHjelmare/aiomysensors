@@ -13,7 +13,7 @@ from aiomysensors.exceptions import TransportError, TransportFailedError
 from aiomysensors.gateway import Gateway
 from aiomysensors.transport.mqtt import MQTTTransport
 
-from .helper import handle_gateway, run_gateway
+from .helper import run_gateway
 
 PAHO_MQTT_LOGGER = logging.getLogger("paho.mqtt.client")
 
@@ -46,9 +46,14 @@ PAHO_MQTT_LOGGER = logging.getLogger("paho.mqtt.client")
 )
 def mqtt_gateway(host: str, port: int, in_prefix: str, out_prefix: str) -> None:
     """Start an MQTT gateway."""
-    transport = MQTTClient(host, port, in_prefix, out_prefix)
-    gateway = Gateway(transport)
-    run_gateway(handle_gateway, gateway)
+
+    async def gateway_factory() -> Gateway:
+        """Return a gateway."""
+        transport = MQTTClient(host, port, in_prefix, out_prefix)
+        gateway = Gateway(transport)
+        return gateway
+
+    run_gateway(gateway_factory)
 
 
 class MQTTClient(MQTTTransport):
@@ -69,7 +74,7 @@ class MQTTClient(MQTTTransport):
     async def _connect(self) -> None:
         """Connect to the broker."""
         try:
-            await self._client.connect(timeout=10.0)
+            await self._client.connect(timeout=10)
         except MqttError as err:
             raise TransportError from err
 
@@ -81,7 +86,7 @@ class MQTTClient(MQTTTransport):
         self._incoming_task.cancel()
         await self._incoming_task
         try:
-            await self._client.disconnect(timeout=10.0)
+            await self._client.disconnect(timeout=10)
         except MqttError as err:
             raise TransportError from err
 
@@ -99,7 +104,7 @@ class MQTTClient(MQTTTransport):
     async def _subscribe(self, topic: str, qos: int) -> None:
         """Subscribe to topic."""
         try:
-            await self._client.subscribe(topic, qos=qos, timeout=10.0)
+            await self._client.subscribe(topic, qos=qos, timeout=10)
         except MqttError as err:
             raise TransportError from err
 
