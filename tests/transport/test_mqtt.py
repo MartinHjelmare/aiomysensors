@@ -1,8 +1,10 @@
 """Test the MQTT transport."""
 from unittest.mock import call, patch
 
+from asyncio_mqtt import MqttError
 import pytest
 
+from aiomysensors.exceptions import TransportError
 from aiomysensors.transport.mqtt import PAHO_MQTT_LOGGER, MQTTClient
 
 # All test coroutines will be treated as marked.
@@ -54,3 +56,13 @@ async def test_connect_disconnect(mqtt, client_id):
 
     assert mqtt_client.disconnect.call_count == 1
     assert mqtt_client.disconnect.call_args == call(timeout=10)
+
+
+async def test_connect_failure(mqtt):
+    """Test MQTT transport connect failure."""
+    mqtt_client = mqtt.return_value
+    mqtt_client.connect.side_effect = MqttError("Boom")
+    transport = MQTTClient(HOST, PORT, IN_PREFIX, OUT_PREFIX)
+
+    with pytest.raises(TransportError):
+        await transport.connect()
