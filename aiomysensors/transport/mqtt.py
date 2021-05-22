@@ -1,7 +1,7 @@
 """Provide an MQTT transport."""
 import asyncio
 from abc import abstractmethod
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 from . import Transport
 
@@ -31,7 +31,18 @@ class MQTTTransport(Transport):
             "/+/+/3/+/+",
             "/+/+/4/+/+",
         ]
-        await self._subscribe_topics(topics)
+        tasks = []
+
+        for partial_topic in topics:
+            topic = f"{self.in_prefix}{partial_topic}"
+            topic_levels = topic.split("/")
+            try:
+                qos = int(topic_levels[-2])
+            except ValueError:
+                qos = 0
+            tasks.append(self._subscribe(topic, qos))
+
+        await asyncio.gather(*tasks)
 
     async def disconnect(self) -> None:
         """Disconnect the transport."""
@@ -75,22 +86,6 @@ class MQTTTransport(Transport):
             return
 
         self._incoming_messages.put_nowait(decoded_message)
-
-    async def _subscribe_topics(self, topics: List[str]) -> None:
-        """Handle subscription of topics."""
-        tasks = []
-
-        for partial_topic in topics:
-            topic = f"{self.in_prefix}{partial_topic}"
-            topic_levels = topic.split("/")
-            try:
-                qos = int(topic_levels[-2])
-            except ValueError:
-                qos = 0
-
-            tasks.append(self._subscribe(topic, qos))
-
-        await asyncio.gather(*tasks)
 
     def _parse_mqtt_to_message(
         self, topic: str, payload: str, qos: int
