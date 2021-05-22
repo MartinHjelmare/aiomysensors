@@ -129,9 +129,7 @@ class IncomingMessageHandler:
         try:
             internal = gateway.protocol.Internal(message.message_type)
         except ValueError as err:
-            raise UnsupportedMessageError(
-                f"Message type is not supported: {message.message_type}"
-            ) from err
+            raise UnsupportedMessageError(message, gateway.protocol_version) from err
 
         message_handler = getattr(cls, f"handle_{internal.name.lower()}", None)
 
@@ -150,9 +148,7 @@ class IncomingMessageHandler:
         try:
             stream = gateway.protocol.Stream(message.message_type)
         except ValueError as err:
-            raise UnsupportedMessageError(
-                f"Message type is not supported: {message.message_type}"
-            ) from err
+            raise UnsupportedMessageError(message, gateway.protocol_version) from err
 
         message_handler = getattr(cls, f"handle_{stream.name.lower()}", None)
 

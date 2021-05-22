@@ -5,7 +5,12 @@ import pytest
 from click.testing import CliRunner
 
 from aiomysensors.cli import cli
-from aiomysensors.exceptions import AIOMySensorsError
+from aiomysensors.exceptions import (
+    AIOMySensorsError,
+    MissingNodeError,
+    UnsupportedMessageError,
+)
+from aiomysensors.model.message import Message
 
 
 @pytest.fixture(name="gateway_cli", autouse=True)
@@ -18,31 +23,22 @@ def gateway_cli_fixture():
         yield gateway
 
 
-def test_serial_gateway():
+@pytest.mark.parametrize(
+    "error",
+    [
+        None,
+        MissingNodeError(1),
+        UnsupportedMessageError(Message()),
+        AIOMySensorsError(),
+    ],
+)
+@pytest.mark.parametrize(
+    "args",
+    [["serial-gateway", "-p", "/test"], ["--debug", "serial-gateway", "-p", "/test"]],
+)
+def test_serial_gateway(gateway_handler, args, error):
     """Test the serial gateway CLI."""
+    gateway_handler.side_effect = [error, KeyboardInterrupt()]
     runner = CliRunner()
-    result = runner.invoke(cli, ["serial-gateway", "-p", "/test"])
-    assert result.exit_code == 0
-
-
-def test_serial_gateway_debug():
-    """Test the serial gateway CLI."""
-    runner = CliRunner()
-    result = runner.invoke(cli, ["--debug", "serial-gateway", "-p", "/test"])
-    assert result.exit_code == 0
-
-
-def test_serial_error(gateway_handler):
-    """Test the serial gateway CLI with serial error."""
-    gateway_handler.side_effect = AIOMySensorsError
-    runner = CliRunner()
-    result = runner.invoke(cli, ["--debug", "serial-gateway", "-p", "/test"])
-    assert result.exit_code == 0
-
-
-def test_keyboard_interrupt(gateway_handler):
-    """Test the serial gateway CLI with KeyboardInterrupt error."""
-    gateway_handler.side_effect = KeyboardInterrupt
-    runner = CliRunner()
-    result = runner.invoke(cli, ["--debug", "serial-gateway", "-p", "/test"])
+    result = runner.invoke(cli, args)
     assert result.exit_code == 0

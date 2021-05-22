@@ -1,4 +1,5 @@
 """Provide a gateway."""
+import logging
 from dataclasses import dataclass, field
 from types import TracebackType
 from typing import AsyncGenerator, Callable, Dict, Optional, Tuple
@@ -10,11 +11,13 @@ from .model.message import Message, MessageSchema
 from .model.node import Node
 from .model.protocol import (
     DEFAULT_PROTOCOL_VERSION,
-    ProtocolType,
     SYSTEM_CHILD_ID,
+    ProtocolType,
     get_protocol,
 )
 from .transport import Transport
+
+LOGGER = logging.getLogger(__package__)
 
 
 class Gateway:
@@ -76,6 +79,7 @@ class Gateway:
         _sleep_buffer = self._sleep_buffer if sleep_buffer else None
 
         message_handler = self._get_message_handler(message, "OutgoingMessageHandler")
+        LOGGER.debug("Sending: %s", message)
         await message_handler(self, message, _sleep_buffer, decoded_message)
 
     def _get_message_handler(self, message: Message, handler_name: str) -> Callable:
@@ -88,23 +92,24 @@ class Gateway:
     async def _handle_incoming(self, message: Message) -> Message:
         """Handle incoming message."""
         message_handler = self._get_message_handler(message, "IncomingMessageHandler")
-        message = await message_handler(self, message, self._sleep_buffer)
-
-        # TODO: Move this to the protocol instead. Probably as a decorator.
-        if self.protocol_version is None and (
-            message.command != self.protocol.Command.internal
-            or message.message_type
-            not in (
-                self.protocol.Internal.I_LOG_MESSAGE,
-                self.protocol.Internal.I_GATEWAY_READY,
-            )
-        ):
-            version_message = Message(
-                child_id=SYSTEM_CHILD_ID,
-                command=self.protocol.Command.internal,
-                message_type=self.protocol.Internal.I_VERSION,
-            )
-            await self.send(version_message)
+        try:
+            message = await message_handler(self, message, self._sleep_buffer)
+        finally:
+            # TODO: Move this to the protocol instead. Probably as a decorator.
+            if self.protocol_version is None and (
+                message.command != self.protocol.Command.internal
+                or message.message_type
+                not in (
+                    self.protocol.Internal.I_LOG_MESSAGE,
+                    self.protocol.Internal.I_GATEWAY_READY,
+                )
+            ):
+                version_message = Message(
+                    child_id=SYSTEM_CHILD_ID,
+                    command=self.protocol.Command.internal,
+                    message_type=self.protocol.Internal.I_VERSION,
+                )
+                await self.send(version_message)
 
         return message
 
@@ -130,5 +135,8 @@ class Config:
 @dataclass
 class SleepBuffer:
     """Represent a sleep message buffer."""
+
+    # TODO: Make this a general buffer for messages that should not be sent.
+    # Eg deduplicate I_PRESENTATION requests for the same node.
 
     set_messages: Dict[Tuple[int, int, int], Message] = field(default_factory=dict)
