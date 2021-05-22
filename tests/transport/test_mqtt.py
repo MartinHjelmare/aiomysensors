@@ -66,3 +66,26 @@ async def test_connect_failure(mqtt):
 
     with pytest.raises(TransportError):
         await transport.connect()
+
+
+async def test_disconnect_failure(mqtt, client_id):
+    """Test MQTT transport disconnect failure."""
+    mqtt_client = mqtt.return_value
+    mqtt_client.disconnect.side_effect = MqttError("Boom")
+    transport = MQTTClient(HOST, PORT, IN_PREFIX, OUT_PREFIX)
+
+    await transport.connect()
+
+    assert mqtt.call_count == 1
+    assert mqtt.call_args == call(
+        HOST,
+        PORT,
+        client_id=client_id,
+        logger=PAHO_MQTT_LOGGER,
+        clean_session=True,
+    )
+
+    # Disconnect error should be caught.
+    await transport.disconnect()
+
+    assert mqtt_client.disconnect.call_count == 1
