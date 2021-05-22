@@ -30,7 +30,7 @@ async def start_gateway(gateway_factory: GatewayFactory) -> None:
     """Start the gateway."""
     gateway = await gateway_factory()
 
-    async with gateway:  # pragma: no cover
+    async with gateway:
         while True:
             try:
                 await handle_gateway(gateway)
@@ -45,6 +45,6 @@ async def start_gateway(gateway_factory: GatewayFactory) -> None:
 
 async def handle_gateway(gateway: Gateway) -> None:
     """Handle the gateway calls."""
-    async for msg in gateway.listen():
+    async for msg in gateway.listen():  # pragma: no cover
         level = logging.DEBUG if msg.message_type == 9 else logging.INFO
         LOGGER.log(level, "Received: %s", msg)
