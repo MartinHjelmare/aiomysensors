@@ -4,7 +4,7 @@ import click
 from aiomysensors.gateway import Gateway
 from aiomysensors.transport.serial import SerialTransport
 
-from .helper import handle_gateway, run_gateway
+from .helper import run_gateway
 
 
 @click.command(options_metavar="<options>")
@@ -19,6 +19,11 @@ from .helper import handle_gateway, run_gateway
 @click.option("-p", "--port", required=True, help="Serial port of the gateway.")
 def serial_gateway(port: str, baud: int) -> None:
     """Start a serial gateway."""
-    transport = SerialTransport(port, baud)
-    gateway = Gateway(transport)
-    run_gateway(handle_gateway, gateway)
+
+    async def gateway_factory() -> Gateway:
+        """Return a gateway."""
+        transport = SerialTransport(port, baud)
+        gateway = Gateway(transport)
+        return gateway
+
+    run_gateway(gateway_factory)
