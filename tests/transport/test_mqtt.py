@@ -97,7 +97,7 @@ async def test_disconnect_failure(mqtt, client_id):
 async def test_read_write(mqtt, client_id):
     """Test MQTT transport read and write."""
     mqtt_client = mqtt.return_value
-    topic = f"{IN_PREFIX}/0/0/0/0/0"
+    topic = f"{IN_PREFIX}/0/255/3/1/11"
     payload = "test"
     msg = MQTTMessage()
     msg.topic = topic.encode()
@@ -131,12 +131,12 @@ async def test_read_write(mqtt, client_id):
 
     await asyncio.sleep(0)
     read = await transport.read()
-    assert read == "0;0;0;0;0;test"
+    assert read == "0;255;3;1;11;test"
 
     await transport.write(read)
     assert mqtt_client.publish.call_count == 1
     assert mqtt_client.publish.call_args == call(
-        f"{OUT_PREFIX}/0/0/0/0/0", qos=0, retain=False, timeout=10, payload=payload
+        f"{OUT_PREFIX}/0/255/3/1/11", qos=1, retain=False, timeout=10, payload=payload
     )
 
     await transport.disconnect()
