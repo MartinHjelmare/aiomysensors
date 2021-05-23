@@ -4,4 +4,5 @@ exclude_lines =
     def __repr__
     raise AssertionError
     raise NotImplementedError
+    raise RuntimeError
     if TYPE_CHECKING:

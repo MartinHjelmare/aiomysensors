@@ -1,4 +1,4 @@
-"""Test the CLI for the serial gateway."""
+"""Test the CLI for the MQTT gateway."""
 from unittest.mock import patch
 
 import pytest
@@ -17,9 +17,7 @@ from aiomysensors.model.message import Message
 @pytest.fixture(name="gateway_cli", autouse=True)
 def gateway_cli_fixture():
     """Mock the CLI gateway handler."""
-    with patch(
-        "aiomysensors.cli.gateway_serial.Gateway", autospec=True
-    ) as gateway_class:
+    with patch("aiomysensors.cli.gateway_mqtt.Gateway", autospec=True) as gateway_class:
         gateway = gateway_class.return_value
         yield gateway
 
@@ -36,10 +34,24 @@ def gateway_cli_fixture():
 )
 @pytest.mark.parametrize(
     "args",
-    [["serial-gateway", "-p", "/test"], ["--debug", "serial-gateway", "-p", "/test"]],
+    [
+        [
+            "mqtt-gateway",
+            "-H test.org",
+            "-i mysensors/test-out",
+            "-o mysensors/test-in",
+        ],
+        [
+            "--debug",
+            "mqtt-gateway",
+            "-H test.org",
+            "-i mysensors/test-out",
+            "-o mysensors/test-in",
+        ],
+    ],
 )
-def test_serial_gateway(gateway_handler, args, error):
-    """Test the serial gateway CLI."""
+def test_mqtt_gateway(gateway_handler, args, error):
+    """Test the MQTT gateway CLI."""
     gateway_handler.side_effect = [error, KeyboardInterrupt()]
     runner = CliRunner()
     result = runner.invoke(cli, args)
