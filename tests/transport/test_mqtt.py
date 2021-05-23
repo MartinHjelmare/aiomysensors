@@ -220,3 +220,16 @@ async def test_write_failure(mqtt, client_id, message, message_schema):
     await transport.disconnect()
 
     assert mqtt_client.disconnect.call_count == 1
+
+
+async def test_subscribe_failure(mqtt):
+    """Test MQTT transport subscribe failure."""
+    mqtt_client = mqtt.return_value
+    mqtt_client.subscribe.side_effect = MqttError("Boom")
+
+    transport = MQTTClient(HOST, PORT, IN_PREFIX, OUT_PREFIX)
+
+    with pytest.raises(TransportError):
+        await transport.connect()
+
+    assert mqtt.call_count == 1
