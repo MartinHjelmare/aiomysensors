@@ -7,6 +7,7 @@ from click.testing import CliRunner
 from aiomysensors.cli import cli
 from aiomysensors.exceptions import (
     AIOMySensorsError,
+    MissingChildError,
     MissingNodeError,
     UnsupportedMessageError,
 )
@@ -28,6 +29,7 @@ def gateway_cli_fixture():
     [
         None,
         MissingNodeError(1),
+        MissingChildError(1),
         UnsupportedMessageError(Message()),
         AIOMySensorsError(),
     ],
