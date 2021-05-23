@@ -191,3 +191,32 @@ async def test_read_failure(mqtt, client_id):
     await transport.disconnect()
 
     assert mqtt_client.disconnect.call_count == 1
+
+
+async def test_write_failure(mqtt, client_id, message, message_schema):
+    """Test MQTT transport write failure."""
+    mqtt_client = mqtt.return_value
+    mqtt_client.publish.side_effect = MqttError("Boom")
+    cmd = message_schema.dump(message)
+
+    transport = MQTTClient(HOST, PORT, IN_PREFIX, OUT_PREFIX)
+
+    await transport.connect()
+
+    assert mqtt.call_count == 1
+    assert mqtt.call_args == call(
+        HOST,
+        PORT,
+        client_id=client_id,
+        logger=PAHO_MQTT_LOGGER,
+        clean_session=True,
+    )
+
+    with pytest.raises(TransportFailedError):
+        await transport.write(cmd)
+
+    assert mqtt_client.publish.call_count == 1
+
+    await transport.disconnect()
+
+    assert mqtt_client.disconnect.call_count == 1
