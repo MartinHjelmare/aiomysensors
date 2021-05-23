@@ -85,20 +85,16 @@ class MQTTTransport(Transport):
     async def _subscribe(self, topic: str, qos: int) -> None:
         """Subscribe to topic."""
 
-    def _receive(self, topic: str, payload: str, qos: int) -> None:
+    def _receive(self, topic: str, payload: str) -> None:
         """Receive an MQTT message.
 
         Call this method when a message is received from the MQTT broker.
         """
-        decoded_message = self._parse_mqtt_to_message(topic, payload, qos)
-        if decoded_message is None:
-            return
-
+        decoded_message = self._parse_mqtt_to_message(topic, payload)
         self._incoming_messages.put_nowait(decoded_message)
 
-    def _parse_mqtt_to_message(
-        self, topic: str, payload: str, qos: int
-    ) -> Optional[str]:
+    @staticmethod
+    def _parse_mqtt_to_message(topic: str, payload: str) -> str:
         """Parse an MQTT topic and payload.
 
         Return a decoded message.
@@ -107,16 +103,6 @@ class MQTTTransport(Transport):
         # The prefix can have topic dividers too.
         topic_levels = topic.split("/")
         without_prefix = topic_levels[-5:]
-        prefix_end_idx = topic.index("/".join(without_prefix)) - 1
-        prefix = topic[:prefix_end_idx]
-        if prefix != self.in_prefix:
-            return None
-
-        if qos:
-            ack = "1"
-        else:
-            ack = "0"
-        without_prefix[3] = ack
         without_prefix.append(payload)
 
         return ";".join(without_prefix)
@@ -206,6 +192,6 @@ class MQTTClient(MQTTTransport):
             async with self._client.unfiltered_messages() as messages:
                 async for message in messages:
                     message = cast(mqtt.MQTTMessage, message)
-                    self._receive(message.topic, message.payload.decode(), message.qos)
+                    self._receive(message.topic, message.payload.decode())
         except MqttError as err:
             raise TransportFailedError from err
