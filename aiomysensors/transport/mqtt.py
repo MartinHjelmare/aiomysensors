@@ -1,5 +1,7 @@
 """Provide an MQTT transport."""
 import asyncio
+from dataclasses import dataclass
+from enum import Enum
 import logging
 import uuid
 from abc import abstractmethod
@@ -13,6 +15,22 @@ from ..exceptions import TransportError, TransportFailedError
 from . import Transport
 
 PAHO_MQTT_LOGGER = logging.getLogger("paho.mqtt.client")
+
+
+class MQTTMessageType(Enum):
+    """Represent the MQTT message type."""
+
+    ERROR = "error"
+    MESSAGE = "message"
+
+
+@dataclass
+class ReceivedMessage:
+    """Represent a received message from the broker."""
+
+    message_type: MQTTMessageType
+    message: Optional[str] = None
+    error: Optional[Exception] = None
 
 
 class MQTTTransport(Transport):
@@ -59,8 +77,15 @@ class MQTTTransport(Transport):
 
     async def read(self) -> str:
         """Return a decoded message."""
-        decoded_message: str = await self._incoming_messages.get()
+        received_message: ReceivedMessage = await self._incoming_messages.get()
         self._incoming_messages.task_done()
+        if received_message.message_type is MQTTMessageType.ERROR:
+            error = received_message.error
+            assert error
+            raise error
+
+        decoded_message = received_message.message
+        assert decoded_message
         return decoded_message
 
     async def write(self, decoded_message: str) -> None:
@@ -91,7 +116,18 @@ class MQTTTransport(Transport):
         Call this method when a message is received from the MQTT broker.
         """
         decoded_message = self._parse_mqtt_to_message(topic, payload)
-        self._incoming_messages.put_nowait(decoded_message)
+        message = ReceivedMessage(
+            message_type=MQTTMessageType.MESSAGE, message=decoded_message
+        )
+        self._incoming_messages.put_nowait(message)
+
+    def _receive_error(self, error: Exception) -> None:
+        """Propapage an Exception raised when receiving an MQTT message.
+
+        Call this method when receiving a message failed.
+        """
+        message = ReceivedMessage(message_type=MQTTMessageType.ERROR, error=error)
+        self._incoming_messages.put_nowait(message)
 
     @staticmethod
     def _parse_mqtt_to_message(topic: str, payload: str) -> str:
@@ -202,5 +238,5 @@ class MQTTClient(MQTTTransport):
                 async for message in messages:
                     message = cast(mqtt.MQTTMessage, message)
                     self._receive(message.topic, message.payload.decode())
-        except MqttError as err:
-            raise TransportFailedError from err
+        except MqttError:
+            self._receive_error(TransportFailedError())
