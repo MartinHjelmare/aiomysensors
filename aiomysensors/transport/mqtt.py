@@ -152,14 +152,19 @@ class MQTTClient(MQTTTransport):
         except MqttError as err:
             raise TransportError from err
 
+        if self._incoming_task is not None:
+            raise RuntimeError("Client needs to disconnect before connecting again.")
+
         self._incoming_task = asyncio.create_task(self._handle_incoming())
 
     async def _disconnect(self) -> None:
         """Disconnect from the broker."""
-        assert self._client
-        assert self._incoming_task
+        if not self._client or not self._incoming_task:
+            raise RuntimeError("Client needs to connect before disconnecting.")
+
         self._incoming_task.cancel()
         await self._incoming_task
+        self._incoming_task = None
         try:
             await self._client.disconnect(timeout=10)
         except MqttError:
@@ -167,7 +172,9 @@ class MQTTClient(MQTTTransport):
 
     async def _publish(self, topic: str, payload: str, qos: int) -> None:
         """Publish to topic."""
-        assert self._client
+        if not self._client:
+            raise RuntimeError("Client needs to connect before publishing.")
+
         params: dict = {"qos": qos, "retain": False, "timeout": 10}
         if payload:
             params["payload"] = payload
@@ -179,7 +186,9 @@ class MQTTClient(MQTTTransport):
 
     async def _subscribe(self, topic: str, qos: int) -> None:
         """Subscribe to topic."""
-        assert self._client
+        if not self._client:
+            raise RuntimeError("Client needs to connect before subscribing.")
+
         try:
             await self._client.subscribe(topic, qos=qos, timeout=10)
         except MqttError as err:
