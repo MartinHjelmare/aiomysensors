@@ -7,7 +7,7 @@ from asyncio_mqtt import MqttError
 from paho.mqtt.client import MQTTMessage
 import pytest
 
-from aiomysensors.exceptions import TransportError
+from aiomysensors.exceptions import TransportError, TransportFailedError
 from aiomysensors.transport.mqtt import PAHO_MQTT_LOGGER, MQTTClient
 
 # All test coroutines will be treated as marked.
@@ -97,7 +97,6 @@ async def test_disconnect_failure(mqtt, client_id):
 async def test_read_write(mqtt, client_id):
     """Test MQTT transport read and write."""
     mqtt_client = mqtt.return_value
-
     topic = f"{IN_PREFIX}/0/0/0/0/0"
     payload = "test"
     msg = MQTTMessage()
@@ -108,7 +107,6 @@ async def test_read_write(mqtt, client_id):
     async def mock_messages():
         """Mock the messages generator."""
         for message in messages:
-            print(message)
             yield message
 
     @asynccontextmanager
@@ -140,6 +138,55 @@ async def test_read_write(mqtt, client_id):
     assert mqtt_client.publish.call_args == call(
         f"{OUT_PREFIX}/0/0/0/0/0", qos=0, retain=False, timeout=10, payload=payload
     )
+
+    await transport.disconnect()
+
+    assert mqtt_client.disconnect.call_count == 1
+
+
+async def test_read_failure(mqtt, client_id):
+    """Test MQTT transport read failure."""
+    mqtt_client = mqtt.return_value
+    topic = f"{IN_PREFIX}/0/0/0/0/0"
+    payload = "test"
+    msg = MQTTMessage()
+    msg.topic = topic.encode()
+    msg.payload = payload.encode()
+    messages = [msg]
+
+    async def mock_messages():
+        """Mock the messages generator."""
+        for message in messages:
+            yield message
+
+    @asynccontextmanager
+    async def filter_messages():
+        """Mock filter messages."""
+        yield mock_messages()
+        raise MqttError("Boom")
+
+    mqtt_client.unfiltered_messages.side_effect = filter_messages
+
+    transport = MQTTClient(HOST, PORT, IN_PREFIX, OUT_PREFIX)
+
+    await transport.connect()
+
+    assert mqtt.call_count == 1
+    assert mqtt.call_args == call(
+        HOST,
+        PORT,
+        client_id=client_id,
+        logger=PAHO_MQTT_LOGGER,
+        clean_session=True,
+    )
+
+    await asyncio.sleep(0)
+    read = await transport.read()
+
+    assert read == "0;0;0;0;0;test"
+
+    with pytest.raises(TransportFailedError):
+        await transport.read()
 
     await transport.disconnect()
 
