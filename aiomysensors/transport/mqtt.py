@@ -85,7 +85,7 @@ class MQTTTransport(Transport):
             raise error
 
         decoded_message = received_message.message
-        assert decoded_message
+        assert decoded_message is not None
         return decoded_message
 
     async def write(self, decoded_message: str) -> None:
