@@ -5,6 +5,7 @@ from typing import Awaitable, Callable
 
 from aiomysensors.exceptions import (
     AIOMySensorsError,
+    MissingChildError,
     MissingNodeError,
     UnsupportedMessageError,
 )
@@ -36,6 +37,8 @@ async def start_gateway(gateway_factory: GatewayFactory) -> None:
                 await handle_gateway(gateway)
             except MissingNodeError as err:
                 LOGGER.debug("Missing node: %s", err.node_id)
+            except MissingChildError as err:
+                LOGGER.debug("Missing child: %s", err.child_id)
             except UnsupportedMessageError as err:
                 LOGGER.warning("Unsupported message: %s", err)
             except AIOMySensorsError as err:
