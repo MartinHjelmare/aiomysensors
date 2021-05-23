@@ -182,7 +182,7 @@ class MQTTClient(MQTTTransport):
     async def _publish(self, topic: str, payload: str, qos: int) -> None:
         """Publish to topic."""
         assert self._client
-        params: dict = {"qos": qos, "retain": False, "timeout": 10.0}
+        params: dict = {"qos": qos, "retain": False, "timeout": 10}
         if payload:
             params["payload"] = payload
 
