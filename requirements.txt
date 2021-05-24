@@ -1,4 +1,4 @@
 asyncio-mqtt==0.9.1
-click==8.0.0
+click==8.0.1
 marshmallow==3.12.1
 pyserial-asyncio==0.5
