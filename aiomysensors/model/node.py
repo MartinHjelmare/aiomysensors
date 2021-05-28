@@ -2,6 +2,7 @@
 from typing import Any, Dict, Optional
 
 from marshmallow import Schema, fields, post_load, validate
+from marshmallow.decorators import pre_load
 
 from ..exceptions import MissingChildError
 from .const import NODE_ID_FIELD
@@ -108,6 +109,18 @@ class ChildSchema(Schema):
     description = fields.Str()
     values = fields.Dict(keys=fields.Int(), values=fields.Str())
 
+    @pre_load
+    def handle_compatibility(self, data: dict, **kwargs: Any) -> dict:
+        """Make pymysensors data compatible with aiomysensors."""
+        # pylint: disable=no-self-use, unused-argument
+        # Conversion of pymysensors data to aiomysensors format.
+        if "id" in data:
+            data["child_id"] = data.pop("id")
+        if "type" in data:
+            data["child_type"] = data.pop("type")
+
+        return data
+
     @post_load
     def make_child(self, data: dict, **kwargs: Any) -> Child:
         """Make a child."""
@@ -127,6 +140,24 @@ class NodeSchema(Schema):
     battery_level = fields.Int(validate=validate.Range(min=0, max=100))
     heartbeat = fields.Int()
     sleeping = fields.Bool()
+
+    @pre_load
+    def handle_compatibility(self, data: dict, **kwargs: Any) -> dict:
+        """Make pymysensors data compatible with aiomysensors."""
+        # pylint: disable=no-self-use, unused-argument
+        # Conversion of pymysensors data to aiomysensors format.
+        if "sensor_id" in data:
+            data["node_id"] = data.pop("sensor_id")
+        if "type" in data:
+            if data["type"] is None:
+                data["type"] = 18  # Set gateway type as default.
+            data["node_type"] = data.pop("type")
+        if data["sketch_name"] is None:
+            data["sketch_name"] = ""
+        if data["sketch_version"] is None:
+            data["sketch_version"] = ""
+
+        return data
 
     @post_load
     def make_node(self, data: dict, **kwargs: Any) -> Node:
