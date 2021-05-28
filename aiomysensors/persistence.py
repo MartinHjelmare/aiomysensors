@@ -1,7 +1,8 @@
 """Provide persistence."""
+import asyncio
 import json
-from dataclasses import dataclass
-from typing import Dict
+from dataclasses import dataclass, field
+from typing import Any, Callable, Coroutine, Dict, Optional
 
 import aiofiles
 
@@ -15,6 +16,9 @@ class Persistence:
 
     nodes: Dict[int, Node]
     path: str
+    _cancel_save: Optional[Callable[[], Coroutine[Any, Any, None]]] = field(
+        default=None, init=False
+    )
 
     async def load(self, path: str = None) -> None:
         """Load the stored data."""
@@ -48,5 +52,28 @@ class Persistence:
     async def start(self) -> None:
         """Start the scheduled saving of data."""
 
+        async def save_on_schedule() -> None:
+            """Save data and sleep until next save."""
+            while True:
+                await self.save()
+                try:
+                    await asyncio.sleep(900)
+                except asyncio.CancelledError:
+                    break
+
+        task = asyncio.create_task(save_on_schedule())
+
+        async def cancel_save() -> None:
+            """Cancel the save task."""
+            task.cancel()
+            await task
+
+        self._cancel_save = cancel_save
+
     async def stop(self) -> None:
-        """Stop the scheduled saving of data."""
+        """Stop the scheduled saving of data and save a final time."""
+        if self._cancel_save:
+            await self._cancel_save()
+            self._cancel_save = None
+
+        await self.save()
