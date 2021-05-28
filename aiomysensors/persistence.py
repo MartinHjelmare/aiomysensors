@@ -5,6 +5,7 @@ from typing import Dict
 
 import aiofiles
 
+from .exceptions import PersistenceReadError, PersistenceWriteError
 from .model.node import Node, NodeSchema
 
 
@@ -19,10 +20,13 @@ class Persistence:
         """Load the stored data."""
         path = path or self.path
 
-        async with aiofiles.open(path, mode="r") as fil:
-            read = await fil.read()
+        try:
+            async with aiofiles.open(path, mode="r") as fil:
+                read = await fil.read()
+            data: dict = json.loads(read)
+        except (OSError, ValueError) as err:
+            raise PersistenceReadError(err) from err
 
-        data: dict = json.loads(read)
         node_schema = NodeSchema()
         for node_data in data.values():
             node: Node = node_schema.load(node_data)
@@ -35,8 +39,11 @@ class Persistence:
         for node in self.nodes.values():
             data[node.node_id] = node_schema.dump(node)
 
-        async with aiofiles.open(self.path, mode="w") as fil:
-            await fil.write(json.dumps(data, sort_keys=True, indent=2))
+        try:
+            async with aiofiles.open(self.path, mode="w") as fil:
+                await fil.write(json.dumps(data, sort_keys=True, indent=2))
+        except (OSError, ValueError) as err:
+            raise PersistenceWriteError(err) from err
 
     async def start(self) -> None:
         """Start the scheduled saving of data."""
