@@ -9,6 +9,8 @@ import aiofiles
 from .exceptions import PersistenceReadError, PersistenceWriteError
 from .model.node import Node, NodeSchema
 
+SAVE_INTERVAL = 900
+
 
 @dataclass
 class Persistence:
@@ -57,7 +59,7 @@ class Persistence:
             while True:
                 await self.save()
                 try:
-                    await asyncio.sleep(900)
+                    await asyncio.sleep(SAVE_INTERVAL)
                 except asyncio.CancelledError:
                     break
 
