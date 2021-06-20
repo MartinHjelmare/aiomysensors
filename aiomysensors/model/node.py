@@ -152,9 +152,9 @@ class NodeSchema(Schema):
             if data["type"] is None:
                 data["type"] = 18  # Set gateway type as default.
             data["node_type"] = data.pop("type")
-        if data["sketch_name"] is None:
+        if "sketch_name" in data and data["sketch_name"] is None:
             data["sketch_name"] = ""
-        if data["sketch_version"] is None:
+        if "sketch_version" in data and data["sketch_version"] is None:
             data["sketch_version"] = ""
 
         return data
