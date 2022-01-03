@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, call, patch
 import aiofiles
 import pytest
 
+from aiomysensors.exceptions import PersistenceReadError
 from aiomysensors.persistence import Persistence
 
 # All test coroutines will be treated as marked.
@@ -60,6 +61,28 @@ async def test_persistence_load(mock_file, persistence_data):
     assert child.values
     value = child.values.get(49)
     assert value == "40.741894,-73.989311,12"
+
+
+@pytest.mark.parametrize(
+    "error, read_return_value, read_side_effect",
+    [
+        (PersistenceReadError, None, OSError("Boom")),
+        (PersistenceReadError, "bad content", None),
+    ],
+)
+async def test_persistence_load_error(
+    mock_file, error, read_return_value, read_side_effect
+):
+    """Test persistence load error."""
+    mock_file.read.return_value = read_return_value
+    mock_file.read.side_effect = read_side_effect
+    nodes = {}
+    persistence = Persistence(nodes, "test_path")
+
+    with pytest.raises(error):
+        await persistence.load()
+
+    assert mock_file.read.call_count == 1
 
 
 async def test_persistence_save(mock_file, persistence_data):
