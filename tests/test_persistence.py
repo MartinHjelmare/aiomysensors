@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, call, patch
 import aiofiles
 import pytest
 
-from aiomysensors.exceptions import PersistenceReadError
+from aiomysensors.exceptions import PersistenceReadError, PersistenceWriteError
 from aiomysensors.persistence import Persistence
 
 # All test coroutines will be treated as marked.
@@ -111,3 +111,21 @@ async def test_persistence_save(mock_file, persistence_data):
     assert mock_file.read.call_count == 1
     assert mock_file.write.call_count == 1
     assert mock_file.write.call_args == call(persistence_data)
+
+
+@pytest.mark.parametrize(
+    "error, write_side_effect",
+    [
+        (PersistenceWriteError, OSError("Boom")),
+    ],
+)
+async def test_persistence_save_error(mock_file, error, write_side_effect):
+    """Test persistence save error."""
+    mock_file.write.side_effect = write_side_effect
+    nodes = {}
+    persistence = Persistence(nodes, "test_path")
+
+    with pytest.raises(error):
+        await persistence.save()
+
+    assert mock_file.write.call_count == 1

@@ -48,7 +48,7 @@ class Persistence:
         try:
             async with aiofiles.open(self.path, mode="w") as fil:
                 await fil.write(json.dumps(data, sort_keys=True, indent=2))
-        except (OSError, ValueError) as err:
+        except OSError as err:
             raise PersistenceWriteError(err) from err
 
     async def start(self) -> None:
