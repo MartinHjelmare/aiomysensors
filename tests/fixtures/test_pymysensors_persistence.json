@@ -2,7 +2,7 @@
     "0": {
         "sensor_id": 0,
         "children": {},
-        "type": 18,
+        "type": null,
         "sketch_name": null,
         "sketch_version": null,
         "battery_level": 0,

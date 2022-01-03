@@ -26,16 +26,24 @@ def mock_file_fixture():
         yield mock_file
 
 
-@pytest.fixture(name="aiomysensors_persistence", scope="session")
-def aiomysensors_persistence_fixture():
-    """Return a JSON string with persistence data save in aiomysensors."""
-    fixture_json = FIXTURES_DIR / "test_aiomysensors_persistence.json"
+@pytest.fixture(name="persistence_data", scope="session")
+def persistence_data_fixture(request):
+    """Return a JSON string with persistence data saved in aiomysensors."""
+    fixture = "test_aiomysensors_persistence.json"
+    if hasattr(request, "param") and request.param:
+        fixture = request.param
+    fixture_json = FIXTURES_DIR / fixture
     return fixture_json.read_text()
 
 
-async def test_persistence_load(mock_file, aiomysensors_persistence):
+@pytest.mark.parametrize(
+    "persistence_data",
+    ["test_aiomysensors_persistence.json", "test_pymysensors_persistence.json"],
+    indirect=True,
+)
+async def test_persistence_load(mock_file, persistence_data):
     """Test persistence load."""
-    mock_file.read.return_value = str(aiomysensors_persistence)
+    mock_file.read.return_value = persistence_data
     nodes = {}
     persistence = Persistence(nodes, "test_path")
 
