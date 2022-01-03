@@ -1,4 +1,5 @@
 """Test persistence."""
+import asyncio
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
@@ -129,3 +130,21 @@ async def test_persistence_save_error(mock_file, error, write_side_effect):
         await persistence.save()
 
     assert mock_file.write.call_count == 1
+
+
+async def test_persistence_start_stop(mock_file, persistence_data):
+    """Test persistence start and stop."""
+    mock_file.read.return_value = persistence_data
+    nodes = {}
+    persistence = Persistence(nodes, "test_path")
+
+    await persistence.start()
+    await asyncio.sleep(0.1)
+
+    assert mock_file.read.call_count == 0
+    assert mock_file.write.call_count == 1
+
+    await persistence.stop()
+
+    assert mock_file.read.call_count == 0
+    assert mock_file.write.call_count == 2
