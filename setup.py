@@ -24,6 +24,7 @@ setup(
     url=GITHUB_URL,
     download_url=DOWNLOAD_URL,
     packages=find_packages(exclude=["contrib", "docs", "tests*"]),
+    package_data={"aiomysensors": ["py.typed"]},
     python_requires=">=3.8",
     install_requires=REQUIRES,
     entry_points={"console_scripts": ["aiomysensors = aiomysensors.cli:cli"]},
