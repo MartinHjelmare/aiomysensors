@@ -1,6 +1,6 @@
 """Test persistence."""
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import aiofiles
 import pytest
@@ -33,7 +33,7 @@ def persistence_data_fixture(request):
     if hasattr(request, "param") and request.param:
         fixture = request.param
     fixture_json = FIXTURES_DIR / fixture
-    return fixture_json.read_text()
+    return fixture_json.read_text().strip()
 
 
 @pytest.mark.parametrize(
@@ -60,3 +60,31 @@ async def test_persistence_load(mock_file, persistence_data):
     assert child.values
     value = child.values.get(49)
     assert value == "40.741894,-73.989311,12"
+
+
+async def test_persistence_save(mock_file, persistence_data):
+    """Test persistence save."""
+    mock_file.read.return_value = persistence_data
+    nodes = {}
+    persistence = Persistence(nodes, "test_path")
+
+    await persistence.load()
+
+    assert mock_file.read.call_count == 1
+    assert mock_file.write.call_count == 0
+    assert nodes
+    node = nodes.get(1)
+    assert node.battery_level == 0
+    assert node.children
+    child = node.children.get(1)
+    assert child.child_id == 1
+    assert child.child_type == 38
+    assert child.values
+    value = child.values.get(49)
+    assert value == "40.741894,-73.989311,12"
+
+    await persistence.save()
+
+    assert mock_file.read.call_count == 1
+    assert mock_file.write.call_count == 1
+    assert mock_file.write.call_args == call(persistence_data)
