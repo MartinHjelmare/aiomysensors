@@ -1,6 +1,7 @@
 """Provide persistence."""
 import asyncio
 import json
+import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable, Coroutine, Dict, Optional
 
@@ -9,6 +10,7 @@ import aiofiles
 from .exceptions import PersistenceReadError, PersistenceWriteError
 from .model.node import Node, NodeSchema
 
+LOGGER = logging.getLogger(__package__)
 SAVE_INTERVAL = 900
 
 
@@ -29,7 +31,11 @@ class Persistence:
         try:
             async with aiofiles.open(path, mode="r") as fil:
                 read = await fil.read()
-            data: dict = json.loads(read)
+            data: dict = json.loads(read or "{}")
+        except FileNotFoundError:
+            LOGGER.debug("Persistence file missing, creating file: %s", path)
+            await self.save()
+            return
         except (OSError, ValueError) as err:
             raise PersistenceReadError(err) from err
 

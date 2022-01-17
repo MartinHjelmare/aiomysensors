@@ -64,6 +64,18 @@ async def test_persistence_load(mock_file, persistence_data):
     assert value == "40.741894,-73.989311,12"
 
 
+async def test_persistence_load_no_data(mock_file):
+    """Test persistence load."""
+    mock_file.read.return_value = ""
+    nodes = {}
+    persistence = Persistence(nodes, "test_path")
+
+    await persistence.load()
+
+    assert mock_file.read.call_count == 1
+    assert not nodes
+
+
 @pytest.mark.parametrize(
     "error, read_return_value, read_side_effect",
     [

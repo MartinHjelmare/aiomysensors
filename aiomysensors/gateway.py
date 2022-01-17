@@ -119,6 +119,9 @@ class Gateway:
 
     async def __aenter__(self) -> "Gateway":
         """Connect to the transport."""
+        if self.persistence:
+            await self.persistence.load()
+            await self.persistence.start()
         await self.transport.connect()
         return self
 
@@ -127,6 +130,8 @@ class Gateway:
     ) -> None:
         """Disconnect from the transport."""
         await self.transport.disconnect()
+        if self.persistence:
+            await self.persistence.stop()
 
 
 @dataclass
