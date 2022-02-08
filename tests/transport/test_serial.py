@@ -11,9 +11,6 @@ from aiomysensors.exceptions import (
 )
 from aiomysensors.transport.serial import SerialTransport
 
-# All test coroutines will be treated as marked.
-pytestmark = pytest.mark.asyncio
-
 
 @pytest.fixture(name="serial")
 def serial_fixture():

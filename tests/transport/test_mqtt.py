@@ -10,9 +10,6 @@ import pytest
 from aiomysensors.exceptions import TransportError, TransportFailedError
 from aiomysensors.transport.mqtt import PAHO_MQTT_LOGGER, MQTTClient
 
-# All test coroutines will be treated as marked.
-pytestmark = pytest.mark.asyncio
-
 HOST = "mqtt.org"
 PORT = 1111
 IN_PREFIX = "mysensors/test-out"

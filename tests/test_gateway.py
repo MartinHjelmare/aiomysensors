@@ -8,9 +8,6 @@ from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
 # pylint: disable=unused-argument
 
-# All test coroutines will be treated as marked.
-pytestmark = pytest.mark.asyncio
-
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 async def test_listen(gateway, message, message_schema, node, child):

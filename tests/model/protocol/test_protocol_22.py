@@ -12,9 +12,6 @@ from tests.common import NODE_CHILD_SERIALIZED
 
 # pylint: disable=unused-argument
 
-# All test coroutines will be treated as marked.
-pytestmark = pytest.mark.asyncio
-
 HEARTBEAT_PAYLOAD = "1111"
 PROTOCOL_VERSIONS_2x = list(PROTOCOL_VERSIONS)
 PROTOCOL_VERSIONS_2x.remove("1.4")

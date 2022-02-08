@@ -24,9 +24,6 @@ from tests.common import (
 
 # pylint: disable=too-many-arguments,unused-argument
 
-# All test coroutines will be treated as marked.
-pytestmark = pytest.mark.asyncio
-
 
 CHILD_PRESENTATION = dict(NODE_SERIALIZED)
 CHILD_PRESENTATION["children"] = {0: DEFAULT_CHILD}

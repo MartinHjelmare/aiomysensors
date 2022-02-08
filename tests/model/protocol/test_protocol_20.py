@@ -15,9 +15,6 @@ from tests.common import (
 
 # pylint: disable=too-many-arguments,unused-argument
 
-# All test coroutines will be treated as marked.
-pytestmark = pytest.mark.asyncio
-
 PROTOCOL_VERSIONS_2x = list(PROTOCOL_VERSIONS)
 PROTOCOL_VERSIONS_2x.remove("1.4")
 PROTOCOL_VERSIONS_2x.remove("1.5")
