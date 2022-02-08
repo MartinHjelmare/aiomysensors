@@ -11,9 +11,6 @@ from aiomysensors.exceptions import (
 )
 from aiomysensors.transport.tcp import TCPTransport
 
-# All test coroutines will be treated as marked.
-pytestmark = pytest.mark.asyncio
-
 
 @pytest.fixture(name="tcp")
 def tcp_fixture():
