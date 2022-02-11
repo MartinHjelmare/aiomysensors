@@ -1,41 +1,11 @@
 """Test persistence."""
 import asyncio
-from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import call
 
-import aiofiles
 import pytest
 
 from aiomysensors.exceptions import PersistenceReadError, PersistenceWriteError
 from aiomysensors.persistence import Persistence
-
-# All test coroutines will be treated as marked.
-pytestmark = pytest.mark.asyncio
-
-FIXTURES_DIR = Path(__file__).parent / "fixtures"
-
-
-@pytest.fixture(name="mock_file")
-def mock_file_fixture():
-    """Patch aiofiles."""
-    mock_file = MagicMock()
-    # pylint: disable=unnecessary-lambda
-    aiofiles.threadpool.wrap.register(MagicMock)(
-        lambda *args, **kwargs: aiofiles.threadpool.AsyncBufferedIOBase(*args, **kwargs)
-    )
-
-    with patch("aiofiles.threadpool.sync_open", return_value=mock_file):
-        yield mock_file
-
-
-@pytest.fixture(name="persistence_data", scope="session")
-def persistence_data_fixture(request):
-    """Return a JSON string with persistence data saved in aiomysensors."""
-    fixture = "test_aiomysensors_persistence.json"
-    if hasattr(request, "param") and request.param:
-        fixture = request.param
-    fixture_json = FIXTURES_DIR / fixture
-    return fixture_json.read_text().strip()
 
 
 @pytest.mark.parametrize(

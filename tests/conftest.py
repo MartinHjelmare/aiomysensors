@@ -1,12 +1,17 @@
 """Provide common fixtures."""
+from pathlib import Path
 from typing import List
+from unittest.mock import MagicMock, patch
 
+import aiofiles
 import pytest
 
 from aiomysensors.gateway import Gateway
 from aiomysensors.model.message import Message, MessageSchema
 from aiomysensors.model.node import Child, Node, NodeSchema
 from aiomysensors.transport import Transport
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
 @pytest.fixture(name="message_schema")
@@ -90,3 +95,26 @@ def gateway_fixture(message_schema, transport):
     gateway = Gateway(transport)
     gateway.protocol_version = message_schema.context.get("protocol_version", "1.4")
     return gateway
+
+
+@pytest.fixture(name="mock_file")
+def mock_file_fixture():
+    """Patch aiofiles."""
+    mock_file = MagicMock()
+    # pylint: disable=unnecessary-lambda
+    aiofiles.threadpool.wrap.register(MagicMock)(
+        lambda *args, **kwargs: aiofiles.threadpool.AsyncBufferedIOBase(*args, **kwargs)
+    )
+
+    with patch("aiofiles.threadpool.sync_open", return_value=mock_file):
+        yield mock_file
+
+
+@pytest.fixture(name="persistence_data", scope="session")
+def persistence_data_fixture(request):
+    """Return a JSON string with persistence data saved in aiomysensors."""
+    fixture = "test_aiomysensors_persistence.json"
+    if hasattr(request, "param") and request.param:
+        fixture = request.param
+    fixture_json = FIXTURES_DIR / fixture
+    return fixture_json.read_text().strip()
