@@ -46,6 +46,19 @@ async def test_persistence_load_no_data(mock_file):
     assert not nodes
 
 
+async def test_persistence_load_missing_file(mock_file):
+    """Test persistence load missing file error."""
+    mock_file.read.side_effect = FileNotFoundError("Missing file.")
+    nodes = {}
+    persistence = Persistence(nodes, "test_path")
+
+    await persistence.load()
+
+    assert not nodes
+    assert mock_file.write.call_count == 1
+    assert mock_file.write.call_args == call("{}")
+
+
 @pytest.mark.parametrize(
     "error, read_return_value, read_side_effect",
     [
