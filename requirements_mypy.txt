@@ -1,1 +1,2 @@
 mypy==0.931
+types-aiofiles==0.8.0

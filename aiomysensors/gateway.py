@@ -15,6 +15,7 @@ from .model.protocol import (
     ProtocolType,
     get_protocol,
 )
+from .persistence import Persistence
 from .transport import Transport
 
 LOGGER = logging.getLogger(__package__)
@@ -27,6 +28,9 @@ class Gateway:
         """Set up gateway."""
         self.config = config or Config()
         self.nodes: Dict[int, Node] = {}
+        self.persistence: Optional[Persistence] = None
+        if self.config.persistence_file:
+            self.persistence = Persistence(self.nodes, self.config.persistence_file)
         self.transport = transport
         self._message_schema = MessageSchema()
         self._protocol: Optional[ProtocolType] = None
@@ -115,6 +119,9 @@ class Gateway:
 
     async def __aenter__(self) -> "Gateway":
         """Connect to the transport."""
+        if self.persistence:
+            await self.persistence.load()
+            await self.persistence.start()
         await self.transport.connect()
         return self
 
@@ -123,6 +130,8 @@ class Gateway:
     ) -> None:
         """Disconnect from the transport."""
         await self.transport.disconnect()
+        if self.persistence:
+            await self.persistence.stop()
 
 
 @dataclass
@@ -130,6 +139,7 @@ class Config:
     """Represent the gateway config."""
 
     metric: bool = True
+    persistence_file: Optional[str] = None
 
 
 @dataclass

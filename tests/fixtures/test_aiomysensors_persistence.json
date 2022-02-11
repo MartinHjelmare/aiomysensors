@@ -1,0 +1,33 @@
+{
+  "0": {
+    "battery_level": 0,
+    "children": {},
+    "heartbeat": 0,
+    "node_id": 0,
+    "node_type": 18,
+    "protocol_version": "2.2.0",
+    "sketch_name": "",
+    "sketch_version": "",
+    "sleeping": false
+  },
+  "1": {
+    "battery_level": 0,
+    "children": {
+      "1": {
+        "child_id": 1,
+        "child_type": 38,
+        "description": "",
+        "values": {
+          "49": "40.741894,-73.989311,12"
+        }
+      }
+    },
+    "heartbeat": 0,
+    "node_id": 1,
+    "node_type": 17,
+    "protocol_version": "2.3.2",
+    "sketch_name": "GPS Sensor",
+    "sketch_version": "1.0",
+    "sleeping": false
+  }
+}

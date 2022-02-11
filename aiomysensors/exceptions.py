@@ -59,6 +59,26 @@ class UnsupportedMessageError(AIOMySensorsError):
         self.protocol_version = protocol_version
 
 
+class PersistenceError(AIOMySensorsError):
+    """Represent a persistence error."""
+
+
+class PersistenceReadError(PersistenceError):
+    """Represent a persistence read error."""
+
+    def __init__(self, err: Exception) -> None:
+        """Set up error."""
+        super().__init__(f"Failed to read persistence file: {err}")
+
+
+class PersistenceWriteError(PersistenceError):
+    """Represent a persistence write error."""
+
+    def __init__(self, err: Exception) -> None:
+        """Set up error."""
+        super().__init__(f"Failed to write persistence file: {err}")
+
+
 class TransportError(AIOMySensorsError):
     """Represent a transport error."""
 
