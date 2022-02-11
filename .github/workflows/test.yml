@@ -31,7 +31,7 @@ jobs:
       - name: Upload coverage data
         uses: "actions/upload-artifact@v2.3.1"
         with:
-          name: coverage-data
+          name: coverage-${{ matrix.python-version }}
           path: "coverage.xml"
 
   coverage:
@@ -40,9 +40,7 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2.4.0
-      - name: Download coverage data
+      - name: Download all coverage data
         uses: actions/download-artifact@v2.1.0
-        with:
-          name: coverage-data
       - name: Upload coverage report
         uses: codecov/codecov-action@v2.1.0
