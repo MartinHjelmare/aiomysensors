@@ -2,7 +2,7 @@
 import calendar
 import time
 from enum import IntEnum
-from typing import Callable, Optional
+from typing import Any, Callable, Optional, TypeVar, cast
 
 from ...exceptions import (
     MissingChildError,
@@ -19,6 +19,37 @@ from . import (
     SYSTEM_CHILD_ID,
     IncomingMessageHandlerBase,
 )
+
+
+Func = TypeVar("Func", bound=Callable[..., Any])
+
+
+def handle_missing_protocol_version(func: Func) -> Func:
+    """Handle a missing set protocol version."""
+
+    async def wrapper(message_handlers, gateway, message, sleep_buffer):  # type: ignore
+        """Wrap a message handler."""
+        try:
+            message = await func(message_handlers, gateway, message, sleep_buffer)
+        finally:
+            if gateway.protocol_version is None and (
+                message.command != Command.internal
+                or message.message_type
+                not in (
+                    Internal.I_LOG_MESSAGE,
+                    Internal.I_GATEWAY_READY,
+                )
+            ):
+                version_message = Message(
+                    child_id=SYSTEM_CHILD_ID,
+                    command=Command.internal,
+                    message_type=Internal.I_VERSION,
+                )
+                await gateway.send(version_message)
+
+        return message
+
+    return cast(Func, wrapper)
 
 
 class IncomingMessageHandler(IncomingMessageHandlerBase):
@@ -44,6 +75,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         return message
 
     @classmethod
+    @handle_missing_protocol_version
     async def handle_presentation(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
@@ -68,6 +100,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         return message
 
     @classmethod
+    @handle_missing_protocol_version
     async def handle_set(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
@@ -98,6 +131,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         return message
 
     @classmethod
+    @handle_missing_protocol_version
     async def handle_req(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
@@ -127,6 +161,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         return message
 
     @classmethod
+    @handle_missing_protocol_version
     async def handle_internal(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
@@ -143,6 +178,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         )
 
     @classmethod
+    @handle_missing_protocol_version
     async def handle_stream(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:

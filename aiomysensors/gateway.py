@@ -11,7 +11,6 @@ from .model.message import Message, MessageSchema
 from .model.node import Node
 from .model.protocol import (
     DEFAULT_PROTOCOL_VERSION,
-    SYSTEM_CHILD_ID,
     ProtocolType,
     get_incoming_message_handler,
     get_outgoing_message_handler,
@@ -91,24 +90,7 @@ class Gateway:
     async def _handle_incoming(self, message: Message) -> Message:
         """Handle incoming message."""
         message_handler = get_incoming_message_handler(self.protocol, message)
-        try:
-            message = await message_handler(self, message, self._sleep_buffer)
-        finally:
-            # TODO: Move this to the protocol instead. Probably as a decorator.
-            if self.protocol_version is None and (
-                message.command != self.protocol.Command.internal
-                or message.message_type
-                not in (
-                    self.protocol.Internal.I_LOG_MESSAGE,
-                    self.protocol.Internal.I_GATEWAY_READY,
-                )
-            ):
-                version_message = Message(
-                    child_id=SYSTEM_CHILD_ID,
-                    command=self.protocol.Command.internal,
-                    message_type=self.protocol.Internal.I_VERSION,
-                )
-                await self.send(version_message)
+        message = await message_handler(self, message, self._sleep_buffer)
 
         return message
 
