@@ -13,10 +13,15 @@ from ...exceptions import (
 from ...gateway import Gateway, SleepBuffer
 from ..message import Message
 from ..node import Node
-from . import DEFAULT_PROTOCOL_VERSION, MAX_NODE_ID, SYSTEM_CHILD_ID
+from . import (
+    DEFAULT_PROTOCOL_VERSION,
+    MAX_NODE_ID,
+    SYSTEM_CHILD_ID,
+    IncomingMessageHandlerBase,
+)
 
 
-class IncomingMessageHandler:
+class IncomingMessageHandler(IncomingMessageHandlerBase):
     """Represent a handler for incoming messages."""
 
     # pylint: disable=unused-argument

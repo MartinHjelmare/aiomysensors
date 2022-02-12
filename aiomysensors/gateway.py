@@ -2,7 +2,7 @@
 import logging
 from dataclasses import dataclass, field
 from types import TracebackType
-from typing import AsyncGenerator, Callable, Dict, Optional, Tuple
+from typing import AsyncGenerator, Dict, Optional, Tuple
 
 from marshmallow import ValidationError
 
@@ -13,6 +13,8 @@ from .model.protocol import (
     DEFAULT_PROTOCOL_VERSION,
     SYSTEM_CHILD_ID,
     ProtocolType,
+    get_incoming_message_handler,
+    get_outgoing_message_handler,
     get_protocol,
 )
 from .persistence import Persistence
@@ -76,26 +78,19 @@ class Gateway:
         """Send a message."""
         # Check valid message first.
         try:
-            decoded_message = self._message_schema.dump(message)
+            decoded_message: str = self._message_schema.dump(message)
         except ValidationError as err:
             raise InvalidMessageError(err, message) from err
 
         _sleep_buffer = self._sleep_buffer if sleep_buffer else None
 
-        message_handler = self._get_message_handler(message, "OutgoingMessageHandler")
+        message_handler = get_outgoing_message_handler(self.protocol, message)
         LOGGER.debug("Sending: %s", message)
         await message_handler(self, message, _sleep_buffer, decoded_message)
 
-    def _get_message_handler(self, message: Message, handler_name: str) -> Callable:
-        """Return the correct message handler."""
-        command = self.protocol.Command(message.command)
-        message_handlers = getattr(self.protocol, handler_name)
-        message_handler: Callable = getattr(message_handlers, f"handle_{command.name}")
-        return message_handler
-
     async def _handle_incoming(self, message: Message) -> Message:
         """Handle incoming message."""
-        message_handler = self._get_message_handler(message, "IncomingMessageHandler")
+        message_handler = get_incoming_message_handler(self.protocol, message)
         try:
             message = await message_handler(self, message, self._sleep_buffer)
         finally:
