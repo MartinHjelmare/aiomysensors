@@ -90,7 +90,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
                 child_id=SYSTEM_CHILD_ID,
                 command=Command.internal,
                 ack=0,
-                message_type=gateway.protocol.Internal.I_REBOOT,
+                message_type=Internal.I_REBOOT,
                 payload="",
             )
             await gateway.send(reboot_message)
@@ -118,7 +118,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             set_message = Message(
                 node_id=message.node_id,
                 child_id=message.child_id,
-                command=gateway.protocol.Command.set,
+                command=Command.set,
                 message_type=message.message_type,
                 payload=value,
             )
@@ -185,14 +185,14 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         # Use temporary default values for the node until node sends presentation.
         gateway.nodes[next_id] = Node(
             next_id,
-            gateway.protocol.Presentation.S_ARDUINO_NODE,
+            Presentation.S_ARDUINO_NODE,
             DEFAULT_PROTOCOL_VERSION,
         )
         id_response_message = Message(
             node_id=message.node_id,
             child_id=message.child_id,
             command=message.command,
-            message_type=gateway.protocol.Internal.I_ID_RESPONSE,
+            message_type=Internal.I_ID_RESPONSE,
             payload=str(next_id),
         )
         await gateway.send(id_response_message)
@@ -444,6 +444,21 @@ class Stream(IntEnum):
     ST_SOUND = 4  # Sound
     ST_IMAGE = 5  # Image
 
+
+INTERNAL_COMMAND_TYPE = Command.internal
+
+NODE_ID_REQUEST_TYPES = {Internal.I_ID_REQUEST, Internal.I_ID_RESPONSE}
+
+STRICT_SYSTEM_COMMAND_TYPES = {
+    Command.internal.value,
+    Command.stream.value,
+}
+
+VALID_SYSTEM_COMMAND_TYPES = {
+    Command.presentation.value,
+    Command.internal.value,
+    Command.stream.value,
+}
 
 VALID_COMMAND_TYPES = {
     Command.presentation: list(Presentation),

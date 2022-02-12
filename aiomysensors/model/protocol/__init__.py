@@ -9,6 +9,7 @@ from typing import (
     Coroutine,
     Optional,
     Protocol,
+    Set,
     Type,
     cast,
 )
@@ -108,6 +109,10 @@ class ProtocolType(Protocol):
     SetReq: Type[IntEnum]
     Internal: Type[IntEnum]
     Stream: Type[IntEnum]
+    INTERNAL_COMMAND_TYPE: int
+    NODE_ID_REQUEST_TYPES: Set[int]
+    STRICT_SYSTEM_COMMAND_TYPES: Set[int]
+    VALID_SYSTEM_COMMAND_TYPES: Set[int]
 
 
 def get_protocol(protocol_version: str) -> ProtocolType:

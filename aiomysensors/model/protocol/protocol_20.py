@@ -10,6 +10,9 @@ from . import SYSTEM_CHILD_ID
 
 # pylint: disable=unused-import
 from .protocol_15 import (  # noqa: F401
+    INTERNAL_COMMAND_TYPE,
+    STRICT_SYSTEM_COMMAND_TYPES,
+    VALID_SYSTEM_COMMAND_TYPES,
     Command,
     IncomingMessageHandler as IncomingMessageHandler15,
     OutgoingMessageHandler as OutgoingMessageHandler15,
@@ -129,7 +132,7 @@ class IncomingMessageHandler(IncomingMessageHandler15):
             node_id=255,
             child_id=message.child_id,
             command=message.command,
-            message_type=gateway.protocol.Internal.I_DISCOVER,
+            message_type=Internal.I_DISCOVER,
         )
         await gateway.send(discover_message)
         return message
@@ -388,6 +391,8 @@ class Internal(IntEnum):
     I_REGISTRATION_RESPONSE = 27  # Register response from GW
     I_DEBUG = 28  # Debug message
 
+
+NODE_ID_REQUEST_TYPES = {Internal.I_ID_REQUEST, Internal.I_ID_RESPONSE}
 
 VALID_COMMAND_TYPES = {
     Command.presentation: list(Presentation),

@@ -3,7 +3,10 @@ from enum import IntEnum
 
 # pylint: disable=unused-import
 from .protocol_20 import (  # noqa: F401
+    INTERNAL_COMMAND_TYPE,
+    STRICT_SYSTEM_COMMAND_TYPES,
     VALID_MESSAGE_TYPES,
+    VALID_SYSTEM_COMMAND_TYPES,
     Command,
     IncomingMessageHandler as IncomingMessageHandler20,
     OutgoingMessageHandler as OutgoingMessageHandler20,
@@ -84,6 +87,8 @@ class Internal(IntEnum):
     I_REGISTRATION_RESPONSE = 27  # Register response from GW
     I_DEBUG = 28  # Debug message
 
+
+NODE_ID_REQUEST_TYPES = {Internal.I_ID_REQUEST, Internal.I_ID_RESPONSE}
 
 VALID_COMMAND_TYPES = {
     Command.presentation: list(Presentation),

@@ -8,7 +8,10 @@ from ..message import Message
 # pylint: disable=unused-import
 from .protocol_20 import handle_missing_node_child
 from .protocol_21 import (  # noqa: F401
+    INTERNAL_COMMAND_TYPE,
+    STRICT_SYSTEM_COMMAND_TYPES,
     VALID_MESSAGE_TYPES,
+    VALID_SYSTEM_COMMAND_TYPES,
     Command,
     IncomingMessageHandler as IncomingMessageHandler21,
     OutgoingMessageHandler as OutgoingMessageHandler21,
@@ -124,6 +127,8 @@ class Internal(IntEnum):
     I_PRE_SLEEP_NOTIFICATION = 32  # Message sent before node is going to sleep
     I_POST_SLEEP_NOTIFICATION = 33  # Message sent after node woke up
 
+
+NODE_ID_REQUEST_TYPES = {Internal.I_ID_REQUEST, Internal.I_ID_RESPONSE}
 
 VALID_COMMAND_TYPES = {
     Command.presentation: list(Presentation),
