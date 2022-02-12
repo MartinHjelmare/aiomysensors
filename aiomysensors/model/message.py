@@ -86,16 +86,14 @@ class CommandField(fields.Field):
         protocol = get_protocol(protocol_version)
         command_type = protocol.Command
 
-        valid_commands = [member.value for member in tuple(command_type)]
+        valid_commands = {  # type: ignore[var-annotated]
+            member.value for member in tuple(command_type)
+        }
         child_id = validate_child_id(
             value=data["child_id"], data=data, protocol=protocol
         )
         if child_id == SYSTEM_CHILD_ID:
-            valid_commands = [
-                command_type.presentation.value,
-                command_type.internal.value,
-                command_type.stream.value,
-            ]
+            valid_commands = protocol.VALID_SYSTEM_COMMAND_TYPES
 
         if command not in valid_commands:
             raise ValidationError(
@@ -170,18 +168,16 @@ def validate_child_id(
     )
     child_range(child_id)
 
-    command_type = protocol.Command
     command = validate_command(data["command"])
     message_type = validate_message_type(data["message_type"])
-    internal_type = protocol.Internal
 
-    if command == command_type.internal and message_type in [
-        internal_type.I_ID_REQUEST,
-        internal_type.I_ID_RESPONSE,
-    ]:
+    if (
+        command == protocol.INTERNAL_COMMAND_TYPE
+        and message_type in protocol.NODE_ID_REQUEST_TYPES
+    ):
         return child_id
 
-    if command in (command_type.internal, command_type.stream):
+    if command in protocol.STRICT_SYSTEM_COMMAND_TYPES:
         valid_child_id = SYSTEM_CHILD_ID
         error = f"When message command is {command}, child_id must be {SYSTEM_CHILD_ID}"
 

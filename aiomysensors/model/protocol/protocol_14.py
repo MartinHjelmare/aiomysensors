@@ -2,7 +2,7 @@
 import calendar
 import time
 from enum import IntEnum
-from typing import Callable, Optional
+from typing import Any, Callable, Optional, TypeVar, cast
 
 from ...exceptions import (
     MissingChildError,
@@ -13,10 +13,46 @@ from ...exceptions import (
 from ...gateway import Gateway, SleepBuffer
 from ..message import Message
 from ..node import Node
-from . import DEFAULT_PROTOCOL_VERSION, MAX_NODE_ID, SYSTEM_CHILD_ID
+from . import (
+    DEFAULT_PROTOCOL_VERSION,
+    MAX_NODE_ID,
+    SYSTEM_CHILD_ID,
+    IncomingMessageHandlerBase,
+)
 
 
-class IncomingMessageHandler:
+Func = TypeVar("Func", bound=Callable[..., Any])
+
+
+def handle_missing_protocol_version(func: Func) -> Func:
+    """Handle a missing set protocol version."""
+
+    async def wrapper(message_handlers, gateway, message, sleep_buffer):  # type: ignore
+        """Wrap a message handler."""
+        try:
+            message = await func(message_handlers, gateway, message, sleep_buffer)
+        finally:
+            if gateway.protocol_version is None and (
+                message.command != Command.internal
+                or message.message_type
+                not in (
+                    Internal.I_LOG_MESSAGE,
+                    Internal.I_GATEWAY_READY,
+                )
+            ):
+                version_message = Message(
+                    child_id=SYSTEM_CHILD_ID,
+                    command=Command.internal,
+                    message_type=Internal.I_VERSION,
+                )
+                await gateway.send(version_message)
+
+        return message
+
+    return cast(Func, wrapper)
+
+
+class IncomingMessageHandler(IncomingMessageHandlerBase):
     """Represent a handler for incoming messages."""
 
     # pylint: disable=unused-argument
@@ -39,6 +75,7 @@ class IncomingMessageHandler:
         return message
 
     @classmethod
+    @handle_missing_protocol_version
     async def handle_presentation(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
@@ -63,6 +100,7 @@ class IncomingMessageHandler:
         return message
 
     @classmethod
+    @handle_missing_protocol_version
     async def handle_set(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
@@ -85,7 +123,7 @@ class IncomingMessageHandler:
                 child_id=SYSTEM_CHILD_ID,
                 command=Command.internal,
                 ack=0,
-                message_type=gateway.protocol.Internal.I_REBOOT,
+                message_type=Internal.I_REBOOT,
                 payload="",
             )
             await gateway.send(reboot_message)
@@ -93,6 +131,7 @@ class IncomingMessageHandler:
         return message
 
     @classmethod
+    @handle_missing_protocol_version
     async def handle_req(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
@@ -113,7 +152,7 @@ class IncomingMessageHandler:
             set_message = Message(
                 node_id=message.node_id,
                 child_id=message.child_id,
-                command=gateway.protocol.Command.set,
+                command=Command.set,
                 message_type=message.message_type,
                 payload=value,
             )
@@ -122,6 +161,7 @@ class IncomingMessageHandler:
         return message
 
     @classmethod
+    @handle_missing_protocol_version
     async def handle_internal(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
@@ -138,6 +178,7 @@ class IncomingMessageHandler:
         )
 
     @classmethod
+    @handle_missing_protocol_version
     async def handle_stream(
         cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
     ) -> Message:
@@ -180,14 +221,14 @@ class IncomingMessageHandler:
         # Use temporary default values for the node until node sends presentation.
         gateway.nodes[next_id] = Node(
             next_id,
-            gateway.protocol.Presentation.S_ARDUINO_NODE,
+            Presentation.S_ARDUINO_NODE,
             DEFAULT_PROTOCOL_VERSION,
         )
         id_response_message = Message(
             node_id=message.node_id,
             child_id=message.child_id,
             command=message.command,
-            message_type=gateway.protocol.Internal.I_ID_RESPONSE,
+            message_type=Internal.I_ID_RESPONSE,
             payload=str(next_id),
         )
         await gateway.send(id_response_message)
@@ -439,6 +480,21 @@ class Stream(IntEnum):
     ST_SOUND = 4  # Sound
     ST_IMAGE = 5  # Image
 
+
+INTERNAL_COMMAND_TYPE = Command.internal
+
+NODE_ID_REQUEST_TYPES = {Internal.I_ID_REQUEST, Internal.I_ID_RESPONSE}
+
+STRICT_SYSTEM_COMMAND_TYPES = {
+    Command.internal.value,
+    Command.stream.value,
+}
+
+VALID_SYSTEM_COMMAND_TYPES = {
+    Command.presentation.value,
+    Command.internal.value,
+    Command.stream.value,
+}
 
 VALID_COMMAND_TYPES = {
     Command.presentation: list(Presentation),

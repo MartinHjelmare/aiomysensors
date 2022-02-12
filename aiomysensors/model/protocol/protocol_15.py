@@ -3,6 +3,9 @@ from enum import IntEnum
 
 # pylint: disable=unused-import
 from .protocol_14 import (  # noqa: F401
+    INTERNAL_COMMAND_TYPE,
+    STRICT_SYSTEM_COMMAND_TYPES,
+    VALID_SYSTEM_COMMAND_TYPES,
     Command,
     IncomingMessageHandler as IncomingMessageHandler14,
     OutgoingMessageHandler as OutgoingMessageHandler14,
@@ -178,6 +181,8 @@ class Internal(IntEnum):
     # Used between sensors for nonce response.
     I_GET_NONCE_RESPONSE = 17
 
+
+NODE_ID_REQUEST_TYPES = {Internal.I_ID_REQUEST, Internal.I_ID_RESPONSE}
 
 VALID_COMMAND_TYPES = {
     Command.presentation: list(Presentation),

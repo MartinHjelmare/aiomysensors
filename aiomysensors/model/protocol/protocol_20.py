@@ -10,16 +10,19 @@ from . import SYSTEM_CHILD_ID
 
 # pylint: disable=unused-import
 from .protocol_15 import (  # noqa: F401
+    INTERNAL_COMMAND_TYPE,
+    STRICT_SYSTEM_COMMAND_TYPES,
+    VALID_SYSTEM_COMMAND_TYPES,
     Command,
     IncomingMessageHandler as IncomingMessageHandler15,
     OutgoingMessageHandler as OutgoingMessageHandler15,
     Stream,
 )
 
-F = TypeVar("F", bound=Callable[..., Any])  # pylint: disable=invalid-name
+Func = TypeVar("Func", bound=Callable[..., Any])
 
 
-def handle_missing_node_child(func: F) -> F:
+def handle_missing_node_child(func: Func) -> Func:
     """Handle a missing node or child."""
 
     async def wrapper(message_handlers, gateway, message, sleep_buffer):  # type: ignore
@@ -30,8 +33,8 @@ def handle_missing_node_child(func: F) -> F:
             presentation_message = Message(
                 node_id=message.node_id,
                 child_id=SYSTEM_CHILD_ID,
-                command=gateway.protocol.Command.internal,
-                message_type=gateway.protocol.Internal.I_PRESENTATION,
+                command=Command.internal,
+                message_type=Internal.I_PRESENTATION,
             )
             await gateway.send(presentation_message)
 
@@ -39,7 +42,7 @@ def handle_missing_node_child(func: F) -> F:
 
         return message
 
-    return cast(F, wrapper)
+    return cast(Func, wrapper)
 
 
 class IncomingMessageHandler(IncomingMessageHandler15):
@@ -129,7 +132,7 @@ class IncomingMessageHandler(IncomingMessageHandler15):
             node_id=255,
             child_id=message.child_id,
             command=message.command,
-            message_type=gateway.protocol.Internal.I_DISCOVER,
+            message_type=Internal.I_DISCOVER,
         )
         await gateway.send(discover_message)
         return message
@@ -388,6 +391,8 @@ class Internal(IntEnum):
     I_REGISTRATION_RESPONSE = 27  # Register response from GW
     I_DEBUG = 28  # Debug message
 
+
+NODE_ID_REQUEST_TYPES = {Internal.I_ID_REQUEST, Internal.I_ID_RESPONSE}
 
 VALID_COMMAND_TYPES = {
     Command.presentation: list(Presentation),
