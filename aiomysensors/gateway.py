@@ -69,7 +69,8 @@ class Gateway:
             except ValidationError as err:
                 raise InvalidMessageError(err, decoded_message) from err
 
-            message = await self._handle_incoming(message)
+            message_handler = get_incoming_message_handler(self.protocol, message)
+            message = await message_handler(self, message, self._sleep_buffer)
 
             yield message
 
@@ -86,13 +87,6 @@ class Gateway:
         message_handler = get_outgoing_message_handler(self.protocol, message)
         LOGGER.debug("Sending: %s", message)
         await message_handler(self, message, _sleep_buffer, decoded_message)
-
-    async def _handle_incoming(self, message: Message) -> Message:
-        """Handle incoming message."""
-        message_handler = get_incoming_message_handler(self.protocol, message)
-        message = await message_handler(self, message, self._sleep_buffer)
-
-        return message
 
     async def __aenter__(self) -> "Gateway":
         """Connect to the transport."""
