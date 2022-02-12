@@ -240,5 +240,7 @@ class MQTTClient(MQTTTransport):
                 async for message in messages:
                     message = cast(mqtt.MQTTMessage, message)
                     self._receive(message.topic, message.payload.decode())
-        except MqttError:
-            self._receive_error(TransportFailedError())
+        except MqttError as err:
+            self._receive_error(
+                TransportFailedError(f"Failed to receive message: {err}")
+            )
