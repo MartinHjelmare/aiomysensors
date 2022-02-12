@@ -176,6 +176,9 @@ class MQTTClient(MQTTTransport):
 
     async def _connect(self) -> None:
         """Connect to the broker."""
+        if self._client is not None or self._incoming_task is not None:
+            raise RuntimeError("Client needs to disconnect before connecting again.")
+
         self._client = AsyncioClient(
             self._host,
             self._port,
@@ -187,9 +190,6 @@ class MQTTClient(MQTTTransport):
             await self._client.connect(timeout=10)
         except MqttError as err:
             raise TransportError from err
-
-        if self._incoming_task is not None:
-            raise RuntimeError("Client needs to disconnect before connecting again.")
 
         self._incoming_task = asyncio.create_task(self._handle_incoming())
 
@@ -205,6 +205,8 @@ class MQTTClient(MQTTTransport):
             await self._client.disconnect(timeout=10)
         except MqttError:
             pass
+
+        self._client = None
 
     async def _publish(self, topic: str, payload: str, qos: int) -> None:
         """Publish to topic."""
@@ -238,5 +240,7 @@ class MQTTClient(MQTTTransport):
                 async for message in messages:
                     message = cast(mqtt.MQTTMessage, message)
                     self._receive(message.topic, message.payload.decode())
-        except MqttError:
-            self._receive_error(TransportFailedError())
+        except MqttError as err:
+            self._receive_error(
+                TransportFailedError(f"Failed to receive message: {err}")
+            )
