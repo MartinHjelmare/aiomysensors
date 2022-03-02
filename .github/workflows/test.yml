@@ -17,7 +17,7 @@ jobs:
         python-version: ["3.8", "3.9", "3.10"]
 
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3.0.0
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
@@ -39,7 +39,7 @@ jobs:
     needs: build
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3.0.0
       - name: Download all coverage data
         uses: actions/download-artifact@v2.1.0
       - name: Upload coverage report
