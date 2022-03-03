@@ -41,6 +41,6 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v3.0.0
       - name: Download all coverage data
-        uses: actions/download-artifact@v2.1.0
+        uses: actions/download-artifact@v3.0.0
       - name: Upload coverage report
         uses: codecov/codecov-action@v2.1.0
