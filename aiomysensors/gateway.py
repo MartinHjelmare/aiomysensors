@@ -36,7 +36,7 @@ class Gateway:
         self._message_schema = MessageSchema()
         self._protocol: Optional[ProtocolType] = None
         self._protocol_version: Optional[str] = None
-        self._sleep_buffer = SleepBuffer()
+        self._message_buffer = MessageBuffer()
 
     @property
     def protocol(self) -> ProtocolType:
@@ -70,11 +70,11 @@ class Gateway:
                 raise InvalidMessageError(err, decoded_message) from err
 
             message_handler = get_incoming_message_handler(self.protocol, message)
-            message = await message_handler(self, message, self._sleep_buffer)
+            message = await message_handler(self, message, self._message_buffer)
 
             yield message
 
-    async def send(self, message: Message, sleep_buffer: bool = True) -> None:
+    async def send(self, message: Message, message_buffer: bool = True) -> None:
         """Send a message."""
         # Check valid message first.
         try:
@@ -82,11 +82,11 @@ class Gateway:
         except ValidationError as err:
             raise InvalidMessageError(err, message) from err
 
-        _sleep_buffer = self._sleep_buffer if sleep_buffer else None
+        _message_buffer = self._message_buffer if message_buffer else None
 
         message_handler = get_outgoing_message_handler(self.protocol, message)
         LOGGER.debug("Sending: %s", message)
-        await message_handler(self, message, _sleep_buffer, decoded_message)
+        await message_handler(self, message, _message_buffer, decoded_message)
 
     async def __aenter__(self) -> "Gateway":
         """Connect to the transport."""
@@ -114,10 +114,7 @@ class Config:
 
 
 @dataclass
-class SleepBuffer:
+class MessageBuffer:
     """Represent a sleep message buffer."""
-
-    # TODO: Make this a general buffer for messages that should not be sent.
-    # Eg deduplicate I_PRESENTATION requests for the same node.
 
     set_messages: Dict[Tuple[int, int, int], Message] = field(default_factory=dict)

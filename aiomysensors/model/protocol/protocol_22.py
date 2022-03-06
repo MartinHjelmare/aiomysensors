@@ -2,7 +2,7 @@
 from enum import IntEnum
 
 from ...exceptions import MissingNodeError
-from ...gateway import Gateway, SleepBuffer
+from ...gateway import Gateway, MessageBuffer
 from ..message import Message
 
 # pylint: disable=unused-import
@@ -27,7 +27,7 @@ class IncomingMessageHandler(IncomingMessageHandler21):
     @classmethod
     @handle_missing_node_child
     async def handle_i_heartbeat_response(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process an internal heartbeat response message."""
         if message.node_id not in gateway.nodes:
@@ -41,7 +41,7 @@ class IncomingMessageHandler(IncomingMessageHandler21):
     @classmethod
     @handle_missing_node_child
     async def handle_i_pre_sleep_notification(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process an internal pre sleep notification message."""
         if message.node_id not in gateway.nodes:
@@ -50,7 +50,7 @@ class IncomingMessageHandler(IncomingMessageHandler21):
         node = gateway.nodes[message.node_id]
         node.sleeping = True
 
-        message = await cls._handle_sleep_buffer(gateway, message, sleep_buffer)
+        message = await cls._handle_sleep_buffer(gateway, message, message_buffer)
 
         return message
 
