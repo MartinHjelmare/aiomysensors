@@ -17,7 +17,7 @@ from typing import (
 from packaging import version
 
 if TYPE_CHECKING:
-    from ...gateway import Gateway, SleepBuffer
+    from ...gateway import Gateway, MessageBuffer
     from ..message import Message
 
 BROADCAST_ID = 255
@@ -40,35 +40,35 @@ class IncomingMessageHandlerBase:
     @classmethod
     @abstractmethod
     async def handle_presentation(
-        cls, gateway: "Gateway", message: "Message", sleep_buffer: "SleepBuffer"
+        cls, gateway: "Gateway", message: "Message", message_buffer: "MessageBuffer"
     ) -> "Message":
         """Process a presentation message."""
 
     @classmethod
     @abstractmethod
     async def handle_set(
-        cls, gateway: "Gateway", message: "Message", sleep_buffer: "SleepBuffer"
+        cls, gateway: "Gateway", message: "Message", message_buffer: "MessageBuffer"
     ) -> "Message":
         """Process a set message."""
 
     @classmethod
     @abstractmethod
     async def handle_req(
-        cls, gateway: "Gateway", message: "Message", sleep_buffer: "SleepBuffer"
+        cls, gateway: "Gateway", message: "Message", message_buffer: "MessageBuffer"
     ) -> "Message":
         """Process a req message."""
 
     @classmethod
     @abstractmethod
     async def handle_internal(
-        cls, gateway: "Gateway", message: "Message", sleep_buffer: "SleepBuffer"
+        cls, gateway: "Gateway", message: "Message", message_buffer: "MessageBuffer"
     ) -> "Message":
         """Process an internal message."""
 
     @classmethod
     @abstractmethod
     async def handle_stream(
-        cls, gateway: "Gateway", message: "Message", sleep_buffer: "SleepBuffer"
+        cls, gateway: "Gateway", message: "Message", message_buffer: "MessageBuffer"
     ) -> "Message":
         """Process a stream message."""
 
@@ -82,7 +82,7 @@ class OutgoingMessageHandlerBase:
         cls,
         gateway: "Gateway",
         message: "Message",
-        sleep_buffer: Optional["SleepBuffer"],
+        message_buffer: Optional["MessageBuffer"],
         decoded_message: str,
     ) -> None:
         """Process outgoing set messages."""
@@ -93,7 +93,7 @@ class OutgoingMessageHandlerBase:
         cls,
         gateway: "Gateway",
         message: "Message",
-        sleep_buffer: Optional["SleepBuffer"],
+        message_buffer: Optional["MessageBuffer"],
         decoded_message: str,
     ) -> None:
         """Process outgoing internal messages."""
@@ -130,12 +130,12 @@ def get_protocol(protocol_version: str) -> ProtocolType:
 
 def get_incoming_message_handler(
     protocol: ProtocolType, message: "Message"
-) -> Callable[["Gateway", "Message", "SleepBuffer"], Coroutine[Any, Any, "Message"]]:
+) -> Callable[["Gateway", "Message", "MessageBuffer"], Coroutine[Any, Any, "Message"]]:
     """Return the correct message handler from the protocol."""
     command: IntEnum = protocol.Command(message.command)
     message_handlers = protocol.IncomingMessageHandler
     message_handler: Callable[
-        ["Gateway", "Message", "SleepBuffer"], Coroutine[Any, Any, "Message"]
+        ["Gateway", "Message", "MessageBuffer"], Coroutine[Any, Any, "Message"]
     ] = getattr(message_handlers, f"handle_{command.name}")
     return message_handler
 
@@ -143,12 +143,13 @@ def get_incoming_message_handler(
 def get_outgoing_message_handler(
     protocol: ProtocolType, message: "Message"
 ) -> Callable[
-    ["Gateway", "Message", Optional["SleepBuffer"], str], Coroutine[Any, Any, None]
+    ["Gateway", "Message", Optional["MessageBuffer"], str], Coroutine[Any, Any, None]
 ]:
     """Return the correct message handler from the protocol."""
     command: IntEnum = protocol.Command(message.command)
     message_handlers = protocol.OutgoingMessageHandler
     message_handler: Callable[
-        ["Gateway", "Message", Optional["SleepBuffer"], str], Coroutine[Any, Any, None]
+        ["Gateway", "Message", Optional["MessageBuffer"], str],
+        Coroutine[Any, Any, None],
     ] = getattr(message_handlers, f"handle_{command.name}")
     return message_handler

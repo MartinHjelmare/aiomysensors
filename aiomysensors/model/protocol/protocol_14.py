@@ -10,7 +10,7 @@ from ...exceptions import (
     TooManyNodesError,
     UnsupportedMessageError,
 )
-from ...gateway import Gateway, SleepBuffer
+from ...gateway import Gateway, MessageBuffer
 from ..message import Message
 from ..node import Node
 from . import (
@@ -27,10 +27,15 @@ Func = TypeVar("Func", bound=Callable[..., Any])
 def handle_missing_protocol_version(func: Func) -> Func:
     """Handle a missing set protocol version."""
 
-    async def wrapper(message_handlers, gateway, message, sleep_buffer):  # type: ignore
+    async def wrapper(  # type: ignore[no-untyped-def]
+        message_handlers,
+        gateway,
+        message,
+        message_buffer,
+    ):
         """Wrap a message handler."""
         try:
-            message = await func(message_handlers, gateway, message, sleep_buffer)
+            message = await func(message_handlers, gateway, message, message_buffer)
         finally:
             if gateway.protocol_version is None and (
                 message.command != Command.internal
@@ -62,7 +67,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         cls,
         gateway: Gateway,
         message: Message,
-        sleep_buffer: SleepBuffer,
+        message_buffer: MessageBuffer,
         message_handler: Optional[Callable],
     ) -> Message:
         """Handle a message."""
@@ -70,14 +75,14 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             # No special handling required.
             return message
 
-        message = await message_handler(gateway, message, sleep_buffer)
+        message = await message_handler(gateway, message, message_buffer)
 
         return message
 
     @classmethod
     @handle_missing_protocol_version
     async def handle_presentation(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process a presentation message."""
         if message.child_id == SYSTEM_CHILD_ID:
@@ -86,7 +91,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             gateway.nodes[node.node_id] = node
             if message.node_id == 0:
                 # Set the gateway protocol version.
-                message = await cls.handle_i_version(gateway, message, sleep_buffer)
+                message = await cls.handle_i_version(gateway, message, message_buffer)
             return message
 
         # this is a presentation of a child sensor
@@ -102,7 +107,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
     @classmethod
     @handle_missing_protocol_version
     async def handle_set(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process a set message."""
         if message.node_id not in gateway.nodes:
@@ -133,7 +138,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
     @classmethod
     @handle_missing_protocol_version
     async def handle_req(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process a req message."""
         if message.node_id not in gateway.nodes:
@@ -163,7 +168,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
     @classmethod
     @handle_missing_protocol_version
     async def handle_internal(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process an internal message."""
         try:
@@ -174,13 +179,13 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         message_handler = getattr(cls, f"handle_{internal.name.lower()}", None)
 
         return await cls._handle_message(
-            gateway, message, sleep_buffer, message_handler
+            gateway, message, message_buffer, message_handler
         )
 
     @classmethod
     @handle_missing_protocol_version
     async def handle_stream(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process a stream message."""
         if message.node_id not in gateway.nodes:
@@ -194,12 +199,12 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         message_handler = getattr(cls, f"handle_{stream.name.lower()}", None)
 
         return await cls._handle_message(
-            gateway, message, sleep_buffer, message_handler
+            gateway, message, message_buffer, message_handler
         )
 
     @classmethod
     async def handle_i_version(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process an internal version message."""
         gateway.protocol_version = message.payload
@@ -207,7 +212,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_id_request(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process an internal id request message."""
         if gateway.nodes:
@@ -237,7 +242,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_config(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process an internal config message."""
         config_message = Message(
@@ -252,7 +257,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_time(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process an internal time message."""
         time_message = Message(
@@ -267,7 +272,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_battery_level(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process an internal battery level message."""
         if message.node_id not in gateway.nodes:
@@ -278,7 +283,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_sketch_name(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process an internal sketch name message."""
         if message.node_id not in gateway.nodes:
@@ -289,7 +294,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_sketch_version(
-        cls, gateway: Gateway, message: Message, sleep_buffer: SleepBuffer
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process an internal sketch version message."""
         if message.node_id not in gateway.nodes:
@@ -309,13 +314,13 @@ class OutgoingMessageHandler:
         cls,
         gateway: Gateway,
         message: Message,
-        sleep_buffer: Optional[SleepBuffer],
+        message_buffer: Optional[MessageBuffer],
         decoded_message: str,
     ) -> None:
         """Process outgoing set messages."""
         node = gateway.nodes.get(message.node_id)
-        if sleep_buffer and node and node.sleeping:
-            sleep_buffer.set_messages[
+        if message_buffer and node and node.sleeping:
+            message_buffer.set_messages[
                 (message.node_id, message.child_id, message.message_type)
             ] = message
 
@@ -328,7 +333,7 @@ class OutgoingMessageHandler:
         cls,
         gateway: Gateway,
         message: Message,
-        sleep_buffer: Optional[SleepBuffer],
+        message_buffer: Optional[MessageBuffer],
         decoded_message: str,
     ) -> None:
         """Process outgoing internal messages."""
