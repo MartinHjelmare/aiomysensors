@@ -119,4 +119,5 @@ class Config:
 class MessageBuffer:
     """Represent a sleep message buffer."""
 
+    internal_messages: Dict[Tuple[int, int, int], Message] = field(default_factory=dict)
     set_messages: Dict[Tuple[int, int, int], Message] = field(default_factory=dict)

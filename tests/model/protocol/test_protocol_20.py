@@ -224,8 +224,8 @@ async def test_discover_response(
             None,  # node_before
             [Message(0, 0, 1, 0, 0, "25.0")],  # to_send
             ["0;255;3;0;19;\n", "0;0;1;0;0;25.0\n"],  # writes
-            ["0;255;3;0;19;\n"],  # second writes
-            ["0;255;3;0;19;\n"],  # third writes
+            [],  # second writes
+            [],  # third writes
         ),  # missing node
         (
             Message(0, 255, 3, 0, 22, "1"),  # command

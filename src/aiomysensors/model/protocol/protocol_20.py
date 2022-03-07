@@ -39,7 +39,14 @@ def handle_missing_node_child(func: Func) -> Func:
                 command=Command.internal,
                 message_type=Internal.I_PRESENTATION,
             )
-            await gateway.send(presentation_message)
+            if (
+                presentation_message.node_id,
+                presentation_message.child_id,
+                presentation_message.message_type,
+            ) not in message_buffer.internal_messages:
+                await gateway.send(presentation_message, message_buffer=False)
+            # Buffer one message to avoid spamming gateway.
+            await gateway.send(presentation_message, message_buffer=True)
 
             raise
 
@@ -76,6 +83,13 @@ class IncomingMessageHandler(IncomingMessageHandler15):
         cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
     ) -> Message:
         """Process a presentation message."""
+        key = (
+            message.node_id,
+            message.child_id,
+            Internal.I_PRESENTATION,
+        )
+        if key in message_buffer.internal_messages:
+            message_buffer.internal_messages.pop(key)
         return await super().handle_presentation(gateway, message, message_buffer)
 
     @classmethod
@@ -137,7 +151,7 @@ class IncomingMessageHandler(IncomingMessageHandler15):
             command=message.command,
             message_type=Internal.I_DISCOVER,
         )
-        await gateway.send(discover_message)
+        await gateway.send(discover_message, message_buffer=False)
         return message
 
     @classmethod

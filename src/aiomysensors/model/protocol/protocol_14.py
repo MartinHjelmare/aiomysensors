@@ -49,7 +49,7 @@ def handle_missing_protocol_version(func: Func) -> Func:
                     command=Command.internal,
                     message_type=Internal.I_VERSION,
                 )
-                await gateway.send(version_message)
+                await gateway.send(version_message, message_buffer=False)
 
         return message
 
@@ -130,7 +130,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
                 message_type=Internal.I_REBOOT,
                 payload="",
             )
-            await gateway.send(reboot_message)
+            await gateway.send(reboot_message, message_buffer=False)
 
         return message
 
@@ -160,7 +160,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
                 message_type=message.message_type,
                 payload=value,
             )
-            await gateway.send(set_message)
+            await gateway.send(set_message, message_buffer=False)
 
         return message
 
@@ -235,7 +235,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             message_type=Internal.I_ID_RESPONSE,
             payload=str(next_id),
         )
-        await gateway.send(id_response_message)
+        await gateway.send(id_response_message, message_buffer=False)
 
         return message
 
@@ -251,7 +251,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             message_type=message.message_type,
             payload="M" if gateway.config.metric else "I",
         )
-        await gateway.send(config_message)
+        await gateway.send(config_message, message_buffer=False)
         return message
 
     @classmethod
@@ -266,7 +266,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             message_type=message.message_type,
             payload=str(calendar.timegm(time.localtime())),
         )
-        await gateway.send(time_message)
+        await gateway.send(time_message, message_buffer=False)
         return message
 
     @classmethod
@@ -336,6 +336,13 @@ class OutgoingMessageHandler:
         decoded_message: str,
     ) -> None:
         """Process outgoing internal messages."""
+        if message_buffer:
+            message_buffer.internal_messages[
+                (message.node_id, message.child_id, message.message_type)
+            ] = message
+
+            return
+
         await gateway.transport.write(decoded_message)
 
 
