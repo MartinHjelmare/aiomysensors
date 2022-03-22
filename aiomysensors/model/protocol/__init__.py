@@ -14,7 +14,7 @@ from typing import (
     cast,
 )
 
-from packaging import version
+from awesomeversion import AwesomeVersion
 
 if TYPE_CHECKING:
     from ...gateway import Gateway, MessageBuffer
@@ -121,7 +121,7 @@ def get_protocol(protocol_version: str) -> ProtocolType:
         (
             PROTOCOL_VERSIONS[_protocol_version]
             for _protocol_version in sorted(PROTOCOL_VERSIONS, reverse=True)
-            if version.parse(protocol_version) >= version.parse(_protocol_version)
+            if AwesomeVersion(protocol_version) >= AwesomeVersion(_protocol_version)
         ),
         DEFAULT_PROTOCOL_PATH,
     )
