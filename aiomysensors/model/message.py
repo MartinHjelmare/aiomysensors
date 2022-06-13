@@ -140,7 +140,7 @@ class MessageSchema(Schema):
     @post_load
     def make_message(self, data: dict, **kwargs: Any) -> Message:
         """Make a message."""
-        # pylint: disable=no-self-use, unused-argument
+        # pylint: disable=unused-argument
         return Message(**data)
 
     @post_dump

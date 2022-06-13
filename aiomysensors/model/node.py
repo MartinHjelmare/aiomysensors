@@ -112,7 +112,7 @@ class ChildSchema(Schema):
     @pre_load
     def handle_compatibility(self, data: dict, **kwargs: Any) -> dict:
         """Make pymysensors data compatible with aiomysensors."""
-        # pylint: disable=no-self-use, unused-argument
+        # pylint: disable=unused-argument
         # Conversion of pymysensors data to aiomysensors format.
         if "id" in data:
             data["child_id"] = data.pop("id")
@@ -124,7 +124,7 @@ class ChildSchema(Schema):
     @post_load
     def make_child(self, data: dict, **kwargs: Any) -> Child:
         """Make a child."""
-        # pylint: disable=no-self-use, unused-argument
+        # pylint: disable=unused-argument
         return Child(**data)
 
 
@@ -144,7 +144,7 @@ class NodeSchema(Schema):
     @pre_load
     def handle_compatibility(self, data: dict, **kwargs: Any) -> dict:
         """Make pymysensors data compatible with aiomysensors."""
-        # pylint: disable=no-self-use, unused-argument
+        # pylint: disable=unused-argument
         # Conversion of pymysensors data to aiomysensors format.
         if "sensor_id" in data:
             data["node_id"] = data.pop("sensor_id")
@@ -162,5 +162,5 @@ class NodeSchema(Schema):
     @post_load
     def make_node(self, data: dict, **kwargs: Any) -> Node:
         """Make a node."""
-        # pylint: disable=no-self-use, unused-argument
+        # pylint: disable=unused-argument
         return Node(**data)
