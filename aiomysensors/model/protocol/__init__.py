@@ -1,6 +1,7 @@
 """Provide MySensors protocols."""
 from abc import abstractmethod
 from enum import IntEnum
+from functools import cache
 from importlib import import_module
 from typing import (
     TYPE_CHECKING,
@@ -115,6 +116,7 @@ class ProtocolType(Protocol):
     VALID_SYSTEM_COMMAND_TYPES: Set[int]
 
 
+@cache
 def get_protocol(protocol_version: str) -> ProtocolType:
     """Return the protocol module for the protocol_version."""
     path = next(
