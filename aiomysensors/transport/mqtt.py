@@ -96,7 +96,10 @@ class MQTTTransport(Transport):
 
     @abstractmethod
     async def _connect(self) -> None:
-        """Connect the transport."""
+        """Connect the transport.
+
+        Raise TransportError if the connection failed.
+        """
 
     @abstractmethod
     async def _disconnect(self) -> None:
@@ -104,11 +107,17 @@ class MQTTTransport(Transport):
 
     @abstractmethod
     async def _publish(self, topic: str, payload: str, qos: int) -> None:
-        """Publish to topic."""
+        """Publish to topic.
+
+        Raise TransportError if the publish failed.
+        """
 
     @abstractmethod
     async def _subscribe(self, topic: str, qos: int) -> None:
-        """Subscribe to topic."""
+        """Subscribe to topic.
+
+        Raise TransportError if the subscribe failed.
+        """
 
     def _receive(self, topic: str, payload: str) -> None:
         """Receive an MQTT message.
@@ -122,7 +131,7 @@ class MQTTTransport(Transport):
         self._incoming_messages.put_nowait(message)
 
     def _receive_error(self, error: Exception) -> None:
-        """Propapage an Exception raised when receiving an MQTT message.
+        """Propagate an Exception raised when receiving an MQTT message.
 
         Call this method when receiving a message failed.
         """
@@ -175,7 +184,10 @@ class MQTTClient(MQTTTransport):
         self._incoming_task: Optional[asyncio.Task] = None
 
     async def _connect(self) -> None:
-        """Connect to the broker."""
+        """Connect to the broker.
+
+        Raise TransportError if the connection failed.
+        """
         if self._client is not None or self._incoming_task is not None:
             raise RuntimeError("Client needs to disconnect before connecting again.")
 
@@ -209,7 +221,10 @@ class MQTTClient(MQTTTransport):
         self._client = None
 
     async def _publish(self, topic: str, payload: str, qos: int) -> None:
-        """Publish to topic."""
+        """Publish to topic.
+
+        Raise TransportError if the publish failed.
+        """
         if not self._client:
             raise RuntimeError("Client needs to connect before publishing.")
 
@@ -223,7 +238,10 @@ class MQTTClient(MQTTTransport):
             raise TransportFailedError from err
 
     async def _subscribe(self, topic: str, qos: int) -> None:
-        """Subscribe to topic."""
+        """Subscribe to topic.
+
+        Raise TransportError if the subscribe failed.
+        """
         if not self._client:
             raise RuntimeError("Client needs to connect before subscribing.")
 
