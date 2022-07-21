@@ -60,7 +60,7 @@ version_toml = "pyproject.toml:tool.poetry.version"
 version_variable = "src/aiomysensors/__init__.py:__version__"
 
 [tool.pytest.ini_options]
-addopts = "-Wdefault --cov=aiomysensors --cov-report=term-missing:skip-covered"
+addopts = "-Wdefault --cov=src --cov-report=term-missing:skip-covered"
 asyncio_mode = "auto"
 pythonpath = ["src"]
 
