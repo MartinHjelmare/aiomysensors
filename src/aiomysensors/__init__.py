@@ -1,6 +1,4 @@
 """Provide a package for aiomysensors."""
-from pathlib import Path
-
 from .exceptions import AIOMySensorsError, TransportError
 from .gateway import Config, Gateway
 from .transport.mqtt import MQTTTransport
@@ -16,4 +14,4 @@ __all__ = [
     "TCPTransport",
     "TransportError",
 ]
-__version__ = (Path(__file__).parent / "VERSION").read_text().strip()
+__version__ = "0.1.0"
