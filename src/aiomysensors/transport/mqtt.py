@@ -1,10 +1,10 @@
 """Provide an MQTT transport."""
 import asyncio
-from dataclasses import dataclass
-from enum import Enum
 import logging
 import uuid
 from abc import abstractmethod
+from dataclasses import dataclass
+from enum import Enum
 from typing import Optional, Tuple, cast
 
 import paho.mqtt.client as mqtt

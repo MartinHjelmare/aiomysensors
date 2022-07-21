@@ -28,6 +28,11 @@ python = "^3.9"
 pytest = "^7.0"
 pytest-cov = "^3.0"
 
+[tool.bandit]
+skips = [
+    "B101",
+]
+
 [tool.semantic_release]
 branch = "main"
 version_toml = "pyproject.toml:tool.poetry.version"
@@ -59,7 +64,7 @@ known_first_party = ["aiomysensors", "tests"]
 
 [tool.mypy]
 check_untyped_defs = true
-disallow_any_generics = true
+# disallow_any_generics = true
 disallow_incomplete_defs = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true

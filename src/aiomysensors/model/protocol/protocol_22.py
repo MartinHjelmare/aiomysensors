@@ -1,26 +1,61 @@
-"""Provide the protocol for MySensors version 2.1."""
+"""Provide the protocol for MySensors version 2.2."""
 from enum import IntEnum
 
+from ...exceptions import MissingNodeError
+from ...gateway import Gateway, MessageBuffer
+from ..message import Message
+
 # pylint: disable=unused-import
-from .protocol_20 import (  # noqa: F401
+from .protocol_20 import handle_missing_node_child
+from .protocol_21 import (  # noqa: F401
     INTERNAL_COMMAND_TYPE,
     STRICT_SYSTEM_COMMAND_TYPES,
     VALID_MESSAGE_TYPES,
     VALID_SYSTEM_COMMAND_TYPES,
     Command,
-    IncomingMessageHandler as IncomingMessageHandler20,
-    OutgoingMessageHandler as OutgoingMessageHandler20,
-    Presentation,
-    SetReq,
-    Stream,
 )
+from .protocol_21 import (  # noqa: F401
+    IncomingMessageHandler as IncomingMessageHandler21,
+)
+from .protocol_21 import OutgoingMessageHandler as OutgoingMessageHandler21
+from .protocol_21 import Presentation, SetReq, Stream  # noqa: F401
 
 
-class IncomingMessageHandler(IncomingMessageHandler20):
+class IncomingMessageHandler(IncomingMessageHandler21):
     """Represent a message handler."""
 
+    @classmethod
+    @handle_missing_node_child
+    async def handle_i_heartbeat_response(
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+    ) -> Message:
+        """Process an internal heartbeat response message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
 
-class OutgoingMessageHandler(OutgoingMessageHandler20):
+        node = gateway.nodes[message.node_id]
+        node.heartbeat = int(message.payload)
+
+        return message
+
+    @classmethod
+    @handle_missing_node_child
+    async def handle_i_pre_sleep_notification(
+        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+    ) -> Message:
+        """Process an internal pre sleep notification message."""
+        if message.node_id not in gateway.nodes:
+            raise MissingNodeError(message.node_id)
+
+        node = gateway.nodes[message.node_id]
+        node.sleeping = True
+
+        message = await cls._handle_sleep_buffer(gateway, message, message_buffer)
+
+        return message
+
+
+class OutgoingMessageHandler(OutgoingMessageHandler21):
     """Represent a handler for outgoing messages."""
 
 
@@ -86,6 +121,11 @@ class Internal(IntEnum):
     I_REGISTRATION_REQUEST = 26  # Register request to GW
     I_REGISTRATION_RESPONSE = 27  # Register response from GW
     I_DEBUG = 28  # Debug message
+    I_SIGNAL_REPORT_REQUEST = 29  # Device signal strength request
+    I_SIGNAL_REPORT_REVERSE = 30  # Internal
+    I_SIGNAL_REPORT_RESPONSE = 31  # Device signal strength response (RSSI)
+    I_PRE_SLEEP_NOTIFICATION = 32  # Message sent before node is going to sleep
+    I_POST_SLEEP_NOTIFICATION = 33  # Message sent after node woke up
 
 
 NODE_ID_REQUEST_TYPES = {Internal.I_ID_REQUEST, Internal.I_ID_RESPONSE}

@@ -58,9 +58,10 @@ repos:
     rev: v0.931
     hooks:
       - id: mypy
-        additional_dependencies: []
+        additional_dependencies: [types-aiofiles==0.8.10]
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.4
     hooks:
       - id: bandit
-        args: [-x, tests]
+        args: [-c, pyproject.toml, -x, tests]
+        additional_dependencies: ["bandit[toml]"]

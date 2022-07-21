@@ -24,7 +24,7 @@ class Persistence:
         default=None, init=False
     )
 
-    async def load(self, path: str = None) -> None:
+    async def load(self, path: Optional[str] = None) -> None:
         """Load the stored data."""
         path = path or self.path
 

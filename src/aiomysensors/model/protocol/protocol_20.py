@@ -5,19 +5,20 @@ from typing import Any, Callable, TypeVar, cast
 from ...exceptions import MissingChildError, MissingNodeError
 from ...gateway import Gateway, MessageBuffer
 from ..message import Message
-
 from . import SYSTEM_CHILD_ID
 
 # pylint: disable=unused-import
+from .protocol_15 import Stream  # noqa: F401
 from .protocol_15 import (  # noqa: F401
     INTERNAL_COMMAND_TYPE,
     STRICT_SYSTEM_COMMAND_TYPES,
     VALID_SYSTEM_COMMAND_TYPES,
     Command,
-    IncomingMessageHandler as IncomingMessageHandler15,
-    OutgoingMessageHandler as OutgoingMessageHandler15,
-    Stream,
 )
+from .protocol_15 import (  # noqa: F401
+    IncomingMessageHandler as IncomingMessageHandler15,
+)
+from .protocol_15 import OutgoingMessageHandler as OutgoingMessageHandler15
 
 Func = TypeVar("Func", bound=Callable[..., Any])
 

@@ -20,7 +20,6 @@ from . import (
     IncomingMessageHandlerBase,
 )
 
-
 Func = TypeVar("Func", bound=Callable[..., Any])
 
 
