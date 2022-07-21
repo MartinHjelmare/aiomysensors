@@ -1,21 +1,24 @@
 [tool.poetry]
-name = "aiomysensors"
-version = "0.1.0"
-description = "Python asyncio package to connect to MySensors gateways."
 authors = ["Martin Hjelmare <marhje52@gmail.com>"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Topic :: Home Automation",
+]
+description = "Python asyncio package to connect to MySensors gateways."
 license = "Apache Software License 2.0"
+name = "aiomysensors"
+packages = [
+  {include = "aiomysensors", from = "src"},
+]
 readme = "README.md"
 repository = "https://github.com/MartinHjelmare/aiomysensors"
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Topic :: Home Automation",
-]
-packages = [
-    { include = "aiomysensors", from = "src" },
-]
+version = "0.1.0"
+
+[tool.poetry.scripts]
+aiomysensors = 'aiomysensors.cli:cli'
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/MartinHjelmare/aiomysensors/issues"
@@ -30,14 +33,14 @@ pytest-cov = "^3.0"
 
 [tool.bandit]
 skips = [
-    "B101",
+  "B101",
 ]
 
 [tool.semantic_release]
 branch = "main"
+build_command = "pip install poetry && poetry build"
 version_toml = "pyproject.toml:tool.poetry.version"
 version_variable = "src/aiomysensors/__init__.py:__version__"
-build_command = "pip install poetry && poetry build"
 
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault --cov=aiomysensors --cov-report=term-missing:skip-covered"
@@ -49,18 +52,18 @@ branch = true
 
 [tool.coverage.report]
 exclude_lines = [
-    "pragma: no cover",
-    "@overload",
-    "def __repr__",
-    "if TYPE_CHECKING",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "raise RuntimeError",
+  "pragma: no cover",
+  "@overload",
+  "def __repr__",
+  "if TYPE_CHECKING",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "raise RuntimeError",
 ]
 
 [tool.isort]
-profile = "black"
 known_first_party = ["aiomysensors", "tests"]
+profile = "black"
 
 [tool.mypy]
 check_untyped_defs = true
@@ -68,6 +71,9 @@ check_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
+exclude = [
+  'setup.py',
+]
 mypy_path = "src/"
 no_implicit_optional = true
 show_error_codes = true
@@ -77,14 +83,11 @@ warn_return_any = true
 warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
-exclude = [
-    'setup.py',
-]
 
 [[tool.mypy.overrides]]
-module = "tests.*"
 allow_untyped_defs = true
+module = "tests.*"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
