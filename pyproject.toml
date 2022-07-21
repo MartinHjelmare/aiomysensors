@@ -34,8 +34,19 @@ pyserial-asyncio = "^0.6"
 python = "^3.9"
 
 [tool.poetry.dev-dependencies]
+bandit = "^1.7"
+black = "^22.1"
+flake8 = "^4.0"
+flake8-docstrings = "^1.6"
+isort = "^5.10"
+mypy = "^0.971"
+pre-commit = "^2.20.0"
+pylint = "^2.14.5"
+pylint-strict-informational = "^0.1"
 pytest = "^7.0"
+pytest-asyncio = "^0.19.0"
 pytest-cov = "^3.0"
+pyupgrade = "^2.29"
 
 [tool.bandit]
 skips = [
