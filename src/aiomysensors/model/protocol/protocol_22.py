@@ -13,12 +13,12 @@ from .protocol_21 import (  # noqa: F401
     VALID_MESSAGE_TYPES,
     VALID_SYSTEM_COMMAND_TYPES,
     Command,
-)
-from .protocol_21 import (  # noqa: F401
     IncomingMessageHandler as IncomingMessageHandler21,
+    OutgoingMessageHandler as OutgoingMessageHandler21,
+    Presentation,
+    SetReq,
+    Stream,
 )
-from .protocol_21 import OutgoingMessageHandler as OutgoingMessageHandler21
-from .protocol_21 import Presentation, SetReq, Stream  # noqa: F401
 
 
 class IncomingMessageHandler(IncomingMessageHandler21):

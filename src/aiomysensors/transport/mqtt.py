@@ -7,8 +7,7 @@ import logging
 from typing import Optional, Tuple, cast
 import uuid
 
-from asyncio_mqtt import Client as AsyncioClient
-from asyncio_mqtt import MqttError
+from asyncio_mqtt import Client as AsyncioClient, MqttError
 import paho.mqtt.client as mqtt
 
 from . import Transport

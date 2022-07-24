@@ -18,8 +18,7 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 def message_schema_fixture(request):
     """Apply protocol version to schema."""
     message_schema = MessageSchema()
-    protocol_version = getattr(request, "param", None)
-    if not protocol_version:
+    if not (protocol_version := getattr(request, "param", None)):
         return message_schema
 
     message_schema.context["protocol_version"] = protocol_version

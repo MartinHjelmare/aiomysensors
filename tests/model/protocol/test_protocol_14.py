@@ -23,9 +23,6 @@ from tests.common import (
     NODE_SERIALIZED,
 )
 
-# pylint: disable=too-many-arguments,unused-argument
-
-
 CHILD_PRESENTATION = dict(NODE_SERIALIZED)
 CHILD_PRESENTATION["children"] = {0: DEFAULT_CHILD}
 
