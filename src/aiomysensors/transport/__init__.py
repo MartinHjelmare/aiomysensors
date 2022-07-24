@@ -1,6 +1,6 @@
 """Provide a MySensors transport."""
-import asyncio
 from abc import ABC, abstractmethod
+import asyncio
 from typing import Optional, Tuple
 
 from ..exceptions import TransportError, TransportFailedError, TransportReadError

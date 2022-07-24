@@ -2,13 +2,10 @@
 from enum import IntEnum
 from typing import Any, Callable, TypeVar, cast
 
+from . import SYSTEM_CHILD_ID
 from ...exceptions import MissingChildError, MissingNodeError
 from ...gateway import Gateway, MessageBuffer
 from ..message import Message
-from . import SYSTEM_CHILD_ID
-
-# pylint: disable=unused-import
-from .protocol_15 import Stream  # noqa: F401
 from .protocol_15 import (  # noqa: F401
     INTERNAL_COMMAND_TYPE,
     STRICT_SYSTEM_COMMAND_TYPES,
@@ -19,6 +16,9 @@ from .protocol_15 import (  # noqa: F401
     IncomingMessageHandler as IncomingMessageHandler15,
 )
 from .protocol_15 import OutgoingMessageHandler as OutgoingMessageHandler15
+
+# pylint: disable=unused-import
+from .protocol_15 import Stream  # noqa: F401
 
 Func = TypeVar("Func", bound=Callable[..., Any])
 

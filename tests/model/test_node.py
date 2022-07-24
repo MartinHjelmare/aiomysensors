@@ -1,11 +1,11 @@
 """Test the node and child model."""
-import pytest
 from marshmallow.exceptions import ValidationError
+import pytest
 
 from aiomysensors.exceptions import MissingChildError
 from aiomysensors.model.node import Node
 
-from tests.common import NODE_SERIALIZED, NODE_CHILD_SERIALIZED
+from tests.common import NODE_CHILD_SERIALIZED, NODE_SERIALIZED
 
 
 def test_dump(child, node_schema):

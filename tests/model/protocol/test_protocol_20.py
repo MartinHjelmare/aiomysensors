@@ -7,6 +7,7 @@ from aiomysensors.exceptions import MissingChildError, MissingNodeError
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Child, Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
+
 from tests.common import (
     DEFAULT_NODE_CHILD_SERIALIZED,
     NODE_CHILD_SERIALIZED,

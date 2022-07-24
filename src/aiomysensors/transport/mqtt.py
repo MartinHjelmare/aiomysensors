@@ -1,18 +1,18 @@
 """Provide an MQTT transport."""
-import asyncio
-import logging
-import uuid
 from abc import abstractmethod
+import asyncio
 from dataclasses import dataclass
 from enum import Enum
+import logging
 from typing import Optional, Tuple, cast
+import uuid
 
-import paho.mqtt.client as mqtt
 from asyncio_mqtt import Client as AsyncioClient
 from asyncio_mqtt import MqttError
+import paho.mqtt.client as mqtt
 
-from ..exceptions import TransportError, TransportFailedError
 from . import Transport
+from ..exceptions import TransportError, TransportFailedError
 
 PAHO_MQTT_LOGGER = logging.getLogger("paho.mqtt.client")
 

@@ -1,8 +1,6 @@
 """Provide the protocol for MySensors version 1.5."""
 from enum import IntEnum
 
-# pylint: disable=unused-import
-from .protocol_14 import Stream  # noqa: F401
 from .protocol_14 import (  # noqa: F401
     INTERNAL_COMMAND_TYPE,
     STRICT_SYSTEM_COMMAND_TYPES,
@@ -11,6 +9,9 @@ from .protocol_14 import (  # noqa: F401
 )
 from .protocol_14 import IncomingMessageHandler as IncomingMessageHandler14
 from .protocol_14 import OutgoingMessageHandler as OutgoingMessageHandler14
+
+# pylint: disable=unused-import
+from .protocol_14 import Stream  # noqa: F401
 
 
 class IncomingMessageHandler(IncomingMessageHandler14):

@@ -1,6 +1,6 @@
 """Provide a gateway."""
-import logging
 from dataclasses import dataclass, field
+import logging
 from types import TracebackType
 from typing import AsyncGenerator, Dict, Optional, Tuple
 

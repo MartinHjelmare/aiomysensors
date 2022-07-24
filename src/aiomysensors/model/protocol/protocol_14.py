@@ -1,9 +1,15 @@
 """Provide the protocol for MySensors version 1.4."""
 import calendar
-import time
 from enum import IntEnum
+import time
 from typing import Any, Callable, Optional, TypeVar, cast
 
+from . import (
+    DEFAULT_PROTOCOL_VERSION,
+    MAX_NODE_ID,
+    SYSTEM_CHILD_ID,
+    IncomingMessageHandlerBase,
+)
 from ...exceptions import (
     MissingChildError,
     MissingNodeError,
@@ -13,12 +19,6 @@ from ...exceptions import (
 from ...gateway import Gateway, MessageBuffer
 from ..message import Message
 from ..node import Node
-from . import (
-    DEFAULT_PROTOCOL_VERSION,
-    MAX_NODE_ID,
-    SYSTEM_CHILD_ID,
-    IncomingMessageHandlerBase,
-)
 
 Func = TypeVar("Func", bound=Callable[..., Any])
 
