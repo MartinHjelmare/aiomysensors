@@ -52,7 +52,7 @@ def child_fixture(node):
 class MockTransport(Transport):
     """Represent a mock transport."""
 
-    def __init__(self, messages: List[str]):
+    def __init__(self, messages: List[str]) -> None:
         """Set up a mock transport."""
         self.messages = messages
         self.writes: List[str] = []
@@ -75,7 +75,7 @@ class MockTransport(Transport):
 @pytest.fixture(name="transport")
 def transport_fixture():
     """Mock a transport."""
-    messages = []
+    messages: List[str] = []
     transport = MockTransport(messages)
     return transport
 
@@ -101,9 +101,10 @@ def gateway_fixture(message_schema, transport):
 def mock_file_fixture():
     """Patch aiofiles."""
     mock_file = MagicMock()
+    io_base = aiofiles.threadpool.AsyncBufferedIOBase  # type: ignore[attr-defined]
     # pylint: disable=unnecessary-lambda
-    aiofiles.threadpool.wrap.register(MagicMock)(
-        lambda *args, **kwargs: aiofiles.threadpool.AsyncBufferedIOBase(*args, **kwargs)
+    aiofiles.threadpool.wrap.register(MagicMock)(  # type: ignore[attr-defined]
+        lambda *args, **kwargs: io_base(*args, **kwargs)
     )
 
     with patch("aiofiles.threadpool.sync_open", return_value=mock_file):

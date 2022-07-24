@@ -90,7 +90,7 @@ def test_remove_child(node, child):
     with pytest.raises(MissingChildError) as exc:
         node.remove_child(child.child_id)
 
-        assert exc.child_id == child.child_id
+        assert exc.value.child_id == child.child_id
 
 
 def test_set_child_value(node, child):
@@ -120,6 +120,6 @@ def test_set_child_value_no_child(node):
     with pytest.raises(MissingChildError) as exc:
         node.set_child_value(child_id, value_type, value)
 
-        assert exc.child_id == child_id
+        assert exc.value.child_id == child_id
 
     assert not node.children

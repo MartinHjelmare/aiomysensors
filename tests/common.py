@@ -1,5 +1,6 @@
 """Provide test tools."""
 from copy import deepcopy
+from typing import Any, Dict
 
 NODE_SERIALIZED = {
     "children": {},
@@ -22,7 +23,7 @@ DEFAULT_CHILD = {
 DEFAULT_CHILDREN_SERIALIZED = {0: DEFAULT_CHILD}
 DEFAULT_NODE_CHILD_SERIALIZED = dict(NODE_SERIALIZED)
 DEFAULT_NODE_CHILD_SERIALIZED["children"] = DEFAULT_CHILDREN_SERIALIZED
-MOD_CHILD = deepcopy(DEFAULT_CHILD)
+MOD_CHILD: Dict[str, Any] = deepcopy(DEFAULT_CHILD)
 MOD_CHILD["values"][0] = "20.0"
 CHILDREN_SERIALIZED = {0: MOD_CHILD}
 

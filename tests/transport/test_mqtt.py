@@ -1,5 +1,6 @@
 """Test the MQTT transport."""
 import asyncio
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from unittest.mock import call, patch
 
@@ -8,6 +9,7 @@ from paho.mqtt.client import MQTTMessage
 import pytest
 
 from aiomysensors.exceptions import TransportError, TransportFailedError
+from aiomysensors.model.message import Message
 from aiomysensors.transport.mqtt import PAHO_MQTT_LOGGER, MQTTClient
 
 HOST = "mqtt.org"
@@ -101,7 +103,7 @@ async def test_read_write(mqtt, client_id):
     msg.payload = payload.encode()
     messages = [msg]
 
-    async def mock_messages():
+    async def mock_messages() -> AsyncGenerator[Message, None]:
         """Mock the messages generator."""
         for message in messages:
             yield message
@@ -151,7 +153,7 @@ async def test_read_failure(mqtt, client_id):
     msg.payload = payload.encode()
     messages = [msg]
 
-    async def mock_messages():
+    async def mock_messages() -> AsyncGenerator[Message, None]:
         """Mock the messages generator."""
         for message in messages:
             yield message

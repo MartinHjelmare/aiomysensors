@@ -20,7 +20,7 @@ def test_dump(message_schema):
     msg.command = 3
     msg.ack = 0
     msg.message_type = 0
-    msg.payload = 57
+    msg.payload = "57"
 
     cmd = message_schema.dump(msg)
 
