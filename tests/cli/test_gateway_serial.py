@@ -1,8 +1,8 @@
 """Test the CLI for the serial gateway."""
 from unittest.mock import patch
 
-import pytest
 from click.testing import CliRunner
+import pytest
 
 from aiomysensors.cli import cli
 from aiomysensors.exceptions import (

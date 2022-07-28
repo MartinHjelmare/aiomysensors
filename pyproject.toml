@@ -1,0 +1,183 @@
+[tool.poetry]
+authors = ["Martin Hjelmare <marhje52@gmail.com>"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Topic :: Home Automation",
+]
+description = "Python asyncio package to connect to MySensors gateways."
+license = "Apache Software License 2.0"
+name = "aiomysensors"
+packages = [
+  {include = "aiomysensors", from = "src"},
+]
+readme = "README.md"
+repository = "https://github.com/MartinHjelmare/aiomysensors"
+version = "0.1.0"
+
+[tool.poetry.scripts]
+aiomysensors = 'aiomysensors.cli:cli'
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/MartinHjelmare/aiomysensors/issues"
+"Changelog" = "https://github.com/MartinHjelmare/aiomysensors/blob/main/CHANGELOG.md"
+
+[tool.poetry.dependencies]
+aiofiles = "^0.8"
+asyncio-mqtt = "^0.12"
+awesomeversion = "^22.6"
+click = "^8.1"
+marshmallow = "^3.17"
+pyserial-asyncio = "^0.6"
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+bandit = "^1.7"
+black = "^22.1"
+flake8 = "^4.0"
+flake8-docstrings = "^1.6"
+isort = "^5.10"
+mypy = "^0.971"
+poetry = "^1.1.14"
+pre-commit = "^2.20.0"
+pylint = "^2.14.5"
+pylint-strict-informational = "^0.1"
+pytest = "^7.0"
+pytest-asyncio = "^0.19.0"
+pytest-cov = "^3.0"
+python-semantic-release = "^7.30.2"
+pyupgrade = "^2.29"
+types-aiofiles = "^0.8.10"
+
+[tool.bandit]
+skips = [
+  "B101",
+]
+
+[tool.pylint.MAIN]
+fail-on = [
+  "I",
+]
+ignore = []
+init-hook = """\
+    from pathlib import Path; \
+    import sys; \
+
+    from pylint.config import find_default_config_files; \
+
+    sys.path.append( \
+        str(Path(next(find_default_config_files())).parent.joinpath('pylint/plugins'))
+    ) \
+    """
+jobs = 2
+load-plugins = [
+  "pylint.extensions.code_style",
+  "pylint.extensions.typing",
+  "pylint_strict_informational",
+]
+persistent = false
+py-version = "3.9"
+score = false
+
+[tool.pylint.DESIGN]
+max-args = 9
+max-attributes = 12
+
+[tool.pylint.FORMAT]
+expected-line-ending-format = "LF"
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+  "consider-alternative-union-syntax",
+  "deprecated-typing-alias",
+  "duplicate-code",
+  "format",
+  "locally-disabled",
+  "too-few-public-methods",
+  "unused-argument",
+]
+enable = [
+  "useless-suppression",
+  "use-symbolic-message-instead",
+]
+
+[tool.pylint.CODE_STYLE]
+max-line-length-suggestions = 88
+
+[tool.pylint.TYPING]
+runtime-typing = false
+
+[tool.semantic_release]
+branch = "main"
+build_command = "pip install poetry && poetry build"
+version_toml = "pyproject.toml:tool.poetry.version"
+version_variable = "src/aiomysensors/__init__.py:__version__"
+
+[tool.pytest.ini_options]
+addopts = "-Wdefault --cov=src --cov-report=term-missing:skip-covered"
+asyncio_mode = "auto"
+pythonpath = ["src"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "@overload",
+  "def __repr__",
+  "if TYPE_CHECKING",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "raise RuntimeError",
+]
+
+[tool.isort]
+combine_as_imports = true
+force_sort_within_sections = true
+forced_separate = [
+  "tests",
+]
+known_first_party = [
+  "aiomysensors",
+  "tests",
+]
+profile = "black"
+
+[tool.mypy]
+check_untyped_defs = true
+# disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+exclude = [
+  'setup.py',
+]
+mypy_path = "src/"
+no_implicit_optional = true
+show_error_codes = true
+warn_incomplete_stub = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+allow_untyped_defs = true
+module = "tests.*"
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = [
+  "paho",
+  "paho.mqtt",
+  "paho.mqtt.client",
+  "serial_asyncio",
+]
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]

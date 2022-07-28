@@ -1,10 +1,12 @@
 """Test persistence."""
 import asyncio
+from typing import Dict
 from unittest.mock import call
 
 import pytest
 
 from aiomysensors.exceptions import PersistenceReadError, PersistenceWriteError
+from aiomysensors.model.node import Node
 from aiomysensors.persistence import Persistence
 
 
@@ -16,7 +18,7 @@ from aiomysensors.persistence import Persistence
 async def test_persistence_load(mock_file, persistence_data):
     """Test persistence load."""
     mock_file.read.return_value = persistence_data
-    nodes = {}
+    nodes: Dict[int, Node] = {}
     persistence = Persistence(nodes, "test_path")
 
     await persistence.load()
@@ -24,9 +26,11 @@ async def test_persistence_load(mock_file, persistence_data):
     assert mock_file.read.call_count == 1
     assert nodes
     node = nodes.get(1)
+    assert node
     assert node.battery_level == 0
     assert node.children
     child = node.children.get(1)
+    assert child
     assert child.child_id == 1
     assert child.child_type == 38
     assert child.values
@@ -37,7 +41,7 @@ async def test_persistence_load(mock_file, persistence_data):
 async def test_persistence_load_no_data(mock_file):
     """Test persistence load."""
     mock_file.read.return_value = ""
-    nodes = {}
+    nodes: Dict[int, Node] = {}
     persistence = Persistence(nodes, "test_path")
 
     await persistence.load()
@@ -49,7 +53,7 @@ async def test_persistence_load_no_data(mock_file):
 async def test_persistence_load_missing_file(mock_file):
     """Test persistence load missing file error."""
     mock_file.read.side_effect = FileNotFoundError("Missing file.")
-    nodes = {}
+    nodes: Dict[int, Node] = {}
     persistence = Persistence(nodes, "test_path")
 
     await persistence.load()
@@ -72,7 +76,7 @@ async def test_persistence_load_error(
     """Test persistence load error."""
     mock_file.read.return_value = read_return_value
     mock_file.read.side_effect = read_side_effect
-    nodes = {}
+    nodes: Dict[int, Node] = {}
     persistence = Persistence(nodes, "test_path")
 
     with pytest.raises(error):
@@ -84,7 +88,7 @@ async def test_persistence_load_error(
 async def test_persistence_save(mock_file, persistence_data):
     """Test persistence save."""
     mock_file.read.return_value = persistence_data
-    nodes = {}
+    nodes: Dict[int, Node] = {}
     persistence = Persistence(nodes, "test_path")
 
     await persistence.load()
@@ -93,9 +97,11 @@ async def test_persistence_save(mock_file, persistence_data):
     assert mock_file.write.call_count == 0
     assert nodes
     node = nodes.get(1)
+    assert node
     assert node.battery_level == 0
     assert node.children
     child = node.children.get(1)
+    assert child
     assert child.child_id == 1
     assert child.child_type == 38
     assert child.values
@@ -118,7 +124,7 @@ async def test_persistence_save(mock_file, persistence_data):
 async def test_persistence_save_error(mock_file, error, write_side_effect):
     """Test persistence save error."""
     mock_file.write.side_effect = write_side_effect
-    nodes = {}
+    nodes: Dict[int, Node] = {}
     persistence = Persistence(nodes, "test_path")
 
     with pytest.raises(error):
@@ -130,7 +136,7 @@ async def test_persistence_save_error(mock_file, error, write_side_effect):
 async def test_persistence_start_stop(mock_file, persistence_data):
     """Test persistence start and stop."""
     mock_file.read.return_value = persistence_data
-    nodes = {}
+    nodes: Dict[int, Node] = {}
     persistence = Persistence(nodes, "test_path")
 
     await persistence.start()

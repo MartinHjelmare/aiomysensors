@@ -1,6 +1,6 @@
 """Test the message model."""
-import pytest
 from marshmallow.exceptions import ValidationError
+import pytest
 
 from aiomysensors.model.message import Message
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
@@ -20,7 +20,7 @@ def test_dump(message_schema):
     msg.command = 3
     msg.ack = 0
     msg.message_type = 0
-    msg.payload = 57
+    msg.payload = "57"
 
     cmd = message_schema.dump(msg)
 

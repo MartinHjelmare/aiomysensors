@@ -63,9 +63,7 @@ async def test_unset_protocol_version(message, message_schema, node, child, tran
             assert message_schema.dump(msg) == cmd
             break
 
-    assert gateway.transport.writes == [
-        message_schema.dump(Message(0, 255, 3, 0, 2, ""))
-    ]
+    assert transport.writes == [message_schema.dump(Message(0, 255, 3, 0, 2, ""))]
 
 
 async def test_persistence(mock_file, persistence_data, transport):
@@ -79,9 +77,11 @@ async def test_persistence(mock_file, persistence_data, transport):
         assert mock_file.read.call_count == 1
         assert gateway.nodes
         node = gateway.nodes.get(1)
+        assert node
         assert node.battery_level == 0
         assert node.children
         child = node.children.get(1)
+        assert child
         assert child.child_id == 1
         assert child.child_type == 38
         assert child.values

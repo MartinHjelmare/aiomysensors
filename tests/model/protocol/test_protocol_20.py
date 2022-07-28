@@ -7,13 +7,12 @@ from aiomysensors.exceptions import MissingChildError, MissingNodeError
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Child, Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
+
 from tests.common import (
     DEFAULT_NODE_CHILD_SERIALIZED,
     NODE_CHILD_SERIALIZED,
     NODE_SERIALIZED,
 )
-
-# pylint: disable=too-many-arguments,unused-argument
 
 PROTOCOL_VERSIONS_2x = list(PROTOCOL_VERSIONS)
 PROTOCOL_VERSIONS_2x.remove("1.4")

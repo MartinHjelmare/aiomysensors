@@ -1,16 +1,39 @@
 # aiomysensors
 
+<p align="center">
+  <a href="https://github.com/MartinHjelmare/aiomysensors/actions?query=workflow%3ACI">
+    <img src="https://img.shields.io/github/workflow/status/MartinHjelmare/aiomysensors/CI/main?label=CI&logo=github&style=flat-square" alt="CI Status" >
+  </a>
+  <a href="https://codecov.io/gh/MartinHjelmare/aiomysensors">
+    <img src="https://img.shields.io/codecov/c/github/MartinHjelmare/aiomysensors.svg?logo=codecov&logoColor=fff&style=flat-square" alt="Test coverage percentage">
+  </a>
+</p>
+<p align="center">
+  <a href="https://python-poetry.org/">
+    <img src="https://img.shields.io/badge/packaging-poetry-299bd7?style=flat-square&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAASCAYAAABrXO8xAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJJSURBVHgBfZLPa1NBEMe/s7tNXoxW1KJQKaUHkXhQvHgW6UHQQ09CBS/6V3hKc/AP8CqCrUcpmop3Cx48eDB4yEECjVQrlZb80CRN8t6OM/teagVxYZi38+Yz853dJbzoMV3MM8cJUcLMSUKIE8AzQ2PieZzFxEJOHMOgMQQ+dUgSAckNXhapU/NMhDSWLs1B24A8sO1xrN4NECkcAC9ASkiIJc6k5TRiUDPhnyMMdhKc+Zx19l6SgyeW76BEONY9exVQMzKExGKwwPsCzza7KGSSWRWEQhyEaDXp6ZHEr416ygbiKYOd7TEWvvcQIeusHYMJGhTwF9y7sGnSwaWyFAiyoxzqW0PM/RjghPxF2pWReAowTEXnDh0xgcLs8l2YQmOrj3N7ByiqEoH0cARs4u78WgAVkoEDIDoOi3AkcLOHU60RIg5wC4ZuTC7FaHKQm8Hq1fQuSOBvX/sodmNJSB5geaF5CPIkUeecdMxieoRO5jz9bheL6/tXjrwCyX/UYBUcjCaWHljx1xiX6z9xEjkYAzbGVnB8pvLmyXm9ep+W8CmsSHQQY77Zx1zboxAV0w7ybMhQmfqdmmw3nEp1I0Z+FGO6M8LZdoyZnuzzBdjISicKRnpxzI9fPb+0oYXsNdyi+d3h9bm9MWYHFtPeIZfLwzmFDKy1ai3p+PDls1Llz4yyFpferxjnyjJDSEy9CaCx5m2cJPerq6Xm34eTrZt3PqxYO1XOwDYZrFlH1fWnpU38Y9HRze3lj0vOujZcXKuuXm3jP+s3KbZVra7y2EAAAAAASUVORK5CYII=" alt="Poetry">
+  </a>
+  <a href="https://github.com/ambv/black">
+    <img src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square" alt="black">
+  </a>
+  <a href="https://github.com/pre-commit/pre-commit">
+    <img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white&style=flat-square" alt="pre-commit">
+  </a>
+</p>
+<p align="center">
+  <a href="https://pypi.org/project/aiomysensors/">
+    <img src="https://img.shields.io/pypi/v/aiomysensors.svg?logo=python&logoColor=fff&style=flat-square" alt="PyPI Version">
+  </a>
+  <img src="https://img.shields.io/pypi/pyversions/aiomysensors.svg?style=flat-square&logo=python&amp;logoColor=fff" alt="Supported Python versions">
+  <img src="https://img.shields.io/pypi/l/aiomysensors.svg?style=flat-square" alt="License">
+</p>
+
 Python asyncio package to connect to MySensors gateways.
 
-## MySensors version support
+## Installation
 
-The following versions are supported:
+Install this via pip (or your favourite package manager):
 
-- 1.4
-- 1.5
-- 2.0
-- 2.1
-- 2.2
+`pip install aiomysensors`
 
 ## Example
 
@@ -50,56 +73,9 @@ There's a CLI for testing purposes.
 aiomysensors --debug serial-gateway -p /dev/ttyACM0
 ```
 
-## Development
+## Credits
 
-- Install and set up development environment.
-
-  ```sh
-  pip install -r requirements_dev.txt
-  ```
-
-  This will install all requirements.
-It will also install this package in development mode, so that code changes are applied immediately without reinstall necessary.
-
-- Here's a list of development tools we use.
-  - [black](https://pypi.org/project/black/)
-  - [flake8](https://pypi.org/project/flake8/)
-  - [mypy](https://pypi.org/project/mypy/)
-  - [pydocstyle](https://pypi.org/project/pydocstyle/)
-  - [pylint](https://pypi.org/project/pylint/)
-  - [pytest](https://pypi.org/project/pytest/)
-  - [tox](https://pypi.org/project/tox/)
-- It's recommended to use the corresponding code formatter and linters also in your code editor to get instant feedback. A popular editor that can do this is [`vscode`](https://code.visualstudio.com/).
-- Run all tests, check formatting and linting.
-
-  ```sh
-  tox
-  ```
-
-- Run a single tox environment.
-
-  ```sh
-  tox -e lint
-  ```
-
-- Reinstall all tox environments.
-
-  ```sh
-  tox -r
-  ```
-
-- Run pytest and all tests.
-
-  ```sh
-  pytest
-  ```
-
-- Run pytest and calculate coverage for the package.
-
-  ```sh
-  pytest --cov-report term-missing --cov=aiomysensors
-  ```
-
-### Release
-
-See the [release instructions](RELEASE.md).
+This package was created with
+[Cookiecutter](https://github.com/audreyr/cookiecutter) and the
+[browniebroke/cookiecutter-pypackage](https://github.com/browniebroke/cookiecutter-pypackage)
+project template.
