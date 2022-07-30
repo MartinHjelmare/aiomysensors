@@ -306,8 +306,6 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 class OutgoingMessageHandler:
     """Represent a handler for outgoing messages."""
 
-    # pylint: disable=unused-argument
-
     @classmethod
     async def handle_set(
         cls,
