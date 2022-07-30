@@ -354,7 +354,9 @@ async def test_missing_node(
     gateway.transport.writes.clear()
 
     # Receive a presentation of the node.
-    presentation_command = "1;255;0;0;17;2.0\n"
+    presentation_command = (
+        f"1;255;0;0;17;{message_schema.context['protocol_version']}\n"
+    )
     gateway.transport.messages.append(presentation_command)
 
     async for msg in gateway.listen():
@@ -376,6 +378,7 @@ async def test_missing_node(
 
     # Check transport messages after third command.
     assert gateway.transport.writes == third_writes
+    gateway.transport.writes.clear()
 
     # Receive a presentation of the child.
     presentation_command = "1;0;0;0;3;Test Child\n"
@@ -406,4 +409,4 @@ async def test_missing_node(
     node = gateway.nodes[1]
     assert node.children
     child = node.children[0]
-    assert child.values[3] == "1"
+    assert child.values[2] == "1"
