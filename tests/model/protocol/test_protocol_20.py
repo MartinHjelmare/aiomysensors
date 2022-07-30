@@ -224,8 +224,8 @@ async def test_discover_response(
             None,  # node_before
             [Message(0, 0, 1, 0, 0, "25.0")],  # to_send
             ["0;255;3;0;19;\n", "0;0;1;0;0;25.0\n"],  # writes
-            ["0;255;3;0;19;\n"],  # second writes
-            ["0;255;3;0;19;\n"],  # third writes
+            [],  # second writes
+            [],  # third writes
         ),  # missing node
         (
             Message(0, 255, 3, 0, 22, "1"),  # command
@@ -300,3 +300,113 @@ async def test_heartbeat_response(
 
     # Check transport messages after third command.
     assert gateway.transport.writes == third_writes
+
+
+@pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
+@pytest.mark.parametrize(
+    "command, node_before, writes, second_writes, third_writes, fourth_writes",
+    [
+        (
+            Message(1, 0, 1, 0, 2, "1"),  # command
+            None,  # node_before
+            ["1;255;3;0;19;\n"],  # writes
+            [],  # second writes
+            ["1;255;3;0;19;\n"],  # third writes
+            [],  # fourth writes
+        ),  # missing node
+    ],
+    indirect=["command", "node_before"],
+)
+async def test_missing_node(
+    command,
+    node_before,
+    writes,
+    second_writes,
+    third_writes,
+    fourth_writes,
+    gateway,
+    message_schema,
+):
+    """Test missing node handling."""
+    # pylint: disable=too-many-statements
+    assert not gateway.nodes
+
+    # Receive command for a missing node.
+    with pytest.raises(MissingNodeError):
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    # Check transport messages after first command.
+    assert gateway.transport.writes == writes
+    gateway.transport.writes.clear()
+
+    # Receive command again.
+    gateway.transport.messages.append(command)
+
+    with pytest.raises(MissingNodeError):
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    # Check transport messages after second command.
+    assert gateway.transport.writes == second_writes
+    gateway.transport.writes.clear()
+
+    # Receive a presentation of the node.
+    presentation_command = (
+        f"1;255;0;0;17;{message_schema.context['protocol_version']}\n"
+    )
+    gateway.transport.messages.append(presentation_command)
+
+    async for msg in gateway.listen():
+        assert message_schema.dump(msg) == presentation_command
+        break
+
+    assert gateway.nodes
+    assert gateway.nodes[1]
+    node = gateway.nodes[1]
+    assert not node.children
+
+    # Receive command again.
+    gateway.transport.messages.append(command)
+
+    with pytest.raises(MissingChildError):
+        async for msg in gateway.listen():
+            assert message_schema.dump(msg) == command
+            break
+
+    # Check transport messages after third command.
+    assert gateway.transport.writes == third_writes
+    gateway.transport.writes.clear()
+
+    # Receive a presentation of the child.
+    presentation_command = "1;0;0;0;3;Test Child\n"
+    gateway.transport.messages.append(presentation_command)
+
+    async for msg in gateway.listen():
+        assert message_schema.dump(msg) == presentation_command
+        break
+
+    assert gateway.nodes
+    assert gateway.nodes[1]
+    node = gateway.nodes[1]
+    assert node.children
+    assert node.children[0]
+
+    # Receive command again.
+    gateway.transport.messages.append(command)
+
+    async for msg in gateway.listen():
+        assert message_schema.dump(msg) == command
+        break
+
+    # Check transport messages after fourth command.
+    assert gateway.transport.writes == fourth_writes
+
+    assert gateway.nodes
+    assert gateway.nodes[1]
+    node = gateway.nodes[1]
+    assert node.children
+    child = node.children[0]
+    assert child.values[2] == "1"
