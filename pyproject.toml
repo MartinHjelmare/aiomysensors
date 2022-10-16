@@ -26,7 +26,7 @@ aiomysensors = 'aiomysensors.cli:cli'
 
 [tool.poetry.dependencies]
 aiofiles = "^22.1"
-asyncio-mqtt = "^0.12"
+asyncio-mqtt = "^0.13"
 awesomeversion = "^22.6"
 click = "^8.1"
 marshmallow = "^3.17"
