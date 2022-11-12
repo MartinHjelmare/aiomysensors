@@ -22,15 +22,20 @@ wrapt = ">=1.11,<2"
 
 [[package]]
 name = "asyncio-mqtt"
-version = "0.13.0"
-description = "Idomatic asyncio wrapper around paho-mqtt."
+version = "0.14.0"
+description = "Idomatic asyncio wrapper around paho-mqtt"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 
 [package.dependencies]
 paho-mqtt = ">=1.6.0"
 typing-extensions = {version = "*", markers = "python_version < \"3.10\""}
+
+[package.extras]
+format = ["black (>=22.10.0)", "isort (>=5.10.1)"]
+lint = ["flake8 (>=5.0.4)", "mypy (>=0.982)", "types-paho-mqtt (>=1.6.0.1)"]
+tests = ["anyio (>=3.6.2)", "pytest (>=7.2.0)", "pytest-cov (>=4.0.0)"]
 
 [[package]]
 name = "atomicwrites"
@@ -1269,7 +1274,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "cfaf697b9d3bb85cda71ac244bd7d6688a82618160dd15e3ea04cf5df0fdf2de"
+content-hash = "71f99ce3097299500430e9eea389cc0737b8067a8b5de3c43355eda1e9695b1d"
 
 [metadata.files]
 aiofiles = [
@@ -1281,8 +1286,8 @@ astroid = [
     {file = "astroid-2.11.7.tar.gz", hash = "sha256:bb24615c77f4837c707669d16907331374ae8a964650a66999da3f5ca68dc946"},
 ]
 asyncio-mqtt = [
-    {file = "asyncio_mqtt-0.13.0-py3-none-any.whl", hash = "sha256:438842f57e27b85e3daf65a4d4001460ba6d46ed3b85923c44a1bd75e56d5d53"},
-    {file = "asyncio_mqtt-0.13.0.tar.gz", hash = "sha256:f3bee8dfdd080524e93feccec562c644786314ae4bb47ef6d2bd9a667970b825"},
+    {file = "asyncio_mqtt-0.14.0-py3-none-any.whl", hash = "sha256:8744fcb1a20349426cf4a8ddf1d5315bcab3d1b07bfe5931c552f58c669713ec"},
+    {file = "asyncio_mqtt-0.14.0.tar.gz", hash = "sha256:0de45018c7261fb7299978384158ce4719308b6679b10b7a74e26b2d17163942"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.1.tar.gz", hash = "sha256:81b2c9071a49367a7f770170e5eec8cb66567cfbbc8c73d20ce5ca4a8d71cf11"},
