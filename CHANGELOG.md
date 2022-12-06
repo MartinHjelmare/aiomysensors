@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.5 (2022-12-06)
+### Fix
+* **deps:** Update dependency asyncio-mqtt to ^0.16 ([`fed8cc3`](https://github.com/MartinHjelmare/aiomysensors/commit/fed8cc3786e2459b7fce545536ccb8f8c3cbf66e))
+
 ## v0.3.4 (2022-11-28)
 ### Fix
 * **deps:** Update dependency asyncio-mqtt to ^0.15 ([`fe9eee3`](https://github.com/MartinHjelmare/aiomysensors/commit/fe9eee3cf958b77e28d4f7310b457da78d9b486f))
