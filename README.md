@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/MartinHjelmare/aiomysensors/actions?query=workflow%3ACI">
-    <img src="https://img.shields.io/github/workflow/status/MartinHjelmare/aiomysensors/CI/main?label=CI&logo=github&style=flat-square" alt="CI Status" >
+    <img src="https://img.shields.io/github/actions/workflow/status/MartinHjelmare/aiomysensors/ci.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status" >
   </a>
   <a href="https://codecov.io/gh/MartinHjelmare/aiomysensors">
     <img src="https://img.shields.io/codecov/c/github/MartinHjelmare/aiomysensors.svg?logo=codecov&logoColor=fff&style=flat-square" alt="Test coverage percentage">
