@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.7 (2023-03-16)
+### Fix
+* **deps:** Update dependency asyncio-mqtt to v0.16.1 ([`cad4fbe`](https://github.com/MartinHjelmare/aiomysensors/commit/cad4fbe500784ec394a828343ac332ffe582061a))
+
 ## v0.3.6 (2023-02-09)
 ### Fix
 * **deps:** Update dependency aiofiles to v23 ([#391](https://github.com/MartinHjelmare/aiomysensors/issues/391)) ([`9799fa1`](https://github.com/MartinHjelmare/aiomysensors/commit/9799fa11aa9c827305652f5e8f115b98c1946bb5))
