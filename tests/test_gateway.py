@@ -30,7 +30,7 @@ async def test_listen_invalid_message(gateway):
     async with gateway:
         with pytest.raises(InvalidMessageError):
             async for _ in gateway.listen():
-                raise Exception  # This line should not be reached.
+                raise RuntimeError  # This line should not be reached.
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)

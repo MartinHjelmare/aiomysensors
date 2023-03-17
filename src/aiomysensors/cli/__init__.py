@@ -9,7 +9,7 @@ from .gateway_mqtt import mqtt_gateway
 from .gateway_serial import serial_gateway
 from .gateway_tcp import tcp_gateway
 
-SETTINGS = dict(help_option_names=["-h", "--help"])
+SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 
 @click.group(
