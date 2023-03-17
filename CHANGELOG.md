@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.8 (2023-03-17)
+### Fix
+* **deps:** Update dependency awesomeversion to v22.9.0 ([`291ed1d`](https://github.com/MartinHjelmare/aiomysensors/commit/291ed1df79b5279b83eb2b9baa1662af00c066c1))
+
 ## v0.3.7 (2023-03-16)
 ### Fix
 * **deps:** Update dependency asyncio-mqtt to v0.16.1 ([`cad4fbe`](https://github.com/MartinHjelmare/aiomysensors/commit/cad4fbe500784ec394a828343ac332ffe582061a))
