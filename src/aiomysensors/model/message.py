@@ -86,9 +86,7 @@ class CommandField(fields.Field):
         protocol = get_protocol(protocol_version)
         command_type = protocol.Command
 
-        valid_commands = {  # type: ignore[var-annotated]
-            member.value for member in tuple(command_type)
-        }
+        valid_commands = {member.value for member in tuple(command_type)}
         child_id = validate_child_id(
             value=data["child_id"], data=data, protocol=protocol
         )
