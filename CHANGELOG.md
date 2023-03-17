@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.9 (2023-03-17)
+### Fix
+* **deps:** Update dependency marshmallow to v3.19.0 ([`fd9f923`](https://github.com/MartinHjelmare/aiomysensors/commit/fd9f923f8fb16f214cbd644e63fee0827ee7683a))
+
 ## v0.3.8 (2023-03-17)
 ### Fix
 * **deps:** Update dependency awesomeversion to v22.9.0 ([`291ed1d`](https://github.com/MartinHjelmare/aiomysensors/commit/291ed1df79b5279b83eb2b9baa1662af00c066c1))
