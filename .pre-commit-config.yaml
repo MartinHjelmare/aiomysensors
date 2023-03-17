@@ -56,7 +56,8 @@ repos:
       - id: codespell
         exclude: |
           (?x)^(
-              LICENSE
+              LICENSE|
+              poetry.lock
           )$
   - repo: https://github.com/PyCQA/flake8
     rev: 6.0.0
