@@ -47,7 +47,7 @@ pylint-strict-informational = "^0.1"
 pytest = "^7.0"
 pytest-asyncio = "^0.21.0"
 pytest-cov = "^4.0"
-python-semantic-release = "^7.30.2"
+python-semantic-release = "^8.0.0"
 pyupgrade = "^3.0"
 types-aiofiles = "^22.0.0"
 
