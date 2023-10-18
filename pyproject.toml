@@ -144,7 +144,7 @@ py-version = "3.9"
 score = false
 
 [tool.pylint.DESIGN]
-max-args = 9
+max-args = 12
 max-attributes = 12
 
 [tool.pylint.FORMAT]
