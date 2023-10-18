@@ -1,3 +1,7 @@
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+
 [tool.poetry]
 authors = ["Martin Hjelmare <marhje52@gmail.com>"]
 classifiers = [
@@ -55,79 +59,6 @@ types-aiofiles = "^22.0.0"
 skips = [
   "B101",
 ]
-
-[tool.pylint.MAIN]
-fail-on = [
-  "I",
-]
-ignore = []
-init-hook = """\
-    from pathlib import Path; \
-    import sys; \
-
-    from pylint.config import find_default_config_files; \
-
-    sys.path.append( \
-        str(Path(next(find_default_config_files())).parent.joinpath('pylint/plugins'))
-    ) \
-    """
-jobs = 2
-load-plugins = [
-  "pylint.extensions.code_style",
-  "pylint.extensions.typing",
-  "pylint_strict_informational",
-]
-persistent = false
-py-version = "3.9"
-score = false
-
-[tool.pylint.DESIGN]
-max-args = 9
-max-attributes = 12
-
-[tool.pylint.FORMAT]
-expected-line-ending-format = "LF"
-
-[tool.pylint."MESSAGES CONTROL"]
-disable = [
-  "consider-alternative-union-syntax",
-  "deprecated-typing-alias",
-  "duplicate-code",
-  "format",
-  "locally-disabled",
-  "too-few-public-methods",
-  "unused-argument",
-]
-enable = [
-  "useless-suppression",
-  "use-symbolic-message-instead",
-]
-
-[tool.pylint.CODE_STYLE]
-max-line-length-suggestions = 88
-
-[tool.pylint.TYPING]
-runtime-typing = false
-
-[tool.semantic_release]
-build_command = "pip install poetry && poetry build"
-major_on_zero = false
-version_toml = ["pyproject.toml:tool.poetry.version"]
-version_variables = [
-  "src/aiomysensors/__init__.py:__version__",
-]
-
-[tool.semantic_release.changelog]
-exclude_commit_patterns = [
-  "^chore.*",
-  "^ci.*",
-  "^Bump.*",
-]
-
-[tool.pytest.ini_options]
-addopts = "-Wdefault --cov=src --cov-report=term-missing:skip-covered"
-asyncio_mode = "auto"
-pythonpath = ["src"]
 
 [tool.coverage.run]
 branch = true
@@ -187,6 +118,75 @@ module = [
   "serial_asyncio",
 ]
 
-[build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.0.0"]
+[tool.pylint.MAIN]
+fail-on = [
+  "I",
+]
+ignore = []
+init-hook = """\
+    from pathlib import Path; \
+    import sys; \
+
+    from pylint.config import find_default_config_files; \
+
+    sys.path.append( \
+        str(Path(next(find_default_config_files())).parent.joinpath('pylint/plugins'))
+    ) \
+    """
+jobs = 2
+load-plugins = [
+  "pylint.extensions.code_style",
+  "pylint.extensions.typing",
+  "pylint_strict_informational",
+]
+persistent = false
+py-version = "3.9"
+score = false
+
+[tool.pylint.DESIGN]
+max-args = 9
+max-attributes = 12
+
+[tool.pylint.FORMAT]
+expected-line-ending-format = "LF"
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+  "consider-alternative-union-syntax",
+  "deprecated-typing-alias",
+  "duplicate-code",
+  "format",
+  "locally-disabled",
+  "too-few-public-methods",
+  "unused-argument",
+]
+enable = [
+  "useless-suppression",
+  "use-symbolic-message-instead",
+]
+
+[tool.pylint.CODE_STYLE]
+max-line-length-suggestions = 88
+
+[tool.pylint.TYPING]
+runtime-typing = false
+
+[tool.pytest.ini_options]
+addopts = "-Wdefault --cov=src --cov-report=term-missing:skip-covered"
+asyncio_mode = "auto"
+pythonpath = ["src"]
+
+[tool.semantic_release]
+build_command = "pip install poetry && poetry build"
+major_on_zero = false
+version_toml = ["pyproject.toml:tool.poetry.version"]
+version_variables = [
+  "src/aiomysensors/__init__.py:__version__",
+]
+
+[tool.semantic_release.changelog]
+exclude_commit_patterns = [
+  "^chore.*",
+  "^ci.*",
+  "^Bump.*",
+]
