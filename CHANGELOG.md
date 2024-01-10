@@ -2,6 +2,13 @@
 
 
 
+## v0.3.11 (2024-01-10)
+
+### Fix
+
+* fix(deps): update dependency marshmallow to v3.20.2 ([`6057377`](https://github.com/MartinHjelmare/aiomysensors/commit/60573771a5e7f86cfc5fc02ca380fd1ed0958102))
+
+
 ## v0.3.10 (2023-11-07)
 
 ### Fix
