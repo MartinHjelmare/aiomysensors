@@ -1,4 +1,5 @@
 """Provide an MQTT transport."""
+
 from abc import abstractmethod
 import asyncio
 from dataclasses import dataclass

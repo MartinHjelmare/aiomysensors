@@ -1,4 +1,5 @@
 """Provide aiomysensors exceptions."""
+
 from typing import TYPE_CHECKING, Optional, Union
 
 if TYPE_CHECKING:

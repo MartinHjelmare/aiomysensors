@@ -1,4 +1,5 @@
 """Test protocol 1.4."""
+
 from contextlib import ExitStack as default_context
 import time
 from unittest.mock import patch

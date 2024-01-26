@@ -1,4 +1,5 @@
 """Provide the protocol for MySensors version 1.4."""
+
 import calendar
 from enum import IntEnum
 import time

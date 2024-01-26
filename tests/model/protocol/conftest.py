@@ -1,4 +1,5 @@
 """Provide common protocol fixtures."""
+
 import pytest
 
 

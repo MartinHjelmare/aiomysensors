@@ -1,4 +1,5 @@
 """Provide persistence."""
+
 import asyncio
 from dataclasses import dataclass, field
 import json

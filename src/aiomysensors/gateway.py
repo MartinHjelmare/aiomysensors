@@ -1,4 +1,5 @@
 """Provide a gateway."""
+
 from dataclasses import dataclass, field
 import logging
 from types import TracebackType
@@ -55,9 +56,9 @@ class Gateway:
     @protocol_version.setter
     def protocol_version(self, value: str) -> None:
         """Return the protocol version."""
-        self._message_schema.context[
-            "protocol_version"
-        ] = self._protocol_version = value
+        self._message_schema.context["protocol_version"] = self._protocol_version = (
+            value
+        )
         self._protocol = get_protocol(self._protocol_version)
 
     async def listen(self) -> AsyncGenerator[Message, None]:

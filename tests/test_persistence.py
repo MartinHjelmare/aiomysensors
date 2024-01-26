@@ -1,4 +1,5 @@
 """Test persistence."""
+
 import asyncio
 from typing import Dict
 from unittest.mock import call

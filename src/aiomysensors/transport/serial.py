@@ -1,4 +1,5 @@
 """Provide a serial transport."""
+
 import asyncio
 from typing import Tuple
 
@@ -20,7 +21,7 @@ class SerialTransport(StreamTransport):
         self,
     ) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Open the stream connection."""
-        reader_writer_pair: Tuple[
-            asyncio.StreamReader, asyncio.StreamWriter
-        ] = await open_serial_connection(url=self.port, baudrate=self.baud)
+        reader_writer_pair: Tuple[asyncio.StreamReader, asyncio.StreamWriter] = (
+            await open_serial_connection(url=self.port, baudrate=self.baud)
+        )
         return reader_writer_pair

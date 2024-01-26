@@ -1,4 +1,5 @@
 """Provide a package for aiomysensors."""
+
 from .exceptions import AIOMySensorsError, TransportError
 from .gateway import Config, Gateway
 from .transport.mqtt import MQTTTransport

@@ -1,4 +1,5 @@
 """Test the serial transport."""
+
 import asyncio
 from unittest.mock import AsyncMock, call, patch
 

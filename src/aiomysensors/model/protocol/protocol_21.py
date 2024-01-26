@@ -1,4 +1,5 @@
 """Provide the protocol for MySensors version 2.1."""
+
 from enum import IntEnum
 
 # pylint: disable=unused-import

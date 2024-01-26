@@ -1,4 +1,5 @@
 """Provide a serial gateway."""
+
 import click
 
 from aiomysensors.gateway import Gateway

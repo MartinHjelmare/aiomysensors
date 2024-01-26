@@ -1,4 +1,5 @@
 """Provide common fixtures for the CLI."""
+
 from unittest.mock import patch
 
 import pytest

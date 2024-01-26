@@ -1,4 +1,5 @@
 """Provide a MySensors node and child abstraction."""
+
 from typing import Any, Dict, Optional
 
 from marshmallow import Schema, fields, post_load, validate

@@ -1,4 +1,5 @@
 """Test the CLI for the serial gateway."""
+
 from unittest.mock import patch
 
 from click.testing import CliRunner
