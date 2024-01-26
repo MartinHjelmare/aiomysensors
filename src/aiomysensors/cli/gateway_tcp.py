@@ -1,4 +1,5 @@
 """Provide a TCP gateway."""
+
 import click
 
 from aiomysensors.gateway import Gateway

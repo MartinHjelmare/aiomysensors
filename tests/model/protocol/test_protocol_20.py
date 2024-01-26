@@ -1,4 +1,5 @@
 """Test protocol 2.0."""
+
 from contextlib import ExitStack as default_context
 
 import pytest

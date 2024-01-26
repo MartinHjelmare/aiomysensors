@@ -2,6 +2,7 @@
 
 Validation should be done on a protocol level, i.e. not with gateway state.
 """
+
 from typing import Any, Dict, Mapping, Optional, Union
 
 from marshmallow import (

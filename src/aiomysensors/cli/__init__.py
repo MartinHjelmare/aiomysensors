@@ -1,4 +1,5 @@
 """Provide a CLI for aiomysensors."""
+
 import logging
 
 import click

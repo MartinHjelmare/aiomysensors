@@ -1,4 +1,5 @@
 """Provide a TCP transport."""
+
 import asyncio
 from typing import Tuple
 
@@ -18,7 +19,7 @@ class TCPTransport(StreamTransport):
         self,
     ) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Open the stream connection."""
-        reader_writer_pair: Tuple[
-            asyncio.StreamReader, asyncio.StreamWriter
-        ] = await asyncio.open_connection(host=self.host, port=self.port)
+        reader_writer_pair: Tuple[asyncio.StreamReader, asyncio.StreamWriter] = (
+            await asyncio.open_connection(host=self.host, port=self.port)
+        )
         return reader_writer_pair

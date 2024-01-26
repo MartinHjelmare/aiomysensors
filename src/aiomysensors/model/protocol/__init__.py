@@ -1,4 +1,5 @@
 """Provide MySensors protocols."""
+
 from abc import abstractmethod
 from enum import IntEnum
 from functools import cache

@@ -1,4 +1,5 @@
 """Provide a MySensors transport."""
+
 from abc import ABC, abstractmethod
 import asyncio
 from typing import Optional, Tuple

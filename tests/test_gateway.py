@@ -1,4 +1,5 @@
 """Test the gateway."""
+
 import asyncio
 from unittest.mock import call
 

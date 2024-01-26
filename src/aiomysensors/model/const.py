@@ -1,4 +1,5 @@
 """Provide shared model constants."""
+
 from marshmallow import fields, validate
 
 from .protocol import BROADCAST_ID

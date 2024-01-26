@@ -1,4 +1,5 @@
 """Test the node and child model."""
+
 from marshmallow.exceptions import ValidationError
 import pytest
 

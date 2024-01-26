@@ -1,4 +1,5 @@
 """Test the message model."""
+
 from marshmallow.exceptions import ValidationError
 import pytest
 

@@ -1,4 +1,5 @@
 """Provide an MQTT gateway."""
+
 import click
 
 from aiomysensors.gateway import Gateway

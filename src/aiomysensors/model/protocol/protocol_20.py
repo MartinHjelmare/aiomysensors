@@ -1,4 +1,5 @@
 """Provide the protocol for MySensors version 2.0."""
+
 from enum import IntEnum
 from typing import Any, Callable, TypeVar, cast
 

@@ -1,4 +1,5 @@
 """Provide the protocol for MySensors version 2.2."""
+
 from enum import IntEnum
 
 from ...exceptions import MissingNodeError
