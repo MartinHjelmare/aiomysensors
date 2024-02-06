@@ -2,6 +2,15 @@
 
 
 
+## v0.3.12 (2024-02-06)
+
+### Fix
+
+* fix(deps): update dependency awesomeversion to v24 (#435)
+
+Co-authored-by: renovate[bot] &lt;29139614+renovate[bot]@users.noreply.github.com&gt; ([`ad6b60d`](https://github.com/MartinHjelmare/aiomysensors/commit/ad6b60d3ef1544173eacaa6883a3c3af0ad0fa3e))
+
+
 ## v0.3.11 (2024-01-10)
 
 ### Fix
