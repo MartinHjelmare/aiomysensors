@@ -2,6 +2,13 @@
 
 
 
+## v0.3.13 (2024-02-27)
+
+### Fix
+
+* fix(deps): update dependency marshmallow to v3.21.0 ([`baba520`](https://github.com/MartinHjelmare/aiomysensors/commit/baba52056d21a7b813766174f5762f05f7dac516))
+
+
 ## v0.3.12 (2024-02-06)
 
 ### Fix
