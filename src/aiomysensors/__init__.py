@@ -15,4 +15,4 @@ __all__ = [
     "TCPTransport",
     "TransportError",
 ]
-__version__ = "0.3.13"
+__version__ = "0.3.14"
