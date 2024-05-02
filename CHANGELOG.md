@@ -2,6 +2,13 @@
 
 
 
+## v0.3.15 (2024-05-02)
+
+### Fix
+
+* fix(deps): update dependency marshmallow to v3.21.2 ([`b89a274`](https://github.com/MartinHjelmare/aiomysensors/commit/b89a274034c54cad4f2f2400cb461331f9117f0f))
+
+
 ## v0.3.14 (2024-03-05)
 
 ### Fix
@@ -113,7 +120,7 @@ Co-authored-by: renovate[bot] &lt;29139614+renovate[bot]@users.noreply.github.co
 * feat: deduplicate presentation requests (#357) ([`9666fef`](https://github.com/MartinHjelmare/aiomysensors/commit/9666fefc9e3bcf6301461ebbc333a5a4439d9454))
 
 
-## v0.2.1 (2022-07-28)
+## v0.2.1 (2022-07-29)
 
 ### Unknown
 
@@ -208,7 +215,7 @@ Co-authored-by: dependabot[bot] &lt;49699333+dependabot[bot]@users.noreply.githu
 * Add release procedure (#48) ([`857677e`](https://github.com/MartinHjelmare/aiomysensors/commit/857677e09bdea6d5012134ccae5599909539688b))
 
 
-## v0.1.0 (2021-01-01)
+## v0.1.0 (2021-01-02)
 
 ### Unknown
 
