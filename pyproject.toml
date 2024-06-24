@@ -29,7 +29,7 @@ aiomysensors = 'aiomysensors.cli:cli'
 "Changelog" = "https://github.com/MartinHjelmare/aiomysensors/blob/main/CHANGELOG.md"
 
 [tool.poetry.dependencies]
-aiofiles = "^23.1"
+aiofiles = "^24.0.0"
 asyncio-mqtt = "^0.16"
 awesomeversion = "^24.0.0"
 click = "^8.1"
