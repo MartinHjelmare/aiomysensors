@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.3.18 (2024-06-24)
+
+### Fix
+
+* fix(deps): update dependency aiofiles to v24 (#446)
+
+Co-authored-by: renovate[bot] &lt;29139614+renovate[bot]@users.noreply.github.com&gt; ([`4025a64`](https://github.com/MartinHjelmare/aiomysensors/commit/4025a640939022c2a14d224d1c534aa48f205bab))
+
 ## v0.3.17 (2024-06-24)
 
 ### Fix
