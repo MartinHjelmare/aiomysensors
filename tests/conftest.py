@@ -1,7 +1,7 @@
 """Provide common fixtures."""
 
+from collections.abc import Generator
 from pathlib import Path
-from typing import List
 from unittest.mock import MagicMock, patch
 
 import aiofiles
@@ -10,13 +10,13 @@ import pytest
 from aiomysensors.gateway import Gateway
 from aiomysensors.model.message import Message, MessageSchema
 from aiomysensors.model.node import Child, Node, NodeSchema
-from aiomysensors.transport import Transport
+from tests.common import MockTransport
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
 @pytest.fixture(name="message_schema")
-def message_schema_fixture(request):
+def message_schema_fixture(request: pytest.FixtureRequest) -> MessageSchema:
     """Apply protocol version to schema."""
     message_schema = MessageSchema()
     if not (protocol_version := getattr(request, "param", None)):
@@ -27,13 +27,13 @@ def message_schema_fixture(request):
 
 
 @pytest.fixture(name="node_schema")
-def node_schema_fixture():
+def node_schema_fixture() -> NodeSchema:
     """Return a node schema."""
     return NodeSchema()
 
 
 @pytest.fixture(name="node")
-def node_fixture(gateway):
+def node_fixture(gateway: Gateway) -> Node:
     """Return a node."""
     node = Node(0, 17, "2.0")
     gateway.nodes[node.node_id] = node
@@ -41,47 +41,26 @@ def node_fixture(gateway):
 
 
 @pytest.fixture(name="child")
-def child_fixture(node):
+def child_fixture(node: Node) -> Child:
     """Return a child on a node."""
     child = node.children[0] = Child(
-        0, 6, description="test child 0", values={0: "20.0"}
+        0,
+        6,
+        description="test child 0",
+        values={0: "20.0"},
     )
     return child
 
 
-class MockTransport(Transport):
-    """Represent a mock transport."""
-
-    def __init__(self, messages: List[str]) -> None:
-        """Set up a mock transport."""
-        self.messages = messages
-        self.writes: List[str] = []
-
-    async def connect(self) -> None:
-        """Connect the transport."""
-
-    async def disconnect(self) -> None:
-        """Disconnect the transport."""
-
-    async def read(self) -> str:
-        """Return the received message."""
-        return self.messages.pop(0)
-
-    async def write(self, decoded_message: str) -> None:
-        """Write a decoded message to the transport."""
-        self.writes.append(decoded_message)
-
-
 @pytest.fixture(name="transport")
-def transport_fixture():
+def transport_fixture() -> MockTransport:
     """Mock a transport."""
-    messages: List[str] = []
-    transport = MockTransport(messages)
-    return transport
+    messages: list[str] = []
+    return MockTransport(messages)
 
 
 @pytest.fixture(name="message")
-def message_fixture(message_schema, transport):
+def message_fixture(message_schema: MessageSchema, transport: MockTransport) -> Message:
     """Mock a message."""
     message = Message(0, 0, 1, 0, 0, "20.0")
     cmd = message_schema.dump(message)
@@ -90,7 +69,7 @@ def message_fixture(message_schema, transport):
 
 
 @pytest.fixture(name="gateway")
-def gateway_fixture(message_schema, transport):
+def gateway_fixture(message_schema: MessageSchema, transport: MockTransport) -> Gateway:
     """Mock a gateway."""
     gateway = Gateway(transport)
     gateway.protocol_version = message_schema.context.get("protocol_version", "1.4")
@@ -98,13 +77,12 @@ def gateway_fixture(message_schema, transport):
 
 
 @pytest.fixture(name="mock_file")
-def mock_file_fixture():
+def mock_file_fixture() -> Generator[MagicMock, None, None]:
     """Patch aiofiles."""
     mock_file = MagicMock()
     io_base = aiofiles.threadpool.AsyncBufferedIOBase  # type: ignore[attr-defined]
-    # pylint: disable=unnecessary-lambda
     aiofiles.threadpool.wrap.register(MagicMock)(  # type: ignore[attr-defined]
-        lambda *args, **kwargs: io_base(*args, **kwargs)
+        lambda *args, **kwargs: io_base(*args, **kwargs),
     )
 
     with patch("aiofiles.threadpool.sync_open", return_value=mock_file):
@@ -112,7 +90,7 @@ def mock_file_fixture():
 
 
 @pytest.fixture(name="persistence_data", scope="session")
-def persistence_data_fixture(request):
+def persistence_data_fixture(request: pytest.FixtureRequest) -> str:
     """Return a JSON string with persistence data saved in aiomysensors."""
     fixture = "test_aiomysensors_persistence.json"
     if hasattr(request, "param") and request.param:

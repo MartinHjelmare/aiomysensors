@@ -2,17 +2,18 @@
 
 from abc import abstractmethod
 import asyncio
+import contextlib
 from dataclasses import dataclass
 from enum import Enum
 import logging
-from typing import Optional, Tuple, cast
 import uuid
 
-from asyncio_mqtt import Client as AsyncioClient, MqttError
-import paho.mqtt.client as mqtt
+from asyncio_mqtt import Client as AsyncioClient
+from asyncio_mqtt import MqttError
+
+from aiomysensors.exceptions import TransportError, TransportFailedError
 
 from . import Transport
-from ..exceptions import TransportError, TransportFailedError
 
 PAHO_MQTT_LOGGER = logging.getLogger("paho.mqtt.client")
 
@@ -29,15 +30,18 @@ class ReceivedMessage:
     """Represent a received message from the broker."""
 
     message_type: MQTTMessageType
-    message: Optional[str] = None
-    error: Optional[Exception] = None
+    message: str | None = None
+    error: Exception | None = None
 
 
 class MQTTTransport(Transport):
     """Represent an MQTT transport."""
 
     def __init__(
-        self, *, in_prefix: str = "mygateway1-out", out_prefix: str = "mygateway1-in"
+        self,
+        *,
+        in_prefix: str = "mygateway1-out",
+        out_prefix: str = "mygateway1-in",
     ) -> None:
         """Set up MQTT transport."""
         self.in_prefix = in_prefix  # prefix for topics gw -> controller
@@ -45,7 +49,7 @@ class MQTTTransport(Transport):
         # topic structure:
         # The prefix can also have topic dividers.
         # prefix/node/child/type/ack/subtype : payload
-        self._incoming_messages: asyncio.Queue = asyncio.Queue()
+        self._incoming_messages: asyncio.Queue[ReceivedMessage] = asyncio.Queue()
 
     async def connect(self) -> None:
         """Connect the transport."""
@@ -77,15 +81,17 @@ class MQTTTransport(Transport):
 
     async def read(self) -> str:
         """Return a decoded message."""
-        received_message: ReceivedMessage = await self._incoming_messages.get()
+        received_message = await self._incoming_messages.get()
         self._incoming_messages.task_done()
         if received_message.message_type is MQTTMessageType.ERROR:
             error = received_message.error
-            assert error
+            if error is None:
+                raise RuntimeError("Received an error message without an error.")
             raise error
 
         decoded_message = received_message.message
-        assert decoded_message is not None
+        if decoded_message is None:
+            raise RuntimeError("Received a message without a message.")
         return decoded_message
 
     async def write(self, decoded_message: str) -> None:
@@ -126,7 +132,8 @@ class MQTTTransport(Transport):
         """
         decoded_message = self._parse_mqtt_to_message(topic, payload)
         message = ReceivedMessage(
-            message_type=MQTTMessageType.MESSAGE, message=decoded_message
+            message_type=MQTTMessageType.MESSAGE,
+            message=decoded_message,
         )
         self._incoming_messages.put_nowait(message)
 
@@ -152,7 +159,7 @@ class MQTTTransport(Transport):
 
         return ";".join(without_prefix)
 
-    def _parse_message_to_mqtt(self, decoded_message: str) -> Tuple[str, str, int]:
+    def _parse_message_to_mqtt(self, decoded_message: str) -> tuple[str, str, int]:
         """Parse a decoded message.
 
         Return an MQTT topic, payload and qos-level as a tuple.
@@ -180,8 +187,8 @@ class MQTTClient(MQTTTransport):
         super().__init__(in_prefix=in_prefix, out_prefix=out_prefix)
         self._host = host
         self._port = port
-        self._client: Optional[AsyncioClient] = None
-        self._incoming_task: Optional[asyncio.Task] = None
+        self._client: AsyncioClient | None = None
+        self._incoming_task: asyncio.Task | None = None
 
     async def _connect(self) -> None:
         """Connect to the broker.
@@ -194,7 +201,7 @@ class MQTTClient(MQTTTransport):
         self._client = AsyncioClient(
             self._host,
             self._port,
-            client_id=mqtt.base62(uuid.uuid4().int, padding=22),
+            client_id=f"aiomysensors-{uuid.uuid4().int}",
             logger=PAHO_MQTT_LOGGER,
             clean_session=True,
         )
@@ -213,10 +220,8 @@ class MQTTClient(MQTTTransport):
         self._incoming_task.cancel()
         await self._incoming_task
         self._incoming_task = None
-        try:
+        with contextlib.suppress(MqttError):
             await self._client.disconnect(timeout=10)
-        except MqttError:
-            pass
 
         self._client = None
 
@@ -252,13 +257,13 @@ class MQTTClient(MQTTTransport):
 
     async def _handle_incoming(self) -> None:
         """Handle incoming messages."""
-        assert self._client
+        if not self._client:
+            raise RuntimeError("Client not connected.")
         try:
             async with self._client.unfiltered_messages() as messages:
                 async for message in messages:
-                    message = cast(mqtt.MQTTMessage, message)
                     self._receive(message.topic, message.payload.decode())
         except MqttError as err:
             self._receive_error(
-                TransportFailedError(f"Failed to receive message: {err}")
+                TransportFailedError(f"Failed to receive message: {err}"),
             )

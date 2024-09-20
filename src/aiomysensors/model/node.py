@@ -1,11 +1,12 @@
 """Provide a MySensors node and child abstraction."""
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from marshmallow import Schema, fields, post_load, validate
 from marshmallow.decorators import pre_load
 
-from ..exceptions import MissingChildError
+from aiomysensors.exceptions import MissingChildError
+
 from .const import NODE_ID_FIELD
 
 
@@ -18,7 +19,7 @@ class Node:
         node_type: int,
         protocol_version: str,
         *,
-        children: Optional[Dict[int, "Child"]] = None,
+        children: dict[int, "Child"] | None = None,
         sketch_name: str = "",
         sketch_version: str = "",
         battery_level: int = 0,
@@ -54,11 +55,14 @@ class Node:
         child_id: int,
         child_type: int,
         description: str = "",
-        values: Optional[Dict[int, str]] = None,
+        values: dict[int, str] | None = None,
     ) -> None:
         """Create and add a child sensor."""
         self.children[child_id] = Child(
-            child_id, child_type, description=description, values=values
+            child_id,
+            child_type,
+            description=description,
+            values=values,
         )
 
     def remove_child(self, child_id: int) -> None:
@@ -85,7 +89,7 @@ class Child:
         child_type: int,
         *,
         description: str = "",
-        values: Optional[Dict[int, str]] = None,
+        values: dict[int, str] | None = None,
     ) -> None:
         """Set up child sensor."""
         self.child_id = child_id
@@ -111,9 +115,8 @@ class ChildSchema(Schema):
     values = fields.Dict(keys=fields.Int(), values=fields.Str())
 
     @pre_load
-    def handle_compatibility(self, data: dict, **kwargs: Any) -> dict:
+    def handle_compatibility(self, data: dict, **kwargs: Any) -> dict:  # noqa: ANN401, ARG002
         """Make pymysensors data compatible with aiomysensors."""
-        # pylint: disable=unused-argument
         # Conversion of pymysensors data to aiomysensors format.
         if "id" in data:
             data["child_id"] = data.pop("id")
@@ -123,9 +126,8 @@ class ChildSchema(Schema):
         return data
 
     @post_load
-    def make_child(self, data: dict, **kwargs: Any) -> Child:
+    def make_child(self, data: dict, **kwargs: Any) -> Child:  # noqa: ANN401, ARG002
         """Make a child."""
-        # pylint: disable=unused-argument
         return Child(**data)
 
 
@@ -143,9 +145,8 @@ class NodeSchema(Schema):
     sleeping = fields.Bool()
 
     @pre_load
-    def handle_compatibility(self, data: dict, **kwargs: Any) -> dict:
+    def handle_compatibility(self, data: dict, **kwargs: Any) -> dict:  # noqa: ANN401, ARG002
         """Make pymysensors data compatible with aiomysensors."""
-        # pylint: disable=unused-argument
         # Conversion of pymysensors data to aiomysensors format.
         if "sensor_id" in data:
             data["node_id"] = data.pop("sensor_id")
@@ -161,7 +162,6 @@ class NodeSchema(Schema):
         return data
 
     @post_load
-    def make_node(self, data: dict, **kwargs: Any) -> Node:
+    def make_node(self, data: dict, **kwargs: Any) -> Node:  # noqa: ANN401, ARG002
         """Make a node."""
-        # pylint: disable=unused-argument
         return Node(**data)

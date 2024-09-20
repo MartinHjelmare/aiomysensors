@@ -1,6 +1,7 @@
 """Test the serial transport."""
 
 import asyncio
+from collections.abc import Generator
 from unittest.mock import AsyncMock, call, patch
 
 import pytest
@@ -14,7 +15,7 @@ from aiomysensors.transport.serial import SerialTransport
 
 
 @pytest.fixture(name="serial")
-def serial_fixture():
+def serial_fixture() -> Generator[AsyncMock, None, None]:
     """Mock the serial connection."""
     mock_reader = AsyncMock(spec=asyncio.StreamReader)
     mock_writer = AsyncMock(spec=asyncio.StreamWriter)
@@ -23,7 +24,7 @@ def serial_fixture():
         yield open_serial
 
 
-async def test_connect_disconnect(serial):
+async def test_connect_disconnect(serial: AsyncMock) -> None:
     """Test serial transport connect and disconnect."""
     transport = SerialTransport("/test", 123456)
 
@@ -39,7 +40,7 @@ async def test_connect_disconnect(serial):
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_connect_failure(serial):
+async def test_connect_failure(serial: AsyncMock) -> None:
     """Test serial transport connect failure."""
     serial.side_effect = OSError("Boom")
     transport = SerialTransport("/test", 123456)
@@ -48,7 +49,7 @@ async def test_connect_failure(serial):
         await transport.connect()
 
 
-async def test_disconnect_failure(serial):
+async def test_disconnect_failure(serial: AsyncMock) -> None:
     """Test serial transport disconnect failure."""
     _, mock_writer = serial.return_value
     mock_writer.wait_closed.side_effect = OSError("Boom")
@@ -65,7 +66,7 @@ async def test_disconnect_failure(serial):
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_read_write(serial):
+async def test_read_write(serial: AsyncMock) -> None:
     """Test serial transport read and write."""
     mock_reader, mock_writer = serial.return_value
     bytes_message = b"0;0;0;0;0;test\n"
@@ -90,7 +91,7 @@ async def test_read_write(serial):
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_read_failure(serial):
+async def test_read_failure(serial: AsyncMock) -> None:
     """Test serial transport read failure."""
     mock_reader, mock_writer = serial.return_value
     transport = SerialTransport("/test", 123456)
@@ -106,7 +107,8 @@ async def test_read_failure(serial):
         await transport.read()
 
     mock_reader.readuntil.side_effect = asyncio.IncompleteReadError(
-        partial=b"partial_test", expected=20
+        partial=b"partial_test",
+        expected=20,
     )
 
     with pytest.raises(TransportReadError) as exc_info:
@@ -125,7 +127,7 @@ async def test_read_failure(serial):
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_write_failure(serial):
+async def test_write_failure(serial: AsyncMock) -> None:
     """Test serial transport write failure."""
     mock_reader, mock_writer = serial.return_value
     bytes_message = b"0;0;0;0;0;test\n"

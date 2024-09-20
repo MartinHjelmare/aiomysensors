@@ -1,38 +1,54 @@
 """Provide the protocol for MySensors version 2.0."""
 
+from collections.abc import Awaitable, Callable, Coroutine
 from enum import IntEnum
-from typing import Any, Callable, TypeVar, cast
+from functools import wraps
+from typing import Any
 
-# pylint: disable=unused-import
+from aiomysensors.exceptions import MissingChildError, MissingNodeError
+from aiomysensors.gateway import Gateway, MessageBuffer
+from aiomysensors.model.message import Message
+
 from . import SYSTEM_CHILD_ID
-from ...exceptions import MissingChildError, MissingNodeError
-from ...gateway import Gateway, MessageBuffer
-from ..message import Message
 from .protocol_15 import (  # noqa: F401
     INTERNAL_COMMAND_TYPE,
     STRICT_SYSTEM_COMMAND_TYPES,
     VALID_SYSTEM_COMMAND_TYPES,
     Command,
+    Stream,
+)
+from .protocol_15 import (
     IncomingMessageHandler as IncomingMessageHandler15,
+)
+from .protocol_15 import (
     OutgoingMessageHandler as OutgoingMessageHandler15,
 )
-from .protocol_15 import Stream  # noqa: F401
-
-Func = TypeVar("Func", bound=Callable[..., Any])
 
 
-def handle_missing_node_child(func: Func) -> Func:
+def handle_missing_node_child[
+    _IncomingMessageHandlerT: type[IncomingMessageHandler],
+    **_P,
+](
+    func: Callable[
+        [_IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
+        Awaitable[Message],
+    ],
+) -> Callable[
+    [_IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
+    Coroutine[Any, Any, Message],
+]:
     """Handle a missing node or child."""
 
-    async def wrapper(  # type: ignore[no-untyped-def]
-        message_handlers,
-        gateway,
-        message,
-        message_buffer,
-    ):
+    @wraps(func)
+    async def wrapper(
+        self: _IncomingMessageHandlerT,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
+    ) -> Message:
         """Wrap a message handler."""
         try:
-            message = await func(message_handlers, gateway, message, message_buffer)
+            message = await func(self, gateway, message, message_buffer)
         except (MissingNodeError, MissingChildError):
             presentation_message = Message(
                 node_id=message.node_id,
@@ -53,17 +69,18 @@ def handle_missing_node_child(func: Func) -> Func:
 
         return message
 
-    return cast(Func, wrapper)
+    return wrapper
 
 
 class IncomingMessageHandler(IncomingMessageHandler15):
     """Represent a message handler."""
 
-    # pylint: disable=unused-argument
-
     @classmethod
     async def _handle_sleep_buffer(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process the sleep buffer and send it to the woken node."""
         node_messages = {
@@ -81,7 +98,10 @@ class IncomingMessageHandler(IncomingMessageHandler15):
     @classmethod
     @handle_missing_node_child
     async def handle_presentation(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process a presentation message."""
         key = (
@@ -96,7 +116,10 @@ class IncomingMessageHandler(IncomingMessageHandler15):
     @classmethod
     @handle_missing_node_child
     async def handle_set(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process a set message."""
         return await super().handle_set(gateway, message, message_buffer)
@@ -104,7 +127,10 @@ class IncomingMessageHandler(IncomingMessageHandler15):
     @classmethod
     @handle_missing_node_child
     async def handle_req(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process a req message."""
         return await super().handle_req(gateway, message, message_buffer)
@@ -112,7 +138,10 @@ class IncomingMessageHandler(IncomingMessageHandler15):
     @classmethod
     @handle_missing_node_child
     async def handle_stream(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process a stream message."""
         return await super().handle_stream(gateway, message, message_buffer)
@@ -120,7 +149,10 @@ class IncomingMessageHandler(IncomingMessageHandler15):
     @classmethod
     @handle_missing_node_child
     async def handle_i_battery_level(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process an internal battery level message."""
         return await super().handle_i_battery_level(gateway, message, message_buffer)
@@ -128,7 +160,10 @@ class IncomingMessageHandler(IncomingMessageHandler15):
     @classmethod
     @handle_missing_node_child
     async def handle_i_sketch_name(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process an internal sketch name message."""
         return await super().handle_i_sketch_name(gateway, message, message_buffer)
@@ -136,14 +171,20 @@ class IncomingMessageHandler(IncomingMessageHandler15):
     @classmethod
     @handle_missing_node_child
     async def handle_i_sketch_version(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process an internal sketch version message."""
         return await super().handle_i_sketch_version(gateway, message, message_buffer)
 
     @classmethod
     async def handle_i_gateway_ready(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal gateway ready message."""
         discover_message = Message(
@@ -158,7 +199,10 @@ class IncomingMessageHandler(IncomingMessageHandler15):
     @classmethod
     @handle_missing_node_child
     async def handle_i_discover_response(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal discover response message."""
         if message.node_id not in gateway.nodes:
@@ -169,7 +213,10 @@ class IncomingMessageHandler(IncomingMessageHandler15):
     @classmethod
     @handle_missing_node_child
     async def handle_i_heartbeat_response(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process an internal heartbeat response message."""
         if message.node_id not in gateway.nodes:
@@ -179,9 +226,7 @@ class IncomingMessageHandler(IncomingMessageHandler15):
         node.sleeping = True
         node.heartbeat = int(message.payload)
 
-        message = await cls._handle_sleep_buffer(gateway, message, message_buffer)
-
-        return message
+        return await cls._handle_sleep_buffer(gateway, message, message_buffer)
 
 
 class OutgoingMessageHandler(OutgoingMessageHandler15):
@@ -298,7 +343,7 @@ class SetReq(IntEnum):
     V_VOLUME = 35  # S_WATER. Water volume.
     # S_LOCK. Set or get lock status. 1=Locked, 0=Unlocked.
     V_LOCK_STATUS = 36
-    # S_DUST, S_AIR_QUALITY, S_SOUND (dB), S_VIBRATION (hz),
+    # S_DUST, S_AIR_QUALITY, S_SOUND (dB), S_VIBRATION (hz),  # noqa: ERA001
     # S_LIGHT_LEVEL (lux).
     V_LEVEL = 37
     V_DUST_LEVEL = 37  # Dust level

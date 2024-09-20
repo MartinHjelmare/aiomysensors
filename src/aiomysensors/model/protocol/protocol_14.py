@@ -1,9 +1,20 @@
 """Provide the protocol for MySensors version 1.4."""
 
 import calendar
+from collections.abc import Awaitable, Callable, Coroutine
 from enum import IntEnum
 import time
-from typing import Any, Callable, Optional, TypeVar, cast
+from typing import Any
+
+from aiomysensors.exceptions import (
+    MissingChildError,
+    MissingNodeError,
+    TooManyNodesError,
+    UnsupportedMessageError,
+)
+from aiomysensors.gateway import Gateway, MessageBuffer
+from aiomysensors.model.message import Message
+from aiomysensors.model.node import Node
 
 from . import (
     DEFAULT_PROTOCOL_VERSION,
@@ -11,31 +22,31 @@ from . import (
     SYSTEM_CHILD_ID,
     IncomingMessageHandlerBase,
 )
-from ...exceptions import (
-    MissingChildError,
-    MissingNodeError,
-    TooManyNodesError,
-    UnsupportedMessageError,
-)
-from ...gateway import Gateway, MessageBuffer
-from ..message import Message
-from ..node import Node
-
-Func = TypeVar("Func", bound=Callable[..., Any])
 
 
-def handle_missing_protocol_version(func: Func) -> Func:
+def handle_missing_protocol_version[
+    _IncomingMessageHandlerT: type[IncomingMessageHandler],
+    **_P,
+](
+    func: Callable[
+        [_IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
+        Awaitable[Message],
+    ],
+) -> Callable[
+    [_IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
+    Coroutine[Any, Any, Message],
+]:
     """Handle a missing set protocol version."""
 
-    async def wrapper(  # type: ignore[no-untyped-def]
-        message_handlers,
-        gateway,
-        message,
-        message_buffer,
-    ):
+    async def wrapper(
+        self: _IncomingMessageHandlerT,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
+    ) -> Message:
         """Wrap a message handler."""
         try:
-            message = await func(message_handlers, gateway, message, message_buffer)
+            message = await func(self, gateway, message, message_buffer)
         finally:
             if gateway.protocol_version is None and (
                 message.command != Command.internal
@@ -54,13 +65,11 @@ def handle_missing_protocol_version(func: Func) -> Func:
 
         return message
 
-    return cast(Func, wrapper)
+    return wrapper
 
 
 class IncomingMessageHandler(IncomingMessageHandlerBase):
     """Represent a handler for incoming messages."""
-
-    # pylint: disable=unused-argument
 
     @classmethod
     async def _handle_message(
@@ -68,21 +77,23 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         gateway: Gateway,
         message: Message,
         message_buffer: MessageBuffer,
-        message_handler: Optional[Callable],
+        message_handler: Callable[[Gateway, Message, MessageBuffer], Awaitable[Message]]
+        | None,
     ) -> Message:
         """Handle a message."""
         if message_handler is None:
             # No special handling required.
             return message
 
-        message = await message_handler(gateway, message, message_buffer)
-
-        return message
+        return await message_handler(gateway, message, message_buffer)
 
     @classmethod
     @handle_missing_protocol_version
     async def handle_presentation(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process a presentation message."""
         if message.child_id == SYSTEM_CHILD_ID:
@@ -99,7 +110,9 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             raise MissingNodeError(message.node_id)
 
         gateway.nodes[message.node_id].add_child(
-            message.child_id, message.message_type, description=message.payload
+            message.child_id,
+            message.message_type,
+            description=message.payload,
         )
 
         return message
@@ -107,7 +120,10 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
     @classmethod
     @handle_missing_protocol_version
     async def handle_set(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process a set message."""
         if message.node_id not in gateway.nodes:
@@ -117,7 +133,9 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             raise MissingChildError(message.node_id)
 
         gateway.nodes[message.node_id].set_child_value(
-            message.child_id, message.message_type, message.payload
+            message.child_id,
+            message.message_type,
+            message.payload,
         )
 
         # Check if reboot is true
@@ -138,7 +156,10 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
     @classmethod
     @handle_missing_protocol_version
     async def handle_req(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process a req message."""
         if message.node_id not in gateway.nodes:
@@ -168,7 +189,10 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
     @classmethod
     @handle_missing_protocol_version
     async def handle_internal(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process an internal message."""
         try:
@@ -179,13 +203,19 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         message_handler = getattr(cls, f"handle_{internal.name.lower()}", None)
 
         return await cls._handle_message(
-            gateway, message, message_buffer, message_handler
+            gateway,
+            message,
+            message_buffer,
+            message_handler,
         )
 
     @classmethod
     @handle_missing_protocol_version
     async def handle_stream(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,
     ) -> Message:
         """Process a stream message."""
         if message.node_id not in gateway.nodes:
@@ -199,12 +229,18 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         message_handler = getattr(cls, f"handle_{stream.name.lower()}", None)
 
         return await cls._handle_message(
-            gateway, message, message_buffer, message_handler
+            gateway,
+            message,
+            message_buffer,
+            message_handler,
         )
 
     @classmethod
     async def handle_i_version(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal version message."""
         gateway.protocol_version = message.payload
@@ -212,13 +248,13 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_id_request(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal id request message."""
-        if gateway.nodes:
-            next_id = max(gateway.nodes) + 1
-        else:
-            next_id = 1
+        next_id = max(gateway.nodes) + 1 if gateway.nodes else 1
 
         if next_id > MAX_NODE_ID:
             raise TooManyNodesError
@@ -242,7 +278,10 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_config(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal config message."""
         config_message = Message(
@@ -257,7 +296,10 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_time(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal time message."""
         time_message = Message(
@@ -272,7 +314,10 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_battery_level(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal battery level message."""
         if message.node_id not in gateway.nodes:
@@ -283,7 +328,10 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_sketch_name(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal sketch name message."""
         if message.node_id not in gateway.nodes:
@@ -294,7 +342,10 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
     @classmethod
     async def handle_i_sketch_version(
-        cls, gateway: Gateway, message: Message, message_buffer: MessageBuffer
+        cls,
+        gateway: Gateway,
+        message: Message,
+        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal sketch version message."""
         if message.node_id not in gateway.nodes:
@@ -312,7 +363,7 @@ class OutgoingMessageHandler:
         cls,
         gateway: Gateway,
         message: Message,
-        message_buffer: Optional[MessageBuffer],
+        message_buffer: MessageBuffer | None,
         decoded_message: str,
     ) -> None:
         """Process outgoing set messages."""
@@ -331,7 +382,7 @@ class OutgoingMessageHandler:
         cls,
         gateway: Gateway,
         message: Message,
-        message_buffer: Optional[MessageBuffer],
+        message_buffer: MessageBuffer | None,
         decoded_message: str,
     ) -> None:
         """Process outgoing internal messages."""
@@ -347,8 +398,6 @@ class OutgoingMessageHandler:
 
 class Command(IntEnum):
     """MySensors command types."""
-
-    # pylint: disable=invalid-name
 
     presentation = 0
     set = 1

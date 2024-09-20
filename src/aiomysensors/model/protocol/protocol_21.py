@@ -2,18 +2,21 @@
 
 from enum import IntEnum
 
-# pylint: disable=unused-import
 from .protocol_20 import (  # noqa: F401
     INTERNAL_COMMAND_TYPE,
     STRICT_SYSTEM_COMMAND_TYPES,
     VALID_MESSAGE_TYPES,
     VALID_SYSTEM_COMMAND_TYPES,
     Command,
-    IncomingMessageHandler as IncomingMessageHandler20,
-    OutgoingMessageHandler as OutgoingMessageHandler20,
     Presentation,
     SetReq,
     Stream,
+)
+from .protocol_20 import (
+    IncomingMessageHandler as IncomingMessageHandler20,
+)
+from .protocol_20 import (
+    OutgoingMessageHandler as OutgoingMessageHandler20,
 )
 
 

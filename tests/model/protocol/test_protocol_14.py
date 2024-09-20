@@ -1,8 +1,11 @@
 """Test protocol 1.4."""
 
-from contextlib import ExitStack as default_context
+from collections.abc import Generator
+from contextlib import AbstractContextManager
+from contextlib import ExitStack as DefaultContext
 import time
-from unittest.mock import patch
+from typing import Any
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -13,15 +16,15 @@ from aiomysensors.exceptions import (
     UnsupportedMessageError,
 )
 from aiomysensors.gateway import Gateway
-from aiomysensors.model.message import Message
-from aiomysensors.model.node import Node
+from aiomysensors.model.message import Message, MessageSchema
+from aiomysensors.model.node import Node, NodeSchema
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS, get_protocol
-
 from tests.common import (
     DEFAULT_CHILD,
     DEFAULT_NODE_CHILD_SERIALIZED,
     NODE_CHILD_SERIALIZED,
     NODE_SERIALIZED,
+    MockTransport,
 )
 
 CHILD_PRESENTATION = dict(NODE_SERIALIZED)
@@ -29,26 +32,27 @@ CHILD_PRESENTATION["children"] = {0: DEFAULT_CHILD}
 
 
 @pytest.fixture(name="mock_time")
-def mock_time_fixture():
+def mock_time_fixture() -> Generator[MagicMock, None, None]:
     """Mock time."""
     with patch("aiomysensors.model.protocol.protocol_14.time") as mock_time:
         mock_time.localtime.return_value = time.gmtime(123456789)
         yield mock_time
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, node_after",
+    ("command", "context", "node_before", "node_after"),
     [
         (
             Message(0, 255, 0, 0, 17, "2.0"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             None,  # node_before
             NODE_SERIALIZED,  # node_after
         ),  # Node presentation
         (
             Message(0, 0, 0, 0, 6, "test child 0"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_SERIALIZED,  # node_before
             CHILD_PRESENTATION,  # node_after
         ),  # Child presentation
@@ -62,19 +66,14 @@ def mock_time_fixture():
     indirect=["command", "node_before"],
 )
 async def test_presentation(
-    command,
-    context,
-    node_before,
-    node_after,
-    gateway,
-    message_schema,
-    node_schema,
-):
+    context: AbstractContextManager,
+    node_after: dict[str, Any],
+    gateway: Gateway,
+    node_schema: NodeSchema,
+) -> None:
     """Test presentation command."""
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     for _node in gateway.nodes.values():
         assert node_schema.dump(_node) == node_after
@@ -82,8 +81,10 @@ async def test_presentation(
 
 @pytest.mark.parametrize("protocol_version", list(PROTOCOL_VERSIONS))
 async def test_presentation_gateway_protocol_version(
-    protocol_version, message_schema, transport
-):
+    protocol_version: str,
+    message_schema: MessageSchema,
+    transport: MockTransport,
+) -> None:
     """Test that gateway presentation sets protocol version."""
     gateway = Gateway(transport)
     message = Message(0, 255, 0, 0, 17, protocol_version)
@@ -91,21 +92,21 @@ async def test_presentation_gateway_protocol_version(
     transport.messages.append(command)
     assert gateway.protocol_version is None
 
-    async for msg in gateway.listen():
-        assert message_schema.dump(msg) == command
-        break
+    msg = await anext(gateway.listen())
 
+    assert message_schema.dump(msg) == command
     assert gateway.protocol_version == protocol_version
     assert gateway.protocol is get_protocol(protocol_version)
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", ["1.4", "1.5"], indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, values_after, writes, reboot",
+    ("command", "context", "node_before", "values_after", "writes", "reboot"),
     [
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "25.0"},  # values_after
             [],  # writes
@@ -113,7 +114,7 @@ async def test_presentation_gateway_protocol_version(
         ),  # Set message
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "25.0"},  # values_after
             ["0;255;3;0;13;\n"],  # writes
@@ -139,47 +140,43 @@ async def test_presentation_gateway_protocol_version(
     indirect=["command", "node_before"],
 )
 async def test_set(
-    command,
-    context,
-    node_before,
-    values_after,
-    writes,
-    reboot,
-    gateway,
-    message_schema,
-    node_schema,
-):
+    context: AbstractContextManager,
+    values_after: dict[str, str],
+    writes: list[str],
+    reboot: bool,
+    gateway: Gateway,
+    transport: MockTransport,
+) -> None:
     """Test set command."""
     if reboot:
         for node in gateway.nodes.values():
             node.reboot = True
 
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     for node in gateway.nodes.values():
         for child in node.children.values():
             assert child.values == values_after
 
-    assert gateway.transport.writes == writes
+    assert transport.writes == writes
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", ["1.4", "1.5"], indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, values_after, writes",
+    ("command", "context", "node_before", "values_after", "writes"),
     [
         (
             Message(0, 0, 2, 0, 0),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "20.0"},  # values_after
             ["0;0;1;0;0;20.0\n"],  # writes
         ),  # Req message
         (
             Message(0, 0, 2, 0, 0),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             DEFAULT_NODE_CHILD_SERIALIZED,  # node_before
             {},  # values_after
             [],  # writes
@@ -202,35 +199,31 @@ async def test_set(
     indirect=["command", "node_before"],
 )
 async def test_req(
-    command,
-    context,
-    node_before,
-    values_after,
-    writes,
-    gateway,
-    message_schema,
-    node_schema,
-):
+    context: AbstractContextManager,
+    values_after: dict[str, str],
+    writes: list[str],
+    gateway: Gateway,
+    transport: MockTransport,
+) -> None:
     """Test req command."""
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     for node in gateway.nodes.values():
         for child in node.children.values():
             assert child.values == values_after
 
-    assert gateway.transport.writes == writes
+    assert transport.writes == writes
 
 
+@pytest.mark.usefixtures("command")
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, context",
+    ("command", "context"),
     [
         (
             Message(0, 255, 3, 0, 2, "2.0"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
         ),  # gateway version
         (
             Message(0, 255, 3, 0, 9999999, ""),  # command
@@ -238,22 +231,21 @@ async def test_req(
         ),  # Unsupported message
         (
             Message(0, 255, 3, 0, 10, ""),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
         ),  # Message without special handler
     ],
     indirect=["command"],
 )
-async def test_internal(command, context, gateway, message_schema):
+async def test_internal(context: AbstractContextManager, gateway: Gateway) -> None:
     """Test internal command."""
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before",
+    ("command", "context", "node_before"),
     [
         (
             Message(0, 255, 4, 0, 5),  # command
@@ -267,18 +259,16 @@ async def test_internal(command, context, gateway, message_schema):
         ),  # Unsupported message
         (
             Message(0, 255, 4, 0, 5),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
         ),  # Message without special handler
     ],
     indirect=["command", "node_before"],
 )
-async def test_stream(command, context, node_before, gateway, message_schema):
+async def test_stream(context: AbstractContextManager, gateway: Gateway) -> None:
     """Test stream command."""
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
@@ -287,24 +277,26 @@ async def test_stream(command, context, node_before, gateway, message_schema):
     [Message(0, 255, 3, 0, 2, "2.0")],
     indirect=["command"],
 )
-async def test_internal_version(command, message_schema, transport):
+async def test_internal_version(
+    command: str, message_schema: MessageSchema, transport: MockTransport
+) -> None:
     """Test internal version command."""
     gateway = Gateway(transport)
 
-    async for msg in gateway.listen():
-        assert message_schema.dump(msg) == command
-        break
+    msg = await anext(gateway.listen())
 
+    assert message_schema.dump(msg) == command
     assert gateway.protocol_version == "2.0"
 
 
+@pytest.mark.usefixtures("command")
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, context, nodes_before, writes",
+    ("command", "context", "nodes_before", "writes"),
     [
         (
             Message(255, 255, 3, 0, 3),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             0,  # nodes_before
             ["255;255;3;0;4;1\n"],  # writes
         ),  # Valid id request message
@@ -318,28 +310,25 @@ async def test_internal_version(command, message_schema, transport):
     indirect=["command"],
 )
 async def test_internal_id_request(
-    command,
-    context,
-    nodes_before,
-    writes,
-    gateway,
-    message_schema,
-):
+    context: AbstractContextManager,
+    nodes_before: int,
+    writes: list[str],
+    gateway: Gateway,
+    transport: MockTransport,
+) -> None:
     """Test internal id request command."""
     for node_id in range(nodes_before):
         gateway.nodes[node_id] = Node(node_id, 17, "1.4")
 
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
-    assert gateway.transport.writes == writes
+    assert transport.writes == writes
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, metric, writes",
+    ("command", "metric", "writes"),
     [
         (
             Message(0, 255, 3, 0, 6),  # command
@@ -355,25 +344,26 @@ async def test_internal_id_request(
     indirect=["command"],
 )
 async def test_internal_config(
-    command,
-    metric,
-    writes,
-    gateway,
-    message_schema,
-):
+    command: str,
+    metric: bool,
+    writes: list[str],
+    gateway: Gateway,
+    message_schema: MessageSchema,
+    transport: MockTransport,
+) -> None:
     """Test internal config command."""
     gateway.config.metric = metric
 
-    async for msg in gateway.listen():
-        assert message_schema.dump(msg) == command
-        break
+    msg = await anext(gateway.listen())
 
-    assert gateway.transport.writes == writes
+    assert message_schema.dump(msg) == command
+    assert transport.writes == writes
 
 
+@pytest.mark.usefixtures("mock_time")
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, writes",
+    ("command", "writes"),
     [
         (
             Message(0, 255, 3, 0, 1),  # command
@@ -383,23 +373,23 @@ async def test_internal_config(
     indirect=["command"],
 )
 async def test_internal_time(
-    command,
-    writes,
-    gateway,
-    message_schema,
-    mock_time,
-):
+    command: str,
+    writes: list[str],
+    gateway: Gateway,
+    message_schema: MessageSchema,
+    transport: MockTransport,
+) -> None:
     """Test internal time command."""
-    async for msg in gateway.listen():
-        assert message_schema.dump(msg) == command
-        break
+    msg = await anext(gateway.listen())
 
-    assert gateway.transport.writes == writes
+    assert message_schema.dump(msg) == command
+    assert transport.writes == writes
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, battery_level",
+    ("command", "context", "node_before", "battery_level"),
     [
         (
             Message(0, 255, 3, 0, 0, "55"),  # command
@@ -409,7 +399,7 @@ async def test_internal_time(
         ),  # Missing node
         (
             Message(0, 255, 3, 0, 0, "55"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             55,  # battery level
         ),  # battery level
@@ -417,26 +407,22 @@ async def test_internal_time(
     indirect=["command", "node_before"],
 )
 async def test_internal_battery_level(
-    command,
-    context,
-    node_before,
-    battery_level,
-    gateway,
-    message_schema,
-):
+    context: AbstractContextManager,
+    battery_level: int,
+    gateway: Gateway,
+) -> None:
     """Test internal battery level command."""
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     for node in gateway.nodes.values():
         assert node.battery_level == battery_level
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, sketch_name",
+    ("command", "context", "node_before", "sketch_name"),
     [
         (
             Message(0, 255, 3, 0, 11, "sketch name set ok"),  # command
@@ -446,7 +432,7 @@ async def test_internal_battery_level(
         ),  # Missing node
         (
             Message(0, 255, 3, 0, 11, "sketch name set ok"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             "sketch name set ok",  # sketch_name
         ),  # sketch name
@@ -454,26 +440,22 @@ async def test_internal_battery_level(
     indirect=["command", "node_before"],
 )
 async def test_internal_sketch_name(
-    command,
-    context,
-    node_before,
-    sketch_name,
-    gateway,
-    message_schema,
-):
+    context: AbstractContextManager,
+    sketch_name: str,
+    gateway: Gateway,
+) -> None:
     """Test internal sketch name command."""
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     for node in gateway.nodes.values():
         assert node.sketch_name == sketch_name
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, sketch_version",
+    ("command", "context", "node_before", "sketch_version"),
     [
         (
             Message(0, 255, 3, 0, 12, "1.2.3"),  # command
@@ -483,7 +465,7 @@ async def test_internal_sketch_name(
         ),  # Missing node
         (
             Message(0, 255, 3, 0, 12, "1.2.3"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             "1.2.3",  # sketch_version
         ),  # sketch version ok
@@ -491,18 +473,13 @@ async def test_internal_sketch_name(
     indirect=["command", "node_before"],
 )
 async def test_internal_sketch_version(
-    command,
-    context,
-    node_before,
-    sketch_version,
-    gateway,
-    message_schema,
-):
+    context: AbstractContextManager,
+    sketch_version: str,
+    gateway: Gateway,
+) -> None:
     """Test internal sketch version command."""
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     for node in gateway.nodes.values():
         assert node.sketch_version == sketch_version

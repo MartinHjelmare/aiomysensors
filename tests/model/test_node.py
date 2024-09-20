@@ -4,12 +4,11 @@ from marshmallow.exceptions import ValidationError
 import pytest
 
 from aiomysensors.exceptions import MissingChildError
-from aiomysensors.model.node import Node
-
+from aiomysensors.model.node import Child, Node, NodeSchema
 from tests.common import NODE_CHILD_SERIALIZED, NODE_SERIALIZED
 
 
-def test_dump(child, node_schema):
+def test_dump(child: Child, node_schema: NodeSchema) -> None:
     """Test dump of node."""
     node = Node(0, 17, "2.0")
 
@@ -33,7 +32,7 @@ def test_dump(child, node_schema):
     assert node_dump == NODE_CHILD_SERIALIZED
 
 
-def test_load(node_schema):
+def test_load(node_schema: NodeSchema) -> None:
     """Test load of message."""
     node = node_schema.load(NODE_CHILD_SERIALIZED)
     assert node.node_id == 0
@@ -55,13 +54,13 @@ def test_load(node_schema):
     assert child.values == {0: "20.0"}
 
 
-def test_load_bad_node(node_schema):
+def test_load_bad_node(node_schema: NodeSchema) -> None:
     """Test load of bad node."""
     with pytest.raises(ValidationError):
         node_schema.load({"bad": "bad"})
 
 
-def test_add_child(node):
+def test_add_child(node: Node) -> None:
     """Test add child."""
     assert not node.children
 
@@ -80,7 +79,7 @@ def test_add_child(node):
     assert child.values == values
 
 
-def test_remove_child(node, child):
+def test_remove_child(node: Node, child: Child) -> None:
     """Test remove child."""
     assert child.child_id in node.children
 
@@ -91,10 +90,10 @@ def test_remove_child(node, child):
     with pytest.raises(MissingChildError) as exc:
         node.remove_child(child.child_id)
 
-        assert exc.value.child_id == child.child_id
+    assert exc.value.child_id == child.child_id
 
 
-def test_set_child_value(node, child):
+def test_set_child_value(node: Node, child: Child) -> None:
     """Test set child value."""
     child_id = child.child_id
     value_type = 0
@@ -110,7 +109,7 @@ def test_set_child_value(node, child):
     assert child.values[value_type] == value
 
 
-def test_set_child_value_no_child(node):
+def test_set_child_value_no_child(node: Node) -> None:
     """Test set child value without child."""
     child_id = 0
     value_type = 0
@@ -121,6 +120,5 @@ def test_set_child_value_no_child(node):
     with pytest.raises(MissingChildError) as exc:
         node.set_child_value(child_id, value_type, value)
 
-        assert exc.value.child_id == child_id
-
+    assert exc.value.child_id == child_id
     assert not node.children

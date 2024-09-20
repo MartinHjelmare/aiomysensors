@@ -2,9 +2,12 @@
 
 from abc import ABC, abstractmethod
 import asyncio
-from typing import Optional, Tuple
 
-from ..exceptions import TransportError, TransportFailedError, TransportReadError
+from aiomysensors.exceptions import (
+    TransportError,
+    TransportFailedError,
+    TransportReadError,
+)
 
 TERMINATOR = b"\n"
 
@@ -37,13 +40,13 @@ class StreamTransport(Transport):
 
     def __init__(self) -> None:
         """Set up stream transport."""
-        self.reader: Optional[asyncio.StreamReader] = None
-        self.writer: Optional[asyncio.StreamWriter] = None
+        self.reader: asyncio.StreamReader | None = None
+        self.writer: asyncio.StreamWriter | None = None
 
     @abstractmethod
     async def _open_connection(
         self,
-    ) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+    ) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Open the stream connection."""
 
     async def connect(self) -> None:
@@ -52,12 +55,13 @@ class StreamTransport(Transport):
             self.reader, self.writer = await self._open_connection()
         except OSError as err:
             raise TransportError(
-                f"Failed to connect to stream transport: {err}"
+                f"Failed to connect to stream transport: {err}",
             ) from err
 
     async def disconnect(self) -> None:
         """Disconnect the transport."""
-        assert self.writer is not None
+        if self.writer is None:
+            return
         try:
             self.writer.close()
             await self.writer.wait_closed()
@@ -66,7 +70,8 @@ class StreamTransport(Transport):
 
     async def read(self) -> str:
         """Return a decoded message."""
-        assert self.reader is not None
+        if self.reader is None:
+            raise TransportError("Not connected to stream transport.")
 
         try:
             read = await self.reader.readuntil(TERMINATOR)
@@ -76,19 +81,20 @@ class StreamTransport(Transport):
             raise TransportReadError(err, err.partial) from err
         except OSError as err:
             raise TransportFailedError(
-                f"Failed reading from stream transport: {err}"
+                f"Failed reading from stream transport: {err}",
             ) from err
 
         return read.decode()
 
     async def write(self, decoded_message: str) -> None:
         """Write a decoded message to the transport."""
-        assert self.writer is not None
+        if self.writer is None:
+            raise TransportError("Not connected to stream transport.")
 
         try:
             self.writer.write(decoded_message.encode())
             await self.writer.drain()
         except OSError as err:
             raise TransportFailedError(
-                f"Failed writing to stream transport: {err}"
+                f"Failed writing to stream transport: {err}",
             ) from err

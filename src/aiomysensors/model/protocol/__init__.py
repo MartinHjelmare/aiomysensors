@@ -1,26 +1,23 @@
 """Provide MySensors protocols."""
 
 from abc import abstractmethod
+from collections.abc import Callable, Coroutine
 from enum import IntEnum
 from functools import cache
 from importlib import import_module
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
-    Coroutine,
     Optional,
     Protocol,
-    Set,
-    Type,
     cast,
 )
 
 from awesomeversion import AwesomeVersion
 
 if TYPE_CHECKING:
-    from ...gateway import Gateway, MessageBuffer
-    from ..message import Message
+    from aiomysensors.gateway import Gateway, MessageBuffer
+    from aiomysensors.model.message import Message
 
 BROADCAST_ID = 255
 DEFAULT_PROTOCOL_VERSION = "1.4"
@@ -42,35 +39,50 @@ class IncomingMessageHandlerBase:
     @classmethod
     @abstractmethod
     async def handle_presentation(
-        cls, gateway: "Gateway", message: "Message", message_buffer: "MessageBuffer"
+        cls,
+        gateway: "Gateway",
+        message: "Message",
+        message_buffer: "MessageBuffer",
     ) -> "Message":
         """Process a presentation message."""
 
     @classmethod
     @abstractmethod
     async def handle_set(
-        cls, gateway: "Gateway", message: "Message", message_buffer: "MessageBuffer"
+        cls,
+        gateway: "Gateway",
+        message: "Message",
+        message_buffer: "MessageBuffer",
     ) -> "Message":
         """Process a set message."""
 
     @classmethod
     @abstractmethod
     async def handle_req(
-        cls, gateway: "Gateway", message: "Message", message_buffer: "MessageBuffer"
+        cls,
+        gateway: "Gateway",
+        message: "Message",
+        message_buffer: "MessageBuffer",
     ) -> "Message":
         """Process a req message."""
 
     @classmethod
     @abstractmethod
     async def handle_internal(
-        cls, gateway: "Gateway", message: "Message", message_buffer: "MessageBuffer"
+        cls,
+        gateway: "Gateway",
+        message: "Message",
+        message_buffer: "MessageBuffer",
     ) -> "Message":
         """Process an internal message."""
 
     @classmethod
     @abstractmethod
     async def handle_stream(
-        cls, gateway: "Gateway", message: "Message", message_buffer: "MessageBuffer"
+        cls,
+        gateway: "Gateway",
+        message: "Message",
+        message_buffer: "MessageBuffer",
     ) -> "Message":
         """Process a stream message."""
 
@@ -104,17 +116,17 @@ class OutgoingMessageHandlerBase:
 class ProtocolType(Protocol):
     """Represent a protocol module type."""
 
-    IncomingMessageHandler: Type[IncomingMessageHandlerBase]
-    OutgoingMessageHandler: Type[OutgoingMessageHandlerBase]
-    Command: Type[IntEnum]
-    Presentation: Type[IntEnum]
-    SetReq: Type[IntEnum]
-    Internal: Type[IntEnum]
-    Stream: Type[IntEnum]
+    IncomingMessageHandler: type[IncomingMessageHandlerBase]
+    OutgoingMessageHandler: type[OutgoingMessageHandlerBase]
+    Command: type[IntEnum]
+    Presentation: type[IntEnum]
+    SetReq: type[IntEnum]
+    Internal: type[IntEnum]
+    Stream: type[IntEnum]
     INTERNAL_COMMAND_TYPE: int
-    NODE_ID_REQUEST_TYPES: Set[int]
-    STRICT_SYSTEM_COMMAND_TYPES: Set[int]
-    VALID_SYSTEM_COMMAND_TYPES: Set[int]
+    NODE_ID_REQUEST_TYPES: set[int]
+    STRICT_SYSTEM_COMMAND_TYPES: set[int]
+    VALID_SYSTEM_COMMAND_TYPES: set[int]
 
 
 @cache
@@ -132,27 +144,31 @@ def get_protocol(protocol_version: str) -> ProtocolType:
 
 
 def get_incoming_message_handler(
-    protocol: ProtocolType, message: "Message"
+    protocol: ProtocolType,
+    message: "Message",
 ) -> Callable[["Gateway", "Message", "MessageBuffer"], Coroutine[Any, Any, "Message"]]:
     """Return the correct message handler from the protocol."""
     command: IntEnum = protocol.Command(message.command)
     message_handlers = protocol.IncomingMessageHandler
     message_handler: Callable[
-        ["Gateway", "Message", "MessageBuffer"], Coroutine[Any, Any, "Message"]
+        [Gateway, Message, MessageBuffer],
+        Coroutine[Any, Any, Message],
     ] = getattr(message_handlers, f"handle_{command.name}")
     return message_handler
 
 
 def get_outgoing_message_handler(
-    protocol: ProtocolType, message: "Message"
+    protocol: ProtocolType,
+    message: "Message",
 ) -> Callable[
-    ["Gateway", "Message", Optional["MessageBuffer"], str], Coroutine[Any, Any, None]
+    ["Gateway", "Message", Optional["MessageBuffer"], str],
+    Coroutine[Any, Any, None],
 ]:
     """Return the correct message handler from the protocol."""
     command: IntEnum = protocol.Command(message.command)
     message_handlers = protocol.OutgoingMessageHandler
     message_handler: Callable[
-        ["Gateway", "Message", Optional["MessageBuffer"], str],
+        [Gateway, Message, MessageBuffer | None, str],
         Coroutine[Any, Any, None],
     ] = getattr(message_handlers, f"handle_{command.name}")
     return message_handler
