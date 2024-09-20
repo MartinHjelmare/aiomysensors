@@ -37,9 +37,10 @@ marshmallow = "^3.17"
 pyserial-asyncio = "^0.6"
 python = "^3.9"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 bandit = "^1.7"
 black = "^24.0.0"
+copier = "^9.3.1"
 flake8 = "^7.0.0"
 flake8-docstrings = "^1.6"
 isort = "^5.10"
