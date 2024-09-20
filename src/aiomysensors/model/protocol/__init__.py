@@ -1,6 +1,7 @@
 """Provide MySensors protocols."""
 
 from abc import abstractmethod
+from collections.abc import Coroutine
 from enum import IntEnum
 from functools import cache
 from importlib import import_module
@@ -8,11 +9,8 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Coroutine,
     Optional,
     Protocol,
-    Set,
-    Type,
     cast,
 )
 
@@ -104,17 +102,17 @@ class OutgoingMessageHandlerBase:
 class ProtocolType(Protocol):
     """Represent a protocol module type."""
 
-    IncomingMessageHandler: Type[IncomingMessageHandlerBase]
-    OutgoingMessageHandler: Type[OutgoingMessageHandlerBase]
-    Command: Type[IntEnum]
-    Presentation: Type[IntEnum]
-    SetReq: Type[IntEnum]
-    Internal: Type[IntEnum]
-    Stream: Type[IntEnum]
+    IncomingMessageHandler: type[IncomingMessageHandlerBase]
+    OutgoingMessageHandler: type[OutgoingMessageHandlerBase]
+    Command: type[IntEnum]
+    Presentation: type[IntEnum]
+    SetReq: type[IntEnum]
+    Internal: type[IntEnum]
+    Stream: type[IntEnum]
     INTERNAL_COMMAND_TYPE: int
-    NODE_ID_REQUEST_TYPES: Set[int]
-    STRICT_SYSTEM_COMMAND_TYPES: Set[int]
-    VALID_SYSTEM_COMMAND_TYPES: Set[int]
+    NODE_ID_REQUEST_TYPES: set[int]
+    STRICT_SYSTEM_COMMAND_TYPES: set[int]
+    VALID_SYSTEM_COMMAND_TYPES: set[int]
 
 
 @cache
@@ -138,7 +136,7 @@ def get_incoming_message_handler(
     command: IntEnum = protocol.Command(message.command)
     message_handlers = protocol.IncomingMessageHandler
     message_handler: Callable[
-        ["Gateway", "Message", "MessageBuffer"], Coroutine[Any, Any, "Message"]
+        [Gateway, Message, MessageBuffer], Coroutine[Any, Any, Message]
     ] = getattr(message_handlers, f"handle_{command.name}")
     return message_handler
 
@@ -152,7 +150,7 @@ def get_outgoing_message_handler(
     command: IntEnum = protocol.Command(message.command)
     message_handlers = protocol.OutgoingMessageHandler
     message_handler: Callable[
-        ["Gateway", "Message", Optional["MessageBuffer"], str],
+        [Gateway, Message, Optional[MessageBuffer], str],
         Coroutine[Any, Any, None],
     ] = getattr(message_handlers, f"handle_{command.name}")
     return message_handler

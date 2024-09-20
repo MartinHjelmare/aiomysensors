@@ -10,8 +10,6 @@ from aiomysensors.gateway import Config, Gateway
 from aiomysensors.model.message import Message
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
-# pylint: disable=unused-argument
-
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
 async def test_listen(gateway, message, message_schema, node, child):

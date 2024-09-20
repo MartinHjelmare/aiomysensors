@@ -1,9 +1,11 @@
-"""Provide a MySensors message abstraction.
+"""
+Provide a MySensors message abstraction.
 
 Validation should be done on a protocol level, i.e. not with gateway state.
 """
 
-from typing import Any, Dict, Mapping, Optional, Union
+from collections.abc import Mapping
+from typing import Any, Optional, Union
 
 from marshmallow import (
     Schema,
@@ -65,7 +67,8 @@ class ChildIdField(fields.Field):
         data: Optional[Mapping[str, Any]],
         **kwargs: Any,
     ) -> int:
-        assert data is not None  # Satisfy typing.
+        if data is None:
+            raise ValidationError("Data must be provided.")
         protocol_version = self.context.get(
             "protocol_version", DEFAULT_PROTOCOL_VERSION
         )
@@ -76,9 +79,8 @@ class ChildIdField(fields.Field):
 class CommandField(fields.Field):
     """Represent a command field."""
 
-    def validate_command(self, *, value: str, data: Optional[Mapping[str, Any]]) -> int:
+    def validate_command(self, *, value: str, data: Mapping[str, Any]) -> int:
         """Validate the command field."""
-        assert data is not None  # Satisfy typing.
         command = validate_command(value)
 
         protocol_version = self.context.get(
@@ -109,6 +111,8 @@ class CommandField(fields.Field):
         data: Optional[Mapping[str, Any]],
         **kwargs: Any,
     ) -> int:
+        if data is None:
+            raise ValidationError("Data must be provided.")
         return self.validate_command(value=value, data=data)
 
 
@@ -129,9 +133,8 @@ class MessageSchema(Schema):
         ordered = True
 
     @pre_load
-    def to_dict(self, in_data: str, **kwargs: Any) -> Dict[str, str]:
+    def to_dict(self, in_data: str, **kwargs: Any) -> dict[str, str]:
         """Transform message string to a dict."""
-        # pylint: disable=unused-argument
         list_data = in_data.rstrip().split(DELIMITER)
         out_data = dict(zip(self.fields, list_data))
         return out_data
@@ -139,13 +142,11 @@ class MessageSchema(Schema):
     @post_load
     def make_message(self, data: dict, **kwargs: Any) -> Message:
         """Make a message."""
-        # pylint: disable=unused-argument
         return Message(**data)
 
     @post_dump
-    def to_string(self, data: Dict[str, Union[int, str]], **kwargs: Any) -> str:
+    def to_string(self, data: dict[str, Union[int, str]], **kwargs: Any) -> str:
         """Serialize message from a dict to a MySensors message string."""
-        # pylint: disable=unused-argument
         try:
             string = f"{DELIMITER.join([str(data[field]) for field in self.fields])}\n"
         except KeyError as err:

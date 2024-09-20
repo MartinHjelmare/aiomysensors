@@ -1,7 +1,6 @@
 """Provide common fixtures."""
 
 from pathlib import Path
-from typing import List
 from unittest.mock import MagicMock, patch
 
 import aiofiles
@@ -52,10 +51,10 @@ def child_fixture(node):
 class MockTransport(Transport):
     """Represent a mock transport."""
 
-    def __init__(self, messages: List[str]) -> None:
+    def __init__(self, messages: list[str]) -> None:
         """Set up a mock transport."""
         self.messages = messages
-        self.writes: List[str] = []
+        self.writes: list[str] = []
 
     async def connect(self) -> None:
         """Connect the transport."""
@@ -75,7 +74,7 @@ class MockTransport(Transport):
 @pytest.fixture(name="transport")
 def transport_fixture():
     """Mock a transport."""
-    messages: List[str] = []
+    messages: list[str] = []
     transport = MockTransport(messages)
     return transport
 
@@ -102,7 +101,6 @@ def mock_file_fixture():
     """Patch aiofiles."""
     mock_file = MagicMock()
     io_base = aiofiles.threadpool.AsyncBufferedIOBase  # type: ignore[attr-defined]
-    # pylint: disable=unnecessary-lambda
     aiofiles.threadpool.wrap.register(MagicMock)(  # type: ignore[attr-defined]
         lambda *args, **kwargs: io_base(*args, **kwargs)
     )

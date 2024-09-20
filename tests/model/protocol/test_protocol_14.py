@@ -16,7 +16,6 @@ from aiomysensors.gateway import Gateway
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS, get_protocol
-
 from tests.common import (
     DEFAULT_CHILD,
     DEFAULT_NODE_CHILD_SERIALIZED,

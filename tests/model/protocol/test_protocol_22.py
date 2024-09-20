@@ -8,10 +8,7 @@ from aiomysensors.exceptions import MissingNodeError
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Child, Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
-
 from tests.common import NODE_CHILD_SERIALIZED
-
-# pylint: disable=unused-argument
 
 HEARTBEAT_PAYLOAD = "1111"
 PROTOCOL_VERSIONS_2x = list(PROTOCOL_VERSIONS)

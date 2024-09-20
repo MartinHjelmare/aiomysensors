@@ -1,10 +1,11 @@
 """Provide persistence."""
 
 import asyncio
+from collections.abc import Coroutine
 from dataclasses import dataclass, field
 import json
 import logging
-from typing import Any, Callable, Coroutine, Dict, Optional
+from typing import Any, Callable, Optional
 
 import aiofiles
 
@@ -19,7 +20,7 @@ SAVE_INTERVAL = 900
 class Persistence:
     """Represent the persistence feature."""
 
-    nodes: Dict[int, Node]
+    nodes: dict[int, Node]
     path: str
     _cancel_save: Optional[Callable[[], Coroutine[Any, Any, None]]] = field(
         default=None, init=False
@@ -30,7 +31,7 @@ class Persistence:
         path = path or self.path
 
         try:
-            async with aiofiles.open(path, mode="r") as fil:
+            async with aiofiles.open(path) as fil:
                 read = await fil.read()
             data: dict = json.loads(read or "{}")
         except FileNotFoundError:

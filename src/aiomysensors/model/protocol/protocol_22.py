@@ -5,8 +5,6 @@ from enum import IntEnum
 from ...exceptions import MissingNodeError
 from ...gateway import Gateway, MessageBuffer
 from ..message import Message
-
-# pylint: disable=unused-import
 from .protocol_20 import handle_missing_node_child
 from .protocol_21 import (  # noqa: F401
     INTERNAL_COMMAND_TYPE,
@@ -14,11 +12,15 @@ from .protocol_21 import (  # noqa: F401
     VALID_MESSAGE_TYPES,
     VALID_SYSTEM_COMMAND_TYPES,
     Command,
-    IncomingMessageHandler as IncomingMessageHandler21,
-    OutgoingMessageHandler as OutgoingMessageHandler21,
     Presentation,
     SetReq,
     Stream,
+)
+from .protocol_21 import (
+    IncomingMessageHandler as IncomingMessageHandler21,
+)
+from .protocol_21 import (
+    OutgoingMessageHandler as OutgoingMessageHandler21,
 )
 
 

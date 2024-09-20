@@ -5,7 +5,6 @@ import pytest
 
 from aiomysensors.exceptions import MissingChildError
 from aiomysensors.model.node import Node
-
 from tests.common import NODE_CHILD_SERIALIZED, NODE_SERIALIZED
 
 

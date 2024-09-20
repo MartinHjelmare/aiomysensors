@@ -1,9 +1,10 @@
 """Provide a gateway."""
 
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass, field
 import logging
 from types import TracebackType
-from typing import AsyncGenerator, Dict, Optional, Tuple
+from typing import Optional
 
 from marshmallow import ValidationError
 
@@ -29,7 +30,7 @@ class Gateway:
     def __init__(self, transport: Transport, config: Optional["Config"] = None) -> None:
         """Set up gateway."""
         self.config = config or Config()
-        self.nodes: Dict[int, Node] = {}
+        self.nodes: dict[int, Node] = {}
         self.persistence: Optional[Persistence] = None
         if self.config.persistence_file:
             self.persistence = Persistence(self.nodes, self.config.persistence_file)
@@ -120,5 +121,5 @@ class Config:
 class MessageBuffer:
     """Represent a sleep message buffer."""
 
-    internal_messages: Dict[Tuple[int, int, int], Message] = field(default_factory=dict)
-    set_messages: Dict[Tuple[int, int, int], Message] = field(default_factory=dict)
+    internal_messages: dict[tuple[int, int, int], Message] = field(default_factory=dict)
+    set_messages: dict[tuple[int, int, int], Message] = field(default_factory=dict)

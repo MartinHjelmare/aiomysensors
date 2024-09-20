@@ -10,14 +10,14 @@ from paho.mqtt.client import MQTTMessage
 import pytest
 
 from aiomysensors.exceptions import TransportError, TransportFailedError
-from aiomysensors.model.message import Message
 from aiomysensors.transport.mqtt import PAHO_MQTT_LOGGER, MQTTClient
 
 HOST = "mqtt.org"
 PORT = 1111
 IN_PREFIX = "mysensors/test-out"
 OUT_PREFIX = "mysensors/test-in"
-MQTT_CLIENT_ID = "mqtt_client_id"
+UUID = 1234
+MQTT_CLIENT_ID = f"aiomysensors-{UUID}"
 
 
 @pytest.fixture(name="mqtt")
@@ -31,8 +31,9 @@ def mqtt_fixture():
 
 @pytest.fixture(name="client_id", autouse=True)
 def mqtt_client_id_fixture():
-    """Mock the client id."""
-    with patch("aiomysensors.transport.mqtt.mqtt.base62", return_value=MQTT_CLIENT_ID):
+    """Mock the UUID for the client id."""
+    with patch("aiomysensors.transport.mqtt.uuid.uuid4") as uuid4:
+        uuid4.return_value.int = UUID
         yield MQTT_CLIENT_ID
 
 
@@ -99,12 +100,11 @@ async def test_read_write(mqtt, client_id):
     mqtt_client = mqtt.return_value
     topic = f"{IN_PREFIX}/0/255/3/1/11"
     payload = "test"
-    msg = MQTTMessage()
-    msg.topic = topic.encode()
+    msg = MQTTMessage(topic=topic.encode(encoding="utf-8"))
     msg.payload = payload.encode()
     messages = [msg]
 
-    async def mock_messages() -> AsyncGenerator[Message, None]:
+    async def mock_messages() -> AsyncGenerator[MQTTMessage, None]:
         """Mock the messages generator."""
         for message in messages:
             yield message
@@ -149,12 +149,11 @@ async def test_read_failure(mqtt, client_id):
     mqtt_client = mqtt.return_value
     topic = f"{IN_PREFIX}/0/0/0/0/0"
     payload = "test"
-    msg = MQTTMessage()
-    msg.topic = topic.encode()
+    msg = MQTTMessage(topic=topic.encode(encoding="utf-8"))
     msg.payload = payload.encode()
     messages = [msg]
 
-    async def mock_messages() -> AsyncGenerator[Message, None]:
+    async def mock_messages() -> AsyncGenerator[MQTTMessage, None]:
         """Mock the messages generator."""
         for message in messages:
             yield message

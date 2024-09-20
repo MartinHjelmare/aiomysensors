@@ -1,8 +1,9 @@
 """Provide CLI helpers."""
 
 import asyncio
+from collections.abc import Awaitable
 import logging
-from typing import Awaitable, Callable
+from typing import Callable
 
 from aiomysensors.exceptions import (
     AIOMySensorsError,

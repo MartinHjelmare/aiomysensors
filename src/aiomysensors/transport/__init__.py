@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 import asyncio
-from typing import Optional, Tuple
+from typing import Optional
 
 from ..exceptions import TransportError, TransportFailedError, TransportReadError
 
@@ -10,7 +10,8 @@ TERMINATOR = b"\n"
 
 
 class Transport(ABC):
-    """Represent a MySensors transport.
+    """
+    Represent a MySensors transport.
 
     Method callers should handle TransportError.
     """
@@ -43,7 +44,7 @@ class StreamTransport(Transport):
     @abstractmethod
     async def _open_connection(
         self,
-    ) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+    ) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Open the stream connection."""
 
     async def connect(self) -> None:
@@ -57,7 +58,8 @@ class StreamTransport(Transport):
 
     async def disconnect(self) -> None:
         """Disconnect the transport."""
-        assert self.writer is not None
+        if self.writer is None:
+            return
         try:
             self.writer.close()
             await self.writer.wait_closed()
@@ -66,7 +68,8 @@ class StreamTransport(Transport):
 
     async def read(self) -> str:
         """Return a decoded message."""
-        assert self.reader is not None
+        if self.reader is None:
+            raise TransportError("Not connected to stream transport.")
 
         try:
             read = await self.reader.readuntil(TERMINATOR)
@@ -83,7 +86,8 @@ class StreamTransport(Transport):
 
     async def write(self, decoded_message: str) -> None:
         """Write a decoded message to the transport."""
-        assert self.writer is not None
+        if self.writer is None:
+            raise TransportError("Not connected to stream transport.")
 
         try:
             self.writer.write(decoded_message.encode())

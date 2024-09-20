@@ -8,7 +8,6 @@ from aiomysensors.exceptions import MissingChildError, MissingNodeError
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Child, Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
-
 from tests.common import (
     DEFAULT_NODE_CHILD_SERIALIZED,
     NODE_CHILD_SERIALIZED,
@@ -329,7 +328,6 @@ async def test_missing_node(
     message_schema,
 ):
     """Test missing node handling."""
-    # pylint: disable=too-many-statements
     assert not gateway.nodes
 
     # Receive command for a missing node.

@@ -2,8 +2,8 @@
 
 from unittest.mock import patch
 
-from click.testing import CliRunner
 import pytest
+from typer.testing import CliRunner
 
 from aiomysensors.cli import cli
 from aiomysensors.exceptions import (
@@ -18,7 +18,7 @@ from aiomysensors.model.message import Message
 @pytest.fixture(name="gateway_cli", autouse=True)
 def gateway_cli_fixture():
     """Mock the CLI gateway handler."""
-    with patch("aiomysensors.cli.gateway_mqtt.Gateway", autospec=True) as gateway_class:
+    with patch("aiomysensors.cli.Gateway", autospec=True) as gateway_class:
         gateway = gateway_class.return_value
         yield gateway
 
@@ -37,13 +37,6 @@ def gateway_cli_fixture():
     "args",
     [
         [
-            "mqtt-gateway",
-            "-H test.org",
-            "-i mysensors/test-out",
-            "-o mysensors/test-in",
-        ],
-        [
-            "--debug",
             "mqtt-gateway",
             "-H test.org",
             "-i mysensors/test-out",

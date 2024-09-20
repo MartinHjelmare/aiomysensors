@@ -3,20 +3,23 @@
 from enum import IntEnum
 from typing import Any, Callable, TypeVar, cast
 
-# pylint: disable=unused-import
-from . import SYSTEM_CHILD_ID
 from ...exceptions import MissingChildError, MissingNodeError
 from ...gateway import Gateway, MessageBuffer
 from ..message import Message
+from . import SYSTEM_CHILD_ID
 from .protocol_15 import (  # noqa: F401
     INTERNAL_COMMAND_TYPE,
     STRICT_SYSTEM_COMMAND_TYPES,
     VALID_SYSTEM_COMMAND_TYPES,
     Command,
+    Stream,
+)
+from .protocol_15 import (
     IncomingMessageHandler as IncomingMessageHandler15,
+)
+from .protocol_15 import (
     OutgoingMessageHandler as OutgoingMessageHandler15,
 )
-from .protocol_15 import Stream  # noqa: F401
 
 Func = TypeVar("Func", bound=Callable[..., Any])
 
@@ -58,8 +61,6 @@ def handle_missing_node_child(func: Func) -> Func:
 
 class IncomingMessageHandler(IncomingMessageHandler15):
     """Represent a message handler."""
-
-    # pylint: disable=unused-argument
 
     @classmethod
     async def _handle_sleep_buffer(
