@@ -2,16 +2,18 @@
 
 from abc import ABC, abstractmethod
 import asyncio
-from typing import Optional
 
-from ..exceptions import TransportError, TransportFailedError, TransportReadError
+from aiomysensors.exceptions import (
+    TransportError,
+    TransportFailedError,
+    TransportReadError,
+)
 
 TERMINATOR = b"\n"
 
 
 class Transport(ABC):
-    """
-    Represent a MySensors transport.
+    """Represent a MySensors transport.
 
     Method callers should handle TransportError.
     """
@@ -38,8 +40,8 @@ class StreamTransport(Transport):
 
     def __init__(self) -> None:
         """Set up stream transport."""
-        self.reader: Optional[asyncio.StreamReader] = None
-        self.writer: Optional[asyncio.StreamWriter] = None
+        self.reader: asyncio.StreamReader | None = None
+        self.writer: asyncio.StreamWriter | None = None
 
     @abstractmethod
     async def _open_connection(
@@ -53,7 +55,7 @@ class StreamTransport(Transport):
             self.reader, self.writer = await self._open_connection()
         except OSError as err:
             raise TransportError(
-                f"Failed to connect to stream transport: {err}"
+                f"Failed to connect to stream transport: {err}",
             ) from err
 
     async def disconnect(self) -> None:
@@ -79,7 +81,7 @@ class StreamTransport(Transport):
             raise TransportReadError(err, err.partial) from err
         except OSError as err:
             raise TransportFailedError(
-                f"Failed reading from stream transport: {err}"
+                f"Failed reading from stream transport: {err}",
             ) from err
 
         return read.decode()
@@ -94,5 +96,5 @@ class StreamTransport(Transport):
             await self.writer.drain()
         except OSError as err:
             raise TransportFailedError(
-                f"Failed writing to stream transport: {err}"
+                f"Failed writing to stream transport: {err}",
             ) from err

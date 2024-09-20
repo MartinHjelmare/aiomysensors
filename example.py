@@ -1,6 +1,7 @@
 """Show a minimal example using aiomysensors."""
 
 import asyncio
+import contextlib
 
 from aiomysensors import AIOMySensorsError, Gateway, SerialTransport
 
@@ -13,14 +14,12 @@ async def run_gateway() -> None:
 
     try:
         async with Gateway(transport) as gateway:
-            async for message in gateway.listen():
-                print("Message received:", message)
-    except AIOMySensorsError as err:
-        print("Error:", err)
+            async for _message in gateway.listen():
+                pass
+    except AIOMySensorsError:
+        pass
 
 
 if __name__ == "__main__":
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         asyncio.run(run_gateway())
-    except KeyboardInterrupt:
-        pass

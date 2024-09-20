@@ -21,6 +21,7 @@ class SerialTransport(StreamTransport):
     ) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Open the stream connection."""
         reader_writer_pair: tuple[
-            asyncio.StreamReader, asyncio.StreamWriter
+            asyncio.StreamReader,
+            asyncio.StreamWriter,
         ] = await open_serial_connection(url=self.port, baudrate=self.baud)
         return reader_writer_pair

@@ -1,17 +1,20 @@
 """Test protocol 2.0."""
 
-from contextlib import ExitStack as default_context
+from contextlib import AbstractContextManager
+from contextlib import ExitStack as DefaultContext
 
 import pytest
 
 from aiomysensors.exceptions import MissingChildError, MissingNodeError
-from aiomysensors.model.message import Message
+from aiomysensors.gateway import Gateway
+from aiomysensors.model.message import Message, MessageSchema
 from aiomysensors.model.node import Child, Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 from tests.common import (
     DEFAULT_NODE_CHILD_SERIALIZED,
     NODE_CHILD_SERIALIZED,
     NODE_SERIALIZED,
+    MockTransport,
 )
 
 PROTOCOL_VERSIONS_2x = list(PROTOCOL_VERSIONS)
@@ -19,13 +22,14 @@ PROTOCOL_VERSIONS_2x.remove("1.4")
 PROTOCOL_VERSIONS_2x.remove("1.5")
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, values_after, writes, reboot",
+    ("command", "context", "node_before", "values_after", "writes", "reboot"),
     [
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "25.0"},  # values_after
             [],  # writes
@@ -33,7 +37,7 @@ PROTOCOL_VERSIONS_2x.remove("1.5")
         ),  # Set message
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "25.0"},  # values_after
             ["0;255;3;0;13;\n"],  # writes
@@ -59,47 +63,43 @@ PROTOCOL_VERSIONS_2x.remove("1.5")
     indirect=["command", "node_before"],
 )
 async def test_set(
-    command,
-    context,
-    node_before,
-    values_after,
-    writes,
-    reboot,
-    gateway,
-    message_schema,
-    node_schema,
-):
+    context: AbstractContextManager,
+    values_after: dict[int, str],
+    writes: list[str],
+    reboot: bool,
+    gateway: Gateway,
+    transport: MockTransport,
+) -> None:
     """Test set command."""
     if reboot:
         for node in gateway.nodes.values():
             node.reboot = True
 
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     for node in gateway.nodes.values():
         for child in node.children.values():
             assert child.values == values_after
 
-    assert gateway.transport.writes == writes
+    assert transport.writes == writes
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, values_after, writes",
+    ("command", "context", "node_before", "values_after", "writes"),
     [
         (
             Message(0, 0, 2, 0, 0),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "20.0"},  # values_after
             ["0;0;1;0;0;20.0\n"],  # writes
         ),  # Req message
         (
             Message(0, 0, 2, 0, 0),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             DEFAULT_NODE_CHILD_SERIALIZED,  # node_before
             {},  # values_after
             [],  # writes
@@ -122,31 +122,26 @@ async def test_set(
     indirect=["command", "node_before"],
 )
 async def test_req(
-    command,
-    context,
-    node_before,
-    values_after,
-    writes,
-    gateway,
-    message_schema,
-    node_schema,
-):
+    context: AbstractContextManager,
+    values_after: dict[int, str],
+    writes: list[str],
+    gateway: Gateway,
+    transport: MockTransport,
+) -> None:
     """Test req command."""
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     for node in gateway.nodes.values():
         for child in node.children.values():
             assert child.values == values_after
 
-    assert gateway.transport.writes == writes
+    assert transport.writes == writes
 
 
 @pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
 @pytest.mark.parametrize(
-    "command, writes",
+    ("command", "writes"),
     [
         (
             Message(0, 255, 3, 0, 14),  # command
@@ -156,26 +151,27 @@ async def test_req(
     indirect=["command"],
 )
 async def test_gateway_ready(
-    command,
-    writes,
-    gateway,
-    message_schema,
-):
+    command: str,
+    writes: list[str],
+    gateway: Gateway,
+    message_schema: MessageSchema,
+    transport: MockTransport,
+) -> None:
     """Test internal gateway ready command."""
-    async for msg in gateway.listen():
-        assert message_schema.dump(msg) == command
-        break
+    msg = await anext(gateway.listen())
 
-    assert gateway.transport.writes == writes
+    assert message_schema.dump(msg) == command
+    assert transport.writes == writes
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, writes",
+    ("command", "context", "node_before", "writes"),
     [
         (
             Message(0, 255, 3, 0, 21, "0"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             [],  # writes
         ),  # gateway ready message
@@ -189,29 +185,34 @@ async def test_gateway_ready(
     indirect=["command", "node_before"],
 )
 async def test_discover_response(
-    command,
-    context,
-    node_before,
-    writes,
-    gateway,
-    message_schema,
-):
+    context: AbstractContextManager,
+    writes: list[str],
+    gateway: Gateway,
+    transport: MockTransport,
+) -> None:
     """Test internal discover response command."""
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
-    assert gateway.transport.writes == writes
+    assert transport.writes == writes
 
 
+@pytest.mark.usefixtures("node_before")
 @pytest.mark.parametrize("message_schema", ["2.0", "2.1"], indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, to_send, writes, second_writes, third_writes",
+    (
+        "command",
+        "context",
+        "node_before",
+        "to_send",
+        "writes",
+        "second_writes",
+        "third_writes",
+    ),
     [
         (
             Message(0, 255, 3, 0, 22, "1"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             [Message(0, 0, 1, 0, 0, "25.0"), Message(1, 0, 1, 0, 0, "25.0")],  # to_send
             ["1;0;1;0;0;25.0\n"],  # writes
@@ -229,7 +230,7 @@ async def test_discover_response(
         ),  # missing node
         (
             Message(0, 255, 3, 0, 22, "1"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             [],  # to_send
             [],  # writes
@@ -238,7 +239,7 @@ async def test_discover_response(
         ),  # nothing to send
         (
             Message(0, 255, 3, 0, 24, "1"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             [Message(0, 0, 1, 0, 0, "25.0")],  # to_send
             ["0;0;1;0;0;25.0\n"],  # writes
@@ -249,16 +250,15 @@ async def test_discover_response(
     indirect=["command", "node_before"],
 )
 async def test_heartbeat_response(
-    command,
-    context,
-    node_before,
-    to_send,
-    writes,
-    second_writes,
-    third_writes,
-    gateway,
-    message_schema,
-):
+    command: str,
+    context: AbstractContextManager,
+    to_send: list[Message],
+    writes: list[str],
+    second_writes: list[str],
+    third_writes: list[str],
+    gateway: Gateway,
+    transport: MockTransport,
+) -> None:
     """Test internal heartbeat response command."""
     # Set a node that won't send a heartbeat.
     gateway.nodes[1] = node = Node(1, 17, "2.0")
@@ -266,45 +266,47 @@ async def test_heartbeat_response(
 
     # Receive command.
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        msg = await anext(gateway.listen())
 
     # Send some messages.
     for msg in to_send:
         await gateway.send(msg)
 
     # Check transport messages after first command and sends.
-    assert gateway.transport.writes == writes
-    gateway.transport.writes.clear()
+    assert transport.writes == writes
+    transport.writes.clear()
 
     # Receive command again.
-    gateway.transport.messages.append(command)
+    transport.messages.append(command)
 
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        msg = await anext(gateway.listen())
 
     # Check transport messages after second command.
-    assert gateway.transport.writes == second_writes
-    gateway.transport.writes.clear()
+    assert transport.writes == second_writes
+    transport.writes.clear()
 
     # Receive command again.
-    gateway.transport.messages.append(command)
+    transport.messages.append(command)
 
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        msg = await anext(gateway.listen())
 
     # Check transport messages after third command.
-    assert gateway.transport.writes == third_writes
+    assert transport.writes == third_writes
 
 
+@pytest.mark.usefixtures("node_before")
 @pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
 @pytest.mark.parametrize(
-    "command, node_before, writes, second_writes, third_writes, fourth_writes",
+    (
+        "command",
+        "node_before",
+        "writes",
+        "second_writes",
+        "third_writes",
+        "fourth_writes",
+    ),
     [
         (
             Message(1, 0, 1, 0, 2, "1"),  # command
@@ -318,75 +320,67 @@ async def test_heartbeat_response(
     indirect=["command", "node_before"],
 )
 async def test_missing_node(
-    command,
-    node_before,
-    writes,
-    second_writes,
-    third_writes,
-    fourth_writes,
-    gateway,
-    message_schema,
-):
+    command: str,
+    writes: list[str],
+    second_writes: list[str],
+    third_writes: list[str],
+    fourth_writes: list[str],
+    gateway: Gateway,
+    message_schema: MessageSchema,
+    transport: MockTransport,
+) -> None:
     """Test missing node handling."""
     assert not gateway.nodes
 
     # Receive command for a missing node.
     with pytest.raises(MissingNodeError):
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     # Check transport messages after first command.
-    assert gateway.transport.writes == writes
-    gateway.transport.writes.clear()
+    assert transport.writes == writes
+    transport.writes.clear()
 
     # Receive command again.
-    gateway.transport.messages.append(command)
+    transport.messages.append(command)
 
     with pytest.raises(MissingNodeError):
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     # Check transport messages after second command.
-    assert gateway.transport.writes == second_writes
-    gateway.transport.writes.clear()
+    assert transport.writes == second_writes
+    transport.writes.clear()
 
     # Receive a presentation of the node.
     presentation_command = (
         f"1;255;0;0;17;{message_schema.context['protocol_version']}\n"
     )
-    gateway.transport.messages.append(presentation_command)
+    transport.messages.append(presentation_command)
 
-    async for msg in gateway.listen():
-        assert message_schema.dump(msg) == presentation_command
-        break
+    msg = await anext(gateway.listen())
 
+    assert message_schema.dump(msg) == presentation_command
     assert gateway.nodes
     assert gateway.nodes[1]
     node = gateway.nodes[1]
     assert not node.children
 
     # Receive command again.
-    gateway.transport.messages.append(command)
+    transport.messages.append(command)
 
     with pytest.raises(MissingChildError):
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        msg = await anext(gateway.listen())
 
     # Check transport messages after third command.
-    assert gateway.transport.writes == third_writes
-    gateway.transport.writes.clear()
+    assert transport.writes == third_writes
+    transport.writes.clear()
 
     # Receive a presentation of the child.
     presentation_command = "1;0;0;0;3;Test Child\n"
-    gateway.transport.messages.append(presentation_command)
+    transport.messages.append(presentation_command)
 
-    async for msg in gateway.listen():
-        assert message_schema.dump(msg) == presentation_command
-        break
+    msg = await anext(gateway.listen())
 
+    assert message_schema.dump(msg) == presentation_command
     assert gateway.nodes
     assert gateway.nodes[1]
     node = gateway.nodes[1]
@@ -394,14 +388,13 @@ async def test_missing_node(
     assert node.children[0]
 
     # Receive command again.
-    gateway.transport.messages.append(command)
+    transport.messages.append(command)
 
-    async for msg in gateway.listen():
-        assert message_schema.dump(msg) == command
-        break
+    msg = await anext(gateway.listen())
 
+    assert message_schema.dump(msg) == command
     # Check transport messages after fourth command.
-    assert gateway.transport.writes == fourth_writes
+    assert transport.writes == fourth_writes
 
     assert gateway.nodes
     assert gateway.nodes[1]

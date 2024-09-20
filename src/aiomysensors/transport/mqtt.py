@@ -2,16 +2,17 @@
 
 from abc import abstractmethod
 import asyncio
+import contextlib
 from dataclasses import dataclass
 from enum import Enum
 import logging
-from typing import Optional
 import uuid
 
 from asyncio_mqtt import Client as AsyncioClient
 from asyncio_mqtt import MqttError
 
-from ..exceptions import TransportError, TransportFailedError
+from aiomysensors.exceptions import TransportError, TransportFailedError
+
 from . import Transport
 
 PAHO_MQTT_LOGGER = logging.getLogger("paho.mqtt.client")
@@ -29,15 +30,18 @@ class ReceivedMessage:
     """Represent a received message from the broker."""
 
     message_type: MQTTMessageType
-    message: Optional[str] = None
-    error: Optional[Exception] = None
+    message: str | None = None
+    error: Exception | None = None
 
 
 class MQTTTransport(Transport):
     """Represent an MQTT transport."""
 
     def __init__(
-        self, *, in_prefix: str = "mygateway1-out", out_prefix: str = "mygateway1-in"
+        self,
+        *,
+        in_prefix: str = "mygateway1-out",
+        out_prefix: str = "mygateway1-in",
     ) -> None:
         """Set up MQTT transport."""
         self.in_prefix = in_prefix  # prefix for topics gw -> controller
@@ -98,8 +102,7 @@ class MQTTTransport(Transport):
 
     @abstractmethod
     async def _connect(self) -> None:
-        """
-        Connect the transport.
+        """Connect the transport.
 
         Raise TransportError if the connection failed.
         """
@@ -110,35 +113,32 @@ class MQTTTransport(Transport):
 
     @abstractmethod
     async def _publish(self, topic: str, payload: str, qos: int) -> None:
-        """
-        Publish to topic.
+        """Publish to topic.
 
         Raise TransportError if the publish failed.
         """
 
     @abstractmethod
     async def _subscribe(self, topic: str, qos: int) -> None:
-        """
-        Subscribe to topic.
+        """Subscribe to topic.
 
         Raise TransportError if the subscribe failed.
         """
 
     def _receive(self, topic: str, payload: str) -> None:
-        """
-        Receive an MQTT message.
+        """Receive an MQTT message.
 
         Call this method when a message is received from the MQTT broker.
         """
         decoded_message = self._parse_mqtt_to_message(topic, payload)
         message = ReceivedMessage(
-            message_type=MQTTMessageType.MESSAGE, message=decoded_message
+            message_type=MQTTMessageType.MESSAGE,
+            message=decoded_message,
         )
         self._incoming_messages.put_nowait(message)
 
     def _receive_error(self, error: Exception) -> None:
-        """
-        Propagate an Exception raised when receiving an MQTT message.
+        """Propagate an Exception raised when receiving an MQTT message.
 
         Call this method when receiving a message failed.
         """
@@ -147,8 +147,7 @@ class MQTTTransport(Transport):
 
     @staticmethod
     def _parse_mqtt_to_message(topic: str, payload: str) -> str:
-        """
-        Parse an MQTT topic and payload.
+        """Parse an MQTT topic and payload.
 
         Return a decoded message.
         """
@@ -161,8 +160,7 @@ class MQTTTransport(Transport):
         return ";".join(without_prefix)
 
     def _parse_message_to_mqtt(self, decoded_message: str) -> tuple[str, str, int]:
-        """
-        Parse a decoded message.
+        """Parse a decoded message.
 
         Return an MQTT topic, payload and qos-level as a tuple.
         """
@@ -189,12 +187,11 @@ class MQTTClient(MQTTTransport):
         super().__init__(in_prefix=in_prefix, out_prefix=out_prefix)
         self._host = host
         self._port = port
-        self._client: Optional[AsyncioClient] = None
-        self._incoming_task: Optional[asyncio.Task] = None
+        self._client: AsyncioClient | None = None
+        self._incoming_task: asyncio.Task | None = None
 
     async def _connect(self) -> None:
-        """
-        Connect to the broker.
+        """Connect to the broker.
 
         Raise TransportError if the connection failed.
         """
@@ -223,16 +220,13 @@ class MQTTClient(MQTTTransport):
         self._incoming_task.cancel()
         await self._incoming_task
         self._incoming_task = None
-        try:
+        with contextlib.suppress(MqttError):
             await self._client.disconnect(timeout=10)
-        except MqttError:
-            pass
 
         self._client = None
 
     async def _publish(self, topic: str, payload: str, qos: int) -> None:
-        """
-        Publish to topic.
+        """Publish to topic.
 
         Raise TransportError if the publish failed.
         """
@@ -249,8 +243,7 @@ class MQTTClient(MQTTTransport):
             raise TransportFailedError from err
 
     async def _subscribe(self, topic: str, qos: int) -> None:
-        """
-        Subscribe to topic.
+        """Subscribe to topic.
 
         Raise TransportError if the subscribe failed.
         """
@@ -272,5 +265,5 @@ class MQTTClient(MQTTTransport):
                     self._receive(message.topic, message.payload.decode())
         except MqttError as err:
             self._receive_error(
-                TransportFailedError(f"Failed to receive message: {err}")
+                TransportFailedError(f"Failed to receive message: {err}"),
             )

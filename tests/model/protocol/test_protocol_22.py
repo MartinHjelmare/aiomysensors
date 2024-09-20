@@ -1,14 +1,16 @@
 """Test protocol 2.2."""
 
-from contextlib import ExitStack as default_context
+from contextlib import AbstractContextManager
+from contextlib import ExitStack as DefaultContext
 
 import pytest
 
 from aiomysensors.exceptions import MissingNodeError
+from aiomysensors.gateway import Gateway
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Child, Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
-from tests.common import NODE_CHILD_SERIALIZED
+from tests.common import NODE_CHILD_SERIALIZED, MockTransport
 
 HEARTBEAT_PAYLOAD = "1111"
 PROTOCOL_VERSIONS_2x = list(PROTOCOL_VERSIONS)
@@ -18,13 +20,14 @@ PROTOCOL_VERSIONS_2x.remove("2.0")
 PROTOCOL_VERSIONS_2x.remove("2.1")
 
 
+@pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, writes, heartbeat",
+    ("command", "context", "node_before", "writes", "heartbeat"),
     [
         (
             Message(0, 255, 3, 0, 22, HEARTBEAT_PAYLOAD),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             [],  # writes
             int(HEARTBEAT_PAYLOAD),  # heartbeat
@@ -40,33 +43,38 @@ PROTOCOL_VERSIONS_2x.remove("2.1")
     indirect=["command", "node_before"],
 )
 async def test_heartbeat_response(
-    command,
-    context,
-    node_before,
-    writes,
-    heartbeat,
-    gateway,
-    message_schema,
-):
+    context: AbstractContextManager,
+    writes: list[str],
+    heartbeat: int,
+    gateway: Gateway,
+    transport: MockTransport,
+) -> None:
     """Test internal heartbeat response command."""
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     for node in gateway.nodes.values():
         assert node.heartbeat == heartbeat
 
-    assert gateway.transport.writes == writes
+    assert transport.writes == writes
 
 
+@pytest.mark.usefixtures("node_before")
 @pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
 @pytest.mark.parametrize(
-    "command, context, node_before, to_send, writes, second_writes, third_writes",
+    (
+        "command",
+        "context",
+        "node_before",
+        "to_send",
+        "writes",
+        "second_writes",
+        "third_writes",
+    ),
     [
         (
             Message(0, 255, 3, 0, 32, "1"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             [Message(0, 0, 1, 0, 0, "25.0"), Message(1, 0, 1, 0, 0, "25.0")],  # to_send
             ["1;0;1;0;0;25.0\n"],  # writes
@@ -84,7 +92,7 @@ async def test_heartbeat_response(
         ),  # missing node
         (
             Message(0, 255, 3, 0, 32, "1"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             [],  # to_send
             [],  # writes
@@ -93,7 +101,7 @@ async def test_heartbeat_response(
         ),  # nothing to send
         (
             Message(0, 255, 3, 0, 24, "1"),  # command
-            default_context(),  # context
+            DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             [Message(0, 0, 1, 0, 0, "25.0")],  # to_send
             ["0;0;1;0;0;25.0\n"],  # writes
@@ -104,16 +112,15 @@ async def test_heartbeat_response(
     indirect=["command", "node_before"],
 )
 async def test_pre_sleep_notification(
-    command,
-    context,
-    node_before,
-    to_send,
-    writes,
-    second_writes,
-    third_writes,
-    gateway,
-    message_schema,
-):
+    command: str,
+    context: AbstractContextManager,
+    to_send: list[Message],
+    writes: list[str],
+    second_writes: list[str],
+    third_writes: list[str],
+    gateway: Gateway,
+    transport: MockTransport,
+) -> None:
     """Test internal pre sleep notification command."""
     # Set a node that won't send a pre sleep notification.
     gateway.nodes[1] = node = Node(1, 17, "2.2")
@@ -121,37 +128,31 @@ async def test_pre_sleep_notification(
 
     # Receive command.
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     # Send some messages.
     for msg in to_send:
         await gateway.send(msg)
 
     # Check transport messages after first command and sends.
-    assert gateway.transport.writes == writes
-    gateway.transport.writes.clear()
+    assert transport.writes == writes
+    transport.writes.clear()
 
     # Receive command again.
-    gateway.transport.messages.append(command)
+    transport.messages.append(command)
 
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     # Check transport messages after second command.
-    assert gateway.transport.writes == second_writes
-    gateway.transport.writes.clear()
+    assert transport.writes == second_writes
+    transport.writes.clear()
 
     # Receive command again.
-    gateway.transport.messages.append(command)
+    transport.messages.append(command)
 
     with context:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == command
-            break
+        await anext(gateway.listen())
 
     # Check transport messages after third command.
-    assert gateway.transport.writes == third_writes
+    assert transport.writes == third_writes

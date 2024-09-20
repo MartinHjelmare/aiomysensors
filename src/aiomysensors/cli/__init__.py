@@ -20,18 +20,23 @@ logging.basicConfig(level=logging.DEBUG)
 def mqtt_gateway(
     host: Annotated[str, typer.Option("--host", "-H", help="Host of the MQTT broker.")],
     port: Annotated[
-        int, typer.Option("--port", "-p", help="Port of the MQTT broker.")
+        int,
+        typer.Option("--port", "-p", help="Port of the MQTT broker."),
     ] = 1883,
     in_prefix: Annotated[
         str,
         typer.Option(
-            "--in-prefix", "-i", help="Topic in-prefix to subscribe to at the broker."
+            "--in-prefix",
+            "-i",
+            help="Topic in-prefix to subscribe to at the broker.",
         ),
     ] = "mygateway1-out",
     out_prefix: Annotated[
         str,
         typer.Option(
-            "--out-prefix", "-o", help="Topic out-prefix to publish to at the broker."
+            "--out-prefix",
+            "-o",
+            help="Topic out-prefix to publish to at the broker.",
         ),
     ] = "mygateway1-in",
 ) -> None:
@@ -40,8 +45,7 @@ def mqtt_gateway(
     async def gateway_factory() -> Gateway:
         """Return a gateway."""
         transport = MQTTClient(host, port, in_prefix, out_prefix)
-        gateway = Gateway(transport)
-        return gateway
+        return Gateway(transport)
 
     run_gateway(gateway_factory)
 
@@ -49,10 +53,12 @@ def mqtt_gateway(
 @cli.command()
 def serial_gateway(
     port: Annotated[
-        str, typer.Option("--port", "-p", help="Serial port of the gateway.")
+        str,
+        typer.Option("--port", "-p", help="Serial port of the gateway."),
     ],
     baud: Annotated[
-        int, typer.Option("--baud", "-b", help="Baud rate of the serial connection.")
+        int,
+        typer.Option("--baud", "-b", help="Baud rate of the serial connection."),
     ] = 115200,
 ) -> None:
     """Start a serial gateway."""
@@ -60,8 +66,7 @@ def serial_gateway(
     async def gateway_factory() -> Gateway:
         """Return a gateway."""
         transport = SerialTransport(port, baud)
-        gateway = Gateway(transport)
-        return gateway
+        return Gateway(transport)
 
     run_gateway(gateway_factory)
 
@@ -69,10 +74,12 @@ def serial_gateway(
 @cli.command()
 def tcp_gateway(
     host: Annotated[
-        str, typer.Option("--host", "-H", help="Host of the TCP connection.")
+        str,
+        typer.Option("--host", "-H", help="Host of the TCP connection."),
     ],
     port: Annotated[
-        int, typer.Option("--port", "-p", help="Port of the TCP connection.")
+        int,
+        typer.Option("--port", "-p", help="Port of the TCP connection."),
     ] = 5003,
 ) -> None:
     """Start a TCP gateway."""
@@ -80,7 +87,6 @@ def tcp_gateway(
     async def gateway_factory() -> Gateway:
         """Return a gateway."""
         transport = TCPTransport(host, port)
-        gateway = Gateway(transport)
-        return gateway
+        return Gateway(transport)
 
     run_gateway(gateway_factory)

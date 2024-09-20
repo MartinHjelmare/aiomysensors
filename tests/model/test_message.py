@@ -3,12 +3,12 @@
 from marshmallow.exceptions import ValidationError
 import pytest
 
-from aiomysensors.model.message import Message
+from aiomysensors.model.message import Message, MessageSchema
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-def test_dump(message_schema):
+def test_dump(message_schema: MessageSchema) -> None:
     """Test dump of message."""
     msg = Message()
 
@@ -29,7 +29,7 @@ def test_dump(message_schema):
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-def test_dump_bad_message(message_schema):
+def test_dump_bad_message(message_schema: MessageSchema) -> None:
     """Test dump of bad message."""
     with pytest.raises(ValidationError):
         message_schema.dump(None)
@@ -39,9 +39,9 @@ def test_dump_bad_message(message_schema):
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-def test_load(message_schema):
+def test_load(message_schema: MessageSchema) -> None:
     """Test load of message."""
-    msg = message_schema.load("1;255;3;0;0;57\n")
+    msg = message_schema.load("1;255;3;0;0;57\n")  # type: ignore[arg-type]
     assert msg.node_id == 1
     assert msg.child_id == 255
     assert msg.command == 3
@@ -51,9 +51,9 @@ def test_load(message_schema):
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-def test_load_internal_id_request(message_schema):
+def test_load_internal_id_request(message_schema: MessageSchema) -> None:
     """Test load internal id request message."""
-    msg = message_schema.load("1;5;3;0;3;\n")
+    msg = message_schema.load("1;5;3;0;3;\n")  # type: ignore[arg-type]
     assert msg.node_id == 1
     assert msg.child_id == 5
     assert msg.command == 3
@@ -63,44 +63,44 @@ def test_load_internal_id_request(message_schema):
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-def test_load_bad_message(message_schema):
+def test_load_bad_message(message_schema: MessageSchema) -> None:
     """Test load of bad message."""
     # Message that fails on bad node id
     with pytest.raises(ValidationError):
-        message_schema.load("bad;0;0;0;0;0\n")
+        message_schema.load("bad;0;0;0;0;0\n")  # type: ignore[arg-type]
 
     # Message that fails on bad child id
     with pytest.raises(ValidationError):
-        message_schema.load("0;bad;0;0;0;0\n")
+        message_schema.load("0;bad;0;0;0;0\n")  # type: ignore[arg-type]
 
     # Message that fails on bad command type
     with pytest.raises(ValidationError):
-        message_schema.load("0;0;bad;0;0;0\n")
+        message_schema.load("0;0;bad;0;0;0\n")  # type: ignore[arg-type]
 
     # Message that fails on bad ack flag
     with pytest.raises(ValidationError):
-        message_schema.load("0;0;0;bad;0;0\n")
+        message_schema.load("0;0;0;bad;0;0\n")  # type: ignore[arg-type]
 
     # Message that fails on bad message type
     with pytest.raises(ValidationError):
-        message_schema.load("0;0;0;0;bad;0\n")
+        message_schema.load("0;0;0;0;bad;0\n")  # type: ignore[arg-type]
 
     # Message that fails on range of child id
     with pytest.raises(ValidationError):
-        message_schema.load("0;300;0;0;0;0\n")
+        message_schema.load("0;300;0;0;0;0\n")  # type: ignore[arg-type]
 
     # Message that fails on range of command type
     with pytest.raises(ValidationError):
-        message_schema.load("0;0;-1;0;0;0\n")
+        message_schema.load("0;0;-1;0;0;0\n")  # type: ignore[arg-type]
 
     # Message that fails on range of ack flag
     with pytest.raises(ValidationError):
-        message_schema.load("0;0;0;3;0;0\n")
+        message_schema.load("0;0;0;3;0;0\n")  # type: ignore[arg-type]
 
     # Message with incorrect child id and command type combination
     with pytest.raises(ValidationError):
-        message_schema.load("1;5;3;0;0;0\n")
+        message_schema.load("1;5;3;0;0;0\n")  # type: ignore[arg-type]
 
     # Message with incorrect child id and command type combination
     with pytest.raises(ValidationError):
-        message_schema.load("1;255;1;0;0;0\n")
+        message_schema.load("1;255;1;0;0;0\n")  # type: ignore[arg-type]

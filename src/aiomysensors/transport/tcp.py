@@ -19,6 +19,7 @@ class TCPTransport(StreamTransport):
     ) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         """Open the stream connection."""
         reader_writer_pair: tuple[
-            asyncio.StreamReader, asyncio.StreamWriter
+            asyncio.StreamReader,
+            asyncio.StreamWriter,
         ] = await asyncio.open_connection(host=self.host, port=self.port)
         return reader_writer_pair

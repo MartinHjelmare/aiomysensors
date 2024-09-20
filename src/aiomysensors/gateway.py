@@ -31,13 +31,13 @@ class Gateway:
         """Set up gateway."""
         self.config = config or Config()
         self.nodes: dict[int, Node] = {}
-        self.persistence: Optional[Persistence] = None
+        self.persistence: Persistence | None = None
         if self.config.persistence_file:
             self.persistence = Persistence(self.nodes, self.config.persistence_file)
         self.transport = transport
         self._message_schema = MessageSchema()
-        self._protocol: Optional[ProtocolType] = None
-        self._protocol_version: Optional[str] = None
+        self._protocol: ProtocolType | None = None
+        self._protocol_version: str | None = None
         self._message_buffer = MessageBuffer()
 
     @property
@@ -50,7 +50,7 @@ class Gateway:
         return self._protocol
 
     @property
-    def protocol_version(self) -> Optional[str]:
+    def protocol_version(self) -> str | None:
         """Return the protocol version."""
         return self._protocol_version
 
@@ -68,7 +68,7 @@ class Gateway:
             decoded_message = await self.transport.read()
             try:
                 message = self._message_schema.load(
-                    decoded_message  # type: ignore[arg-type]
+                    decoded_message,  # type: ignore[arg-type]
                 )
             except ValidationError as err:
                 raise InvalidMessageError(err, decoded_message) from err
@@ -78,7 +78,7 @@ class Gateway:
 
             yield message
 
-    async def send(self, message: Message, message_buffer: bool = True) -> None:
+    async def send(self, message: Message, *, message_buffer: bool = True) -> None:
         """Send a message."""
         # Check valid message first.
         try:
@@ -101,7 +101,10 @@ class Gateway:
         return self
 
     async def __aexit__(
-        self, exc_type: Exception, exc_value: str, traceback: TracebackType
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         """Disconnect from the transport."""
         await self.transport.disconnect()
@@ -114,7 +117,7 @@ class Config:
     """Represent the gateway config."""
 
     metric: bool = True
-    persistence_file: Optional[str] = None
+    persistence_file: str | None = None
 
 
 @dataclass

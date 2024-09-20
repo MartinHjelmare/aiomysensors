@@ -1,6 +1,6 @@
 """Test the CLI for the MQTT gateway."""
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock
 
 import pytest
 from typer.testing import CliRunner
@@ -13,14 +13,6 @@ from aiomysensors.exceptions import (
     UnsupportedMessageError,
 )
 from aiomysensors.model.message import Message
-
-
-@pytest.fixture(name="gateway_cli", autouse=True)
-def gateway_cli_fixture():
-    """Mock the CLI gateway handler."""
-    with patch("aiomysensors.cli.Gateway", autospec=True) as gateway_class:
-        gateway = gateway_class.return_value
-        yield gateway
 
 
 @pytest.mark.parametrize(
@@ -44,7 +36,9 @@ def gateway_cli_fixture():
         ],
     ],
 )
-def test_mqtt_gateway(gateway_handler, args, error):
+def test_mqtt_gateway(
+    gateway_handler: AsyncMock, args: list[str], error: Exception | None
+) -> None:
     """Test the MQTT gateway CLI."""
     gateway_handler.side_effect = [error, KeyboardInterrupt()]
     runner = CliRunner()

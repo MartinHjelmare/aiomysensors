@@ -1,71 +1,91 @@
 """Test the gateway."""
 
 import asyncio
-from unittest.mock import call
+from unittest.mock import MagicMock, call
 
 import pytest
 
 from aiomysensors.exceptions import InvalidMessageError
 from aiomysensors.gateway import Config, Gateway
-from aiomysensors.model.message import Message
+from aiomysensors.model.message import Message, MessageSchema
+from aiomysensors.model.node import Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS
+from tests.common import MockTransport
 
 
+@pytest.mark.usefixtures("node", "child")
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-async def test_listen(gateway, message, message_schema, node, child):
+async def test_listen(
+    gateway: Gateway,
+    message: Message,
+    message_schema: MessageSchema,
+) -> None:
     """Test gateway listen."""
     cmd = message_schema.dump(message)
 
     async with gateway:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == cmd
-            break
+        msg = await anext(gateway.listen())
+
+    assert message_schema.dump(msg) == cmd
 
 
-async def test_listen_invalid_message(gateway):
+async def test_listen_invalid_message(
+    gateway: Gateway, transport: MockTransport
+) -> None:
     """Test gateway listen for invalid message."""
-    gateway.transport.messages.append("invalid")
+    transport.messages.append("invalid")
 
     async with gateway:
         with pytest.raises(InvalidMessageError):
-            async for _ in gateway.listen():
-                raise RuntimeError  # This line should not be reached.
+            await anext(gateway.listen())
 
 
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-async def test_send(gateway, message, message_schema):
+async def test_send(
+    gateway: Gateway,
+    message: Message,
+    message_schema: MessageSchema,
+    transport: MockTransport,
+) -> None:
     """Test gateway send."""
     cmd = message_schema.dump(message)
 
     async with gateway:
         await gateway.send(message)
 
-    assert gateway.transport.writes == [cmd]
+    assert transport.writes == [cmd]
 
 
-async def test_send_invalid_message(gateway):
+async def test_send_invalid_message(gateway: Gateway) -> None:
     """Test gateway send invalid message."""
     async with gateway:
         with pytest.raises(InvalidMessageError):
-            await gateway.send("invalid")
+            await gateway.send("invalid")  # type: ignore[arg-type]
 
 
+@pytest.mark.usefixtures("child")
 @pytest.mark.parametrize("message_schema", list(PROTOCOL_VERSIONS), indirect=True)
-async def test_unset_protocol_version(message, message_schema, node, child, transport):
+async def test_unset_protocol_version(
+    message: Message,
+    message_schema: MessageSchema,
+    node: Node,
+    transport: MockTransport,
+) -> None:
     """Test gateway listen."""
     gateway = Gateway(transport)
     gateway.nodes[0] = node
     cmd = message_schema.dump(message)
 
     async with gateway:
-        async for msg in gateway.listen():
-            assert message_schema.dump(msg) == cmd
-            break
+        msg = await anext(gateway.listen())
 
+    assert message_schema.dump(msg) == cmd
     assert transport.writes == [message_schema.dump(Message(0, 255, 3, 0, 2, ""))]
 
 
-async def test_persistence(mock_file, persistence_data, transport):
+async def test_persistence(
+    mock_file: MagicMock, persistence_data: str, transport: MockTransport
+) -> None:
     """Test gateway persistence."""
     mock_file.read.return_value = persistence_data
     gateway = Gateway(transport, Config(persistence_file="test_path.json"))

@@ -1,6 +1,7 @@
 """Test the tcp transport."""
 
 import asyncio
+from collections.abc import Generator
 from unittest.mock import AsyncMock, call, patch
 
 import pytest
@@ -14,7 +15,7 @@ from aiomysensors.transport.tcp import TCPTransport
 
 
 @pytest.fixture(name="tcp")
-def tcp_fixture():
+def tcp_fixture() -> Generator[AsyncMock, None, None]:
     """Mock the tcp connection."""
     mock_reader = AsyncMock(spec=asyncio.StreamReader)
     mock_writer = AsyncMock(spec=asyncio.StreamWriter)
@@ -23,7 +24,7 @@ def tcp_fixture():
         yield open_tcp
 
 
-async def test_connect_disconnect(tcp):
+async def test_connect_disconnect(tcp: AsyncMock) -> None:
     """Test TCP transport connect and disconnect."""
     transport = TCPTransport("1.1.1.1", 9999)
 
@@ -39,7 +40,7 @@ async def test_connect_disconnect(tcp):
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_connect_failure(tcp):
+async def test_connect_failure(tcp: AsyncMock) -> None:
     """Test TCP transport connect failure."""
     tcp.side_effect = OSError("Boom")
     transport = TCPTransport("1.1.1.1", 9999)
@@ -48,7 +49,7 @@ async def test_connect_failure(tcp):
         await transport.connect()
 
 
-async def test_disconnect_failure(tcp):
+async def test_disconnect_failure(tcp: AsyncMock) -> None:
     """Test TCP transport disconnect failure."""
     _, mock_writer = tcp.return_value
     mock_writer.wait_closed.side_effect = OSError("Boom")
@@ -65,7 +66,7 @@ async def test_disconnect_failure(tcp):
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_read_write(tcp):
+async def test_read_write(tcp: AsyncMock) -> None:
     """Test TCP transport read and write."""
     mock_reader, mock_writer = tcp.return_value
     bytes_message = b"0;0;0;0;0;test\n"
@@ -90,7 +91,7 @@ async def test_read_write(tcp):
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_read_failure(tcp):
+async def test_read_failure(tcp: AsyncMock) -> None:
     """Test TCP transport read failure."""
     mock_reader, mock_writer = tcp.return_value
     transport = TCPTransport("1.1.1.1", 9999)
@@ -106,7 +107,8 @@ async def test_read_failure(tcp):
         await transport.read()
 
     mock_reader.readuntil.side_effect = asyncio.IncompleteReadError(
-        partial=b"partial_test", expected=20
+        partial=b"partial_test",
+        expected=20,
     )
 
     with pytest.raises(TransportReadError) as exc_info:
@@ -125,7 +127,7 @@ async def test_read_failure(tcp):
     assert mock_writer.wait_closed.call_count == 1
 
 
-async def test_write_failure(tcp):
+async def test_write_failure(tcp: AsyncMock) -> None:
     """Test TCP transport write failure."""
     mock_reader, mock_writer = tcp.return_value
     bytes_message = b"0;0;0;0;0;test\n"

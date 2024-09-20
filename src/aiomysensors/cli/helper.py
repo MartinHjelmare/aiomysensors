@@ -1,9 +1,8 @@
 """Provide CLI helpers."""
 
 import asyncio
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Callable
 import logging
-from typing import Callable
 
 from aiomysensors.exceptions import (
     AIOMySensorsError,
@@ -43,8 +42,8 @@ async def start_gateway(gateway_factory: GatewayFactory) -> None:
                 LOGGER.debug("Missing child: %s", err.child_id)
             except UnsupportedMessageError as err:
                 LOGGER.warning("Unsupported message: %s", err)
-            except AIOMySensorsError as err:
-                LOGGER.error("Error '%s'", err)
+            except AIOMySensorsError:
+                LOGGER.exception("Error")
                 break
 
 

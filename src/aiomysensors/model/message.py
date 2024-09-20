@@ -1,11 +1,10 @@
-"""
-Provide a MySensors message abstraction.
+"""Provide a MySensors message abstraction.
 
 Validation should be done on a protocol level, i.e. not with gateway state.
 """
 
 from collections.abc import Mapping
-from typing import Any, Optional, Union
+from typing import Any
 
 from marshmallow import (
     Schema,
@@ -63,14 +62,15 @@ class ChildIdField(fields.Field):
     def _deserialize(
         self,
         value: str,
-        attr: Optional[str],
-        data: Optional[Mapping[str, Any]],
-        **kwargs: Any,
+        attr: str | None,  # noqa: ARG002
+        data: Mapping[str, Any] | None,
+        **kwargs: Any,  # noqa: ANN401, ARG002
     ) -> int:
         if data is None:
             raise ValidationError("Data must be provided.")
         protocol_version = self.context.get(
-            "protocol_version", DEFAULT_PROTOCOL_VERSION
+            "protocol_version",
+            DEFAULT_PROTOCOL_VERSION,
         )
         protocol = get_protocol(protocol_version)
         return validate_child_id(value=value, data=data, protocol=protocol)
@@ -84,14 +84,17 @@ class CommandField(fields.Field):
         command = validate_command(value)
 
         protocol_version = self.context.get(
-            "protocol_version", DEFAULT_PROTOCOL_VERSION
+            "protocol_version",
+            DEFAULT_PROTOCOL_VERSION,
         )
         protocol = get_protocol(protocol_version)
         command_type = protocol.Command
 
         valid_commands = {member.value for member in tuple(command_type)}
         child_id = validate_child_id(
-            value=data["child_id"], data=data, protocol=protocol
+            value=data["child_id"],
+            data=data,
+            protocol=protocol,
         )
         if child_id == SYSTEM_CHILD_ID:
             valid_commands = protocol.VALID_SYSTEM_COMMAND_TYPES
@@ -99,7 +102,7 @@ class CommandField(fields.Field):
         if command not in valid_commands:
             raise ValidationError(
                 f"The command type must one of {valid_commands} "
-                f"when child id is {SYSTEM_CHILD_ID}."
+                f"when child id is {SYSTEM_CHILD_ID}.",
             )
 
         return command
@@ -107,9 +110,9 @@ class CommandField(fields.Field):
     def _deserialize(
         self,
         value: str,
-        attr: Optional[str],
-        data: Optional[Mapping[str, Any]],
-        **kwargs: Any,
+        attr: str | None,  # noqa: ARG002
+        data: Mapping[str, Any] | None,
+        **kwargs: Any,  # noqa: ANN401, ARG002
     ) -> int:
         if data is None:
             raise ValidationError("Data must be provided.")
@@ -133,19 +136,18 @@ class MessageSchema(Schema):
         ordered = True
 
     @pre_load
-    def to_dict(self, in_data: str, **kwargs: Any) -> dict[str, str]:
+    def to_dict(self, in_data: str, **kwargs: Any) -> dict[str, str]:  # noqa: ANN401, ARG002
         """Transform message string to a dict."""
         list_data = in_data.rstrip().split(DELIMITER)
-        out_data = dict(zip(self.fields, list_data))
-        return out_data
+        return dict(zip(self.fields, list_data, strict=False))
 
     @post_load
-    def make_message(self, data: dict, **kwargs: Any) -> Message:
+    def make_message(self, data: dict, **kwargs: Any) -> Message:  # noqa: ANN401, ARG002
         """Make a message."""
         return Message(**data)
 
     @post_dump
-    def to_string(self, data: dict[str, Union[int, str]], **kwargs: Any) -> str:
+    def to_string(self, data: dict[str, int | str], **kwargs: Any) -> str:  # noqa: ANN401, ARG002
         """Serialize message from a dict to a MySensors message string."""
         try:
             string = f"{DELIMITER.join([str(data[field]) for field in self.fields])}\n"
@@ -155,7 +157,10 @@ class MessageSchema(Schema):
 
 
 def validate_child_id(
-    *, value: str, data: Mapping[str, Any], protocol: ProtocolType
+    *,
+    value: str,
+    data: Mapping[str, Any],
+    protocol: ProtocolType,
 ) -> int:
     """Validate the child id field."""
     try:
@@ -164,7 +169,9 @@ def validate_child_id(
         raise ValidationError("The child_id type must be an integer.") from exc
 
     child_range = validate.Range(
-        min=0, max=SYSTEM_CHILD_ID, error="Not valid child_id: {input}"
+        min=0,
+        max=SYSTEM_CHILD_ID,
+        error="Not valid child_id: {input}",
     )
     child_range(child_id)
 
