@@ -12,6 +12,20 @@ files = [
 ]
 
 [[package]]
+name = "aiomqtt"
+version = "2.3.0"
+description = "The idiomatic asyncio MQTT client, wrapped around paho-mqtt"
+optional = false
+python-versions = "<4.0,>=3.8"
+files = [
+    {file = "aiomqtt-2.3.0-py3-none-any.whl", hash = "sha256:127926717bd6b012d1630f9087f24552eb9c4af58205bc2964f09d6e304f7e63"},
+    {file = "aiomqtt-2.3.0.tar.gz", hash = "sha256:312feebe20bc76dc7c20916663011f3bd37aa6f42f9f687a19a1c58308d80d47"},
+]
+
+[package.dependencies]
+paho-mqtt = ">=2.1.0,<3.0.0"
+
+[[package]]
 name = "annotated-types"
 version = "0.7.0"
 description = "Reusable constraint types to use with typing.Annotated"
@@ -21,24 +35,6 @@ files = [
     {file = "annotated_types-0.7.0-py3-none-any.whl", hash = "sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53"},
     {file = "annotated_types-0.7.0.tar.gz", hash = "sha256:aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89"},
 ]
-
-[[package]]
-name = "asyncio-mqtt"
-version = "0.16.2"
-description = "Idiomatic asyncio wrapper around paho-mqtt"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "asyncio_mqtt-0.16.2-py3-none-any.whl", hash = "sha256:fe70ea2c648b248779a7ff3d9218262cdd739083743dfaa7c0d52ba458a8ad71"},
-]
-
-[package.dependencies]
-paho-mqtt = ">=1.6.0"
-
-[package.extras]
-format = ["black (>=22.10.0)"]
-lint = ["mypy (>=0.991)", "ruff (>=0.0.158)", "types-paho-mqtt (>=1.6.0.1)"]
-tests = ["anyio (>=3.6.2)", "pytest (>=7.2.0)", "pytest-cov (>=4.0.0)"]
 
 [[package]]
 name = "awesomeversion"
@@ -1415,4 +1411,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "8fad93b9fdf94bd89a4f841c0da35c6996f37473c5d8d9d80a254240e6cf96a3"
+content-hash = "c690bb0443f07b6dc87374f17b3df5a20e1d799669893b9ff2b420b3ad3bb5e7"

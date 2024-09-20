@@ -30,7 +30,7 @@ aiomysensors = 'aiomysensors.cli:cli'
 
 [tool.poetry.dependencies]
 aiofiles = "^24.0.0"
-asyncio-mqtt = "^0.16"
+aiomqtt = "^2.3"
 awesomeversion = "^24.0.0"
 marshmallow = "^3.17"
 pyserial-asyncio = "^0.6"
