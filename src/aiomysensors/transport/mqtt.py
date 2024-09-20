@@ -6,10 +6,11 @@ import contextlib
 from dataclasses import dataclass
 from enum import Enum
 import logging
+from typing import cast
 import uuid
 
-from asyncio_mqtt import Client as AsyncioClient
-from asyncio_mqtt import MqttError
+from aiomqtt import Client as AsyncioClient
+from aiomqtt import MqttError
 
 from aiomysensors.exceptions import TransportError, TransportFailedError
 
@@ -201,12 +202,12 @@ class MQTTClient(MQTTTransport):
         self._client = AsyncioClient(
             self._host,
             self._port,
-            client_id=f"aiomysensors-{uuid.uuid4().int}",
+            identifier=f"aiomysensors-{uuid.uuid4().int}",
             logger=PAHO_MQTT_LOGGER,
             clean_session=True,
         )
         try:
-            await self._client.connect(timeout=10)
+            await self._client.__aenter__()
         except MqttError as err:
             raise TransportError from err
 
@@ -221,7 +222,7 @@ class MQTTClient(MQTTTransport):
         await self._incoming_task
         self._incoming_task = None
         with contextlib.suppress(MqttError):
-            await self._client.disconnect(timeout=10)
+            await self._client.__aexit__(None, None, None)
 
         self._client = None
 
@@ -260,9 +261,9 @@ class MQTTClient(MQTTTransport):
         if not self._client:
             raise RuntimeError("Client not connected.")
         try:
-            async with self._client.unfiltered_messages() as messages:
-                async for message in messages:
-                    self._receive(message.topic, message.payload.decode())
+            async for message in self._client.messages:
+                payload = cast(bytes, message.payload)
+                self._receive(message.topic.value, payload.decode())
         except MqttError as err:
             self._receive_error(
                 TransportFailedError(f"Failed to receive message: {err}"),

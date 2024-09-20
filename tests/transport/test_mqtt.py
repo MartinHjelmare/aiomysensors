@@ -2,10 +2,10 @@
 
 import asyncio
 from collections.abc import AsyncGenerator, Generator
-from contextlib import asynccontextmanager
-from unittest.mock import AsyncMock, MagicMock, call, patch
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, call, patch
 
-from asyncio_mqtt import MqttError
+from aiomqtt import Message as AIOMQTTMessage
+from aiomqtt import MqttError
 from paho.mqtt.client import MQTTMessage
 import pytest
 
@@ -49,25 +49,23 @@ async def test_connect_disconnect(mqtt: AsyncMock, client_id: str) -> None:
     assert mqtt.call_args == call(
         HOST,
         PORT,
-        client_id=client_id,
+        identifier=client_id,
         logger=PAHO_MQTT_LOGGER,
         clean_session=True,
     )
     mqtt_client = mqtt.return_value
 
-    assert mqtt_client.connect.call_count == 1
-    assert mqtt_client.connect.call_args == call(timeout=10)
+    assert mqtt_client.__aenter__.call_count == 1
 
     await transport.disconnect()
 
-    assert mqtt_client.disconnect.call_count == 1
-    assert mqtt_client.disconnect.call_args == call(timeout=10)
+    assert mqtt_client.__aexit__.call_count == 1
 
 
 async def test_connect_failure(mqtt: AsyncMock) -> None:
     """Test MQTT transport connect failure."""
     mqtt_client = mqtt.return_value
-    mqtt_client.connect.side_effect = MqttError("Boom")
+    mqtt_client.__aenter__.side_effect = MqttError("Boom")
     transport = MQTTClient(HOST, PORT, IN_PREFIX, OUT_PREFIX)
 
     with pytest.raises(TransportError):
@@ -77,7 +75,7 @@ async def test_connect_failure(mqtt: AsyncMock) -> None:
 async def test_disconnect_failure(mqtt: AsyncMock, client_id: str) -> None:
     """Test MQTT transport disconnect failure."""
     mqtt_client = mqtt.return_value
-    mqtt_client.disconnect.side_effect = MqttError("Boom")
+    mqtt_client.__aexit__.side_effect = MqttError("Boom")
     transport = MQTTClient(HOST, PORT, IN_PREFIX, OUT_PREFIX)
 
     await transport.connect()
@@ -86,7 +84,7 @@ async def test_disconnect_failure(mqtt: AsyncMock, client_id: str) -> None:
     assert mqtt.call_args == call(
         HOST,
         PORT,
-        client_id=client_id,
+        identifier=client_id,
         logger=PAHO_MQTT_LOGGER,
         clean_session=True,
     )
@@ -94,7 +92,7 @@ async def test_disconnect_failure(mqtt: AsyncMock, client_id: str) -> None:
     # Disconnect error should be caught.
     await transport.disconnect()
 
-    assert mqtt_client.disconnect.call_count == 1
+    assert mqtt_client.__aexit__.call_count == 1
 
 
 async def test_read_write(mqtt: AsyncMock, client_id: str) -> None:
@@ -102,23 +100,17 @@ async def test_read_write(mqtt: AsyncMock, client_id: str) -> None:
     mqtt_client = mqtt.return_value
     topic = f"{IN_PREFIX}/0/255/3/1/11"
     payload = "test"
-    msg = MQTTMessage(topic=topic.encode(encoding="utf-8"))
-    msg.payload = payload.encode()
+    mqtt_message = MQTTMessage(topic=topic.encode(encoding="utf-8"))
+    mqtt_message.payload = payload.encode()
+    msg = AIOMQTTMessage._from_paho_message(mqtt_message)  # noqa: SLF001
     messages = [msg]
 
-    async def mock_messages() -> AsyncGenerator[MQTTMessage, None]:
+    async def mock_messages() -> AsyncGenerator[AIOMQTTMessage, None]:
         """Mock the messages generator."""
         for message in messages:
             yield message
 
-    @asynccontextmanager
-    async def filter_messages() -> (
-        AsyncGenerator[AsyncGenerator[MQTTMessage, None], None]
-    ):
-        """Mock filter messages."""
-        yield mock_messages()
-
-    mqtt_client.unfiltered_messages.side_effect = filter_messages
+    type(mqtt_client).messages = PropertyMock(return_value=mock_messages())
 
     transport = MQTTClient(HOST, PORT, IN_PREFIX, OUT_PREFIX)
 
@@ -128,7 +120,7 @@ async def test_read_write(mqtt: AsyncMock, client_id: str) -> None:
     assert mqtt.call_args == call(
         HOST,
         PORT,
-        client_id=client_id,
+        identifier=client_id,
         logger=PAHO_MQTT_LOGGER,
         clean_session=True,
     )
@@ -149,7 +141,7 @@ async def test_read_write(mqtt: AsyncMock, client_id: str) -> None:
 
     await transport.disconnect()
 
-    assert mqtt_client.disconnect.call_count == 1
+    assert mqtt_client.__aexit__.call_count == 1
 
 
 async def test_read_failure(mqtt: AsyncMock, client_id: str) -> None:
@@ -157,24 +149,18 @@ async def test_read_failure(mqtt: AsyncMock, client_id: str) -> None:
     mqtt_client = mqtt.return_value
     topic = f"{IN_PREFIX}/0/0/0/0/0"
     payload = "test"
-    msg = MQTTMessage(topic=topic.encode(encoding="utf-8"))
-    msg.payload = payload.encode()
+    mqtt_message = MQTTMessage(topic=topic.encode(encoding="utf-8"))
+    mqtt_message.payload = payload.encode()
+    msg = AIOMQTTMessage._from_paho_message(mqtt_message)  # noqa: SLF001
     messages = [msg]
 
-    async def mock_messages() -> AsyncGenerator[MQTTMessage, None]:
+    async def mock_messages() -> AsyncGenerator[AIOMQTTMessage, None]:
         """Mock the messages generator."""
         for message in messages:
             yield message
+            raise MqttError("Boom")
 
-    @asynccontextmanager
-    async def filter_messages() -> (
-        AsyncGenerator[AsyncGenerator[MQTTMessage, None], None]
-    ):
-        """Mock filter messages."""
-        yield mock_messages()
-        raise MqttError("Boom")
-
-    mqtt_client.unfiltered_messages.side_effect = filter_messages
+    type(mqtt_client).messages = PropertyMock(return_value=mock_messages())
 
     transport = MQTTClient(HOST, PORT, IN_PREFIX, OUT_PREFIX)
 
@@ -184,7 +170,7 @@ async def test_read_failure(mqtt: AsyncMock, client_id: str) -> None:
     assert mqtt.call_args == call(
         HOST,
         PORT,
-        client_id=client_id,
+        identifier=client_id,
         logger=PAHO_MQTT_LOGGER,
         clean_session=True,
     )
@@ -199,7 +185,7 @@ async def test_read_failure(mqtt: AsyncMock, client_id: str) -> None:
 
     await transport.disconnect()
 
-    assert mqtt_client.disconnect.call_count == 1
+    assert mqtt_client.__aexit__.call_count == 1
 
 
 async def test_write_failure(
@@ -218,7 +204,7 @@ async def test_write_failure(
     assert mqtt.call_args == call(
         HOST,
         PORT,
-        client_id=client_id,
+        identifier=client_id,
         logger=PAHO_MQTT_LOGGER,
         clean_session=True,
     )
@@ -230,7 +216,7 @@ async def test_write_failure(
 
     await transport.disconnect()
 
-    assert mqtt_client.disconnect.call_count == 1
+    assert mqtt_client.__aexit__.call_count == 1
 
 
 async def test_subscribe_failure(mqtt: AsyncMock) -> None:
