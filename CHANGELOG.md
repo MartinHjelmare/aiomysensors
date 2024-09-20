@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.1 (2024-09-20)
+
+### Fix
+
+* Update dependency typer to ^0.12.0 ([`aa45610`](https://github.com/MartinHjelmare/aiomysensors/commit/aa456100670a24f9d16f7d52b428c5ce7043a3f4))
+
 ## v0.4.0 (2024-09-20)
 
 ### Breaking
