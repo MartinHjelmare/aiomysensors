@@ -12,7 +12,7 @@ classifiers = [
   "Topic :: Home Automation",
 ]
 description = "Python asyncio package to connect to MySensors gateways."
-license = "Apache Software License 2.0"
+license = "Apache-2.0"
 name = "aiomysensors"
 packages = [
   {include = "aiomysensors", from = "src"},
