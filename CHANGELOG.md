@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.2 (2024-10-01)
+
+### Fix
+
+* Update dependency rich to v13.9.1 ([`3bd2377`](https://github.com/MartinHjelmare/aiomysensors/commit/3bd2377cee1f5d0f9709376a273db4dd8fe9759a))
+
 ## v0.4.1 (2024-09-20)
 
 ### Fix
