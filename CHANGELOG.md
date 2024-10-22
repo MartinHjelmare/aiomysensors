@@ -1,8 +1,23 @@
 # Changelog
 
+## v0.4.5 (2024-10-22)
+
+### Bug fixes
+
+* Update dependency rich to v13.9.3 ([`5f79fed`](https://github.com/MartinHjelmare/aiomysensors/commit/5f79fed0dfb5f972f85105d26df5d5196db41b50))
+
+### Chores
+
+* Update dependency mypy to v1.12.1 ([`fac8885`](https://github.com/MartinHjelmare/aiomysensors/commit/fac8885b0f449f009a55c4fded238fbc0a3283de))
+* Update dependency copier to v9.4.1 ([`9bd71dc`](https://github.com/MartinHjelmare/aiomysensors/commit/9bd71dce304a23c6c899f1f81ff1febb61e316fb))
+* Update pre-commit hook tox-dev/pyproject-fmt to v2.4.3 ([`d4a3aca`](https://github.com/MartinHjelmare/aiomysensors/commit/d4a3aca92c1b30297b1043086059421569972100))
+* Update python-semantic-release/python-semantic-release action to v9.12.0 ([`f71a876`](https://github.com/MartinHjelmare/aiomysensors/commit/f71a87629ede00b2c06cc881fcbe96cdf335e48e))
+* Update dependency python-semantic-release to v9.12.0 ([`6d3d1ec`](https://github.com/MartinHjelmare/aiomysensors/commit/6d3d1ec0eeb96945db5a3a9b8800a8c3ae6534ed))
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.7.0 ([`a3dd72f`](https://github.com/MartinHjelmare/aiomysensors/commit/a3dd72fba095fca353c8a2c451baefdd56570265))
+
 ## v0.4.4 (2024-10-18)
 
-### Fixes
+### Bug fixes
 
 * Update dependency marshmallow to v3.23.0 ([`0f2c6d2`](https://github.com/MartinHjelmare/aiomysensors/commit/0f2c6d2a312b77f4461d3931cde73921d091cab0))
 
@@ -33,13 +48,13 @@
 
 * Update pre-commit hook astral-sh/ruff-pre-commit to v0.6.9 ([`9cdc397`](https://github.com/MartinHjelmare/aiomysensors/commit/9cdc3975efcd7b0784be27571b26254ffdb01e1c))
 
-### Fixes
+### Bug fixes
 
 * Update dependency rich to v13.9.2 ([`2278895`](https://github.com/MartinHjelmare/aiomysensors/commit/22788958f7e9746bcf1ed5fdd08925e636e5066f))
 
 ## v0.4.2 (2024-10-01)
 
-### Fixes
+### Bug fixes
 
 * Update dependency rich to v13.9.1 ([`3bd2377`](https://github.com/MartinHjelmare/aiomysensors/commit/3bd2377cee1f5d0f9709376a273db4dd8fe9759a))
 
@@ -64,7 +79,7 @@
 
 * Update from asyncio-mqtt to aiomqtt (#456) ([`6712740`](https://github.com/MartinHjelmare/aiomysensors/commit/67127407fa84f892888065594df54d8726ae12ee))
 
-### Fixes
+### Bug fixes
 
 * Update dependency typer to ^0.12.0 ([`aa45610`](https://github.com/MartinHjelmare/aiomysensors/commit/aa456100670a24f9d16f7d52b428c5ce7043a3f4))
 
@@ -91,7 +106,7 @@
 
 ## v0.3.19 (2024-08-20)
 
-### Fixes
+### Bug fixes
 
 * Update dependency marshmallow to v3.22.0 ([`d5d2b5a`](https://github.com/MartinHjelmare/aiomysensors/commit/d5d2b5a7540c3a68b9f57c1f6250794b57b19261))
 
@@ -127,13 +142,13 @@
 
 ## v0.3.18 (2024-06-24)
 
-### Fixes
+### Bug fixes
 
 * Update dependency aiofiles to v24 (#446) ([`4025a64`](https://github.com/MartinHjelmare/aiomysensors/commit/4025a640939022c2a14d224d1c534aa48f205bab))
 
 ## v0.3.17 (2024-06-24)
 
-### Fixes
+### Bug fixes
 
 * Update dependency awesomeversion to v24.6.0 ([`dfe7c88`](https://github.com/MartinHjelmare/aiomysensors/commit/dfe7c880f86948ed5fd63a2469e4e6c74c96bd76))
 
@@ -153,7 +168,7 @@
 
 ## v0.3.16 (2024-06-06)
 
-### Fixes
+### Bug fixes
 
 * Update dependency marshmallow to v3.21.3 ([`6249388`](https://github.com/MartinHjelmare/aiomysensors/commit/62493885b231a54053b489ace6f7b591f90655d6))
 
@@ -184,7 +199,7 @@
 
 ## v0.3.15 (2024-05-02)
 
-### Fixes
+### Bug fixes
 
 * Update dependency marshmallow to v3.21.2 ([`b89a274`](https://github.com/MartinHjelmare/aiomysensors/commit/b89a274034c54cad4f2f2400cb461331f9117f0f))
 
@@ -240,7 +255,7 @@
 
 ## v0.3.14 (2024-03-05)
 
-### Fixes
+### Bug fixes
 
 * Update dependency marshmallow to v3.21.1 ([`9e22543`](https://github.com/MartinHjelmare/aiomysensors/commit/9e225433f36f17dc8fcaddd7ff2d6aaa7388bc30))
 
@@ -251,7 +266,7 @@
 
 ## v0.3.13 (2024-02-27)
 
-### Fixes
+### Bug fixes
 
 * Update dependency marshmallow to v3.21.0 ([`baba520`](https://github.com/MartinHjelmare/aiomysensors/commit/baba52056d21a7b813766174f5762f05f7dac516))
 
@@ -297,13 +312,13 @@
 * Bump jinja2 from 3.1.2 to 3.1.3 (#430) ([`2800282`](https://github.com/MartinHjelmare/aiomysensors/commit/28002822914c21be35df5855db9f3ccc34712278))
 * Bump gitpython from 3.1.38 to 3.1.41 (#429) ([`902dc8f`](https://github.com/MartinHjelmare/aiomysensors/commit/902dc8fe0253bebf78b59491b70a1fef85b939ba))
 
-### Fixes
+### Bug fixes
 
 * Update dependency awesomeversion to v24 (#435) ([`ad6b60d`](https://github.com/MartinHjelmare/aiomysensors/commit/ad6b60d3ef1544173eacaa6883a3c3af0ad0fa3e))
 
 ## v0.3.11 (2024-01-10)
 
-### Fixes
+### Bug fixes
 
 * Update dependency marshmallow to v3.20.2 ([`6057377`](https://github.com/MartinHjelmare/aiomysensors/commit/60573771a5e7f86cfc5fc02ca380fd1ed0958102))
 
@@ -349,7 +364,7 @@
 
 ## v0.3.10 (2023-11-07)
 
-### Fixes
+### Bug fixes
 
 * Update dependency awesomeversion to v23.11.0 ([`3dd7e5f`](https://github.com/MartinHjelmare/aiomysensors/commit/3dd7e5fcca3c3a1bfd2f97610974da31485b84e1))
 
@@ -533,13 +548,13 @@
 
 ## v0.3.9 (2023-03-17)
 
-### Fixes
+### Bug fixes
 
 * Update dependency marshmallow to v3.19.0 ([`fd9f923`](https://github.com/MartinHjelmare/aiomysensors/commit/fd9f923f8fb16f214cbd644e63fee0827ee7683a))
 
 ## v0.3.8 (2023-03-17)
 
-### Fixes
+### Bug fixes
 
 * Update dependency awesomeversion to v22.9.0 ([`291ed1d`](https://github.com/MartinHjelmare/aiomysensors/commit/291ed1df79b5279b83eb2b9baa1662af00c066c1))
 
@@ -556,7 +571,7 @@
 
 ## v0.3.7 (2023-03-16)
 
-### Fixes
+### Bug fixes
 
 * Update dependency asyncio-mqtt to v0.16.1 ([`cad4fbe`](https://github.com/MartinHjelmare/aiomysensors/commit/cad4fbe500784ec394a828343ac332ffe582061a))
 
@@ -572,7 +587,7 @@
 
 ## v0.3.6 (2023-02-09)
 
-### Fixes
+### Bug fixes
 
 * Update dependency aiofiles to v23 (#391) ([`9799fa1`](https://github.com/MartinHjelmare/aiomysensors/commit/9799fa11aa9c827305652f5e8f115b98c1946bb5))
 
@@ -608,7 +623,7 @@
 
 ## v0.3.5 (2022-12-06)
 
-### Fixes
+### Bug fixes
 
 * Update dependency asyncio-mqtt to ^0.16 ([`fed8cc3`](https://github.com/MartinHjelmare/aiomysensors/commit/fed8cc3786e2459b7fce545536ccb8f8c3cbf66e))
 
@@ -620,7 +635,7 @@
 
 ## v0.3.4 (2022-11-28)
 
-### Fixes
+### Bug fixes
 
 * Update dependency asyncio-mqtt to ^0.15 ([`fe9eee3`](https://github.com/MartinHjelmare/aiomysensors/commit/fe9eee3cf958b77e28d4f7310b457da78d9b486f))
 
@@ -633,7 +648,7 @@
 
 ## v0.3.3 (2022-11-12)
 
-### Fixes
+### Bug fixes
 
 * Update dependency asyncio-mqtt to ^0.14 ([`a8c40a4`](https://github.com/MartinHjelmare/aiomysensors/commit/a8c40a400052f65a3f9df57c54e5adad068d102a))
 
@@ -650,7 +665,7 @@
 
 ## v0.3.2 (2022-10-16)
 
-### Fixes
+### Bug fixes
 
 * Update dependency asyncio-mqtt to ^0.13 ([`3947c1a`](https://github.com/MartinHjelmare/aiomysensors/commit/3947c1a81cff32975ca4c8b240025f0c23577cf5))
 
@@ -685,7 +700,7 @@
 
 ## v0.3.1 (2022-09-04)
 
-### Fixes
+### Bug fixes
 
 * Update dependency aiofiles to v22 (#364) ([`136a7b1`](https://github.com/MartinHjelmare/aiomysensors/commit/136a7b133c871001043dd93ae975b6d3a89ecd84))
 
