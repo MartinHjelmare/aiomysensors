@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.4.6 (2024-11-01)
+
+### Bug fixes
+
+* Update dependency marshmallow to v3.23.1 ([`937d50d`](https://github.com/MartinHjelmare/aiomysensors/commit/937d50d000542ee25e060dffaf15eb169689e6fd))
+
+### Chores
+
+* Update dependency ruff to v0.7.2 ([`ea63275`](https://github.com/MartinHjelmare/aiomysensors/commit/ea632751c2c6bb42e4d0f67ab1675e394d3c3a3c))
+* Update pre-commit hook tox-dev/pyproject-fmt to v2.5.0 ([`1a6e28a`](https://github.com/MartinHjelmare/aiomysensors/commit/1a6e28ac70b3ffa750cef2476118d7fb6b770cd9))
+* Update dependency pytest-cov to v6 (#460) ([`9c258cb`](https://github.com/MartinHjelmare/aiomysensors/commit/9c258cbf074a1cc03d132d8c9ea8083d2e427423))
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.7.1 ([`2c0725c`](https://github.com/MartinHjelmare/aiomysensors/commit/2c0725cf0f8d51bcb7ea3a3ec9c0df348d6eb329))
+* Update dependency ruff to v0.7.1 ([`ac86723`](https://github.com/MartinHjelmare/aiomysensors/commit/ac867233b2d9fec183ce090abe3fa60d6d94e82a))
+* Update pre-commit hook commitizen-tools/commitizen to v3.30.0 ([`e14fe34`](https://github.com/MartinHjelmare/aiomysensors/commit/e14fe34a58d692770c38d73976c9317dc35ec3db))
+* Update dependency mypy to v1.13.0 ([`47a128e`](https://github.com/MartinHjelmare/aiomysensors/commit/47a128e10a4f08b54ddff6e9b82a3f2b52b42d6a))
+
 ## v0.4.5 (2024-10-22)
 
 ### Bug fixes
