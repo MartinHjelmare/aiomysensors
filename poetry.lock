@@ -1414,7 +1414,10 @@ files = [
     {file = "wcwidth-0.2.13.tar.gz", hash = "sha256:72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5"},
 ]
 
+[extras]
+cli = ["aiomqtt", "typer"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "2da88f2be2da3a5cdaf4f3451ed003fd51827af1b8ea18df9121fbc6f8f654e1"
+content-hash = "7bf0a8bdc8da0e792058da8a9f973b5627c793199a507e455740582bf1917474"
