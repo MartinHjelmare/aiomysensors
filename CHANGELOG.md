@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.4.8 (2024-11-08)
+
+### Bug fixes
+
+* Update dependency typer to ^0.13.0 ([`9e8e69b`](https://github.com/MartinHjelmare/aiomysensors/commit/9e8e69b096d3cf464d3f7b90f06c7b763e58a6fa))
+
+### Chores
+
+* Update python-semantic-release/python-semantic-release action to v9.12.2 ([`c7380e3`](https://github.com/MartinHjelmare/aiomysensors/commit/c7380e3a6a33ce9d365c1e71ec0d045ceff06ee4))
+* Update dependency python-semantic-release to v9.12.2 ([`65e02c8`](https://github.com/MartinHjelmare/aiomysensors/commit/65e02c8f192f706ef647848b93eacb97db4f1c95))
+* Update python-semantic-release/python-semantic-release action to v9.12.1 ([`867e34f`](https://github.com/MartinHjelmare/aiomysensors/commit/867e34fe87f3570622b4103b8ce19146d18cb179))
+* Update dependency python-semantic-release to v9.12.1 ([`0f0ae1d`](https://github.com/MartinHjelmare/aiomysensors/commit/0f0ae1dc7ca8b952176670b58420e08a651940ef))
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.7.2 ([`0f8f173`](https://github.com/MartinHjelmare/aiomysensors/commit/0f8f1730a39490c3cecf6b0e82221f1df5805387))
+
 ## v0.4.7 (2024-11-02)
 
 ### Bug fixes
