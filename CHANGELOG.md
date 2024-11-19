@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.4.9 (2024-11-19)
+
+### Bug fixes
+
+* Update dependency typer to v0.13.1 ([`7aa90d1`](https://github.com/MartinHjelmare/aiomysensors/commit/7aa90d1f188cb4fb65ef15653412698fd033d15c))
+
+### Chores
+
+* Update pre-commit hook commitizen-tools/commitizen to v3.31.0 ([`b7240e9`](https://github.com/MartinHjelmare/aiomysensors/commit/b7240e9a30cd779a0e5ece7a5f4074f79f91c24f))
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.7.4 ([`ee89eef`](https://github.com/MartinHjelmare/aiomysensors/commit/ee89eefd1d033d093d63ad97697092f2e3d26823))
+* Update dependency ruff to v0.7.4 ([`9da9c01`](https://github.com/MartinHjelmare/aiomysensors/commit/9da9c016c4c2c5e1d86c63240b484bf42fe8ed50))
+* Update codecov/codecov-action action to v5 (#462) ([`4e79afc`](https://github.com/MartinHjelmare/aiomysensors/commit/4e79afcb83c5b8f694eab7da93b3f04369ab9cf8))
+* Update python-semantic-release/python-semantic-release action to v9.14.0 ([`40855f4`](https://github.com/MartinHjelmare/aiomysensors/commit/40855f43c86d3b2b5e9150f793adfbfb3f549682))
+* Update dependency python-semantic-release to v9.14.0 ([`1453471`](https://github.com/MartinHjelmare/aiomysensors/commit/145347122441b034823ffdad14de8c975c8b7550))
+* Update python-semantic-release/python-semantic-release action to v9.13.0 ([`3f396a7`](https://github.com/MartinHjelmare/aiomysensors/commit/3f396a79e7f1b16151326f10b12a6c5622d10d33))
+* Update dependency python-semantic-release to v9.13.0 ([`34ae4a5`](https://github.com/MartinHjelmare/aiomysensors/commit/34ae4a52440b9fa8235f3fd9dabea4e1a7a3318e))
+* Update pre-commit hook commitizen-tools/commitizen to v3.30.1 ([`3c31a2e`](https://github.com/MartinHjelmare/aiomysensors/commit/3c31a2e3352cf2c35b0dbca699e119feabd2f385))
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.7.3 ([`da26d05`](https://github.com/MartinHjelmare/aiomysensors/commit/da26d05fcd6306e7cd7a6543c4179b06a68c3efb))
+* Update dependency ruff to v0.7.3 ([`a42967a`](https://github.com/MartinHjelmare/aiomysensors/commit/a42967a7573211a2c60e5bca349e63485722b800))
+* Adjust typer deps (#461) ([`9b74767`](https://github.com/MartinHjelmare/aiomysensors/commit/9b74767253201f8a766cedac5362c57dc3a3c00a))
+
 ## v0.4.8 (2024-11-08)
 
 ### Bug fixes
@@ -125,12 +146,9 @@
 
 ## v0.4.0 (2024-09-20)
 
-### Breaking
-
-* Copier copy (#454) ([`2398fc7`](https://github.com/MartinHjelmare/aiomysensors/commit/2398fc7980a87054311cd90c9da2e485ef96937e))
-
 ### Chores
 
+* Copier copy (#454) ([`2398fc7`](https://github.com/MartinHjelmare/aiomysensors/commit/2398fc7980a87054311cd90c9da2e485ef96937e))
 * Update dependency pytest to v8.3.3 ([`1f7c8ea`](https://github.com/MartinHjelmare/aiomysensors/commit/1f7c8eaf47f0967fd064c3410d586a7343e8f6b5))
 * Update tiangolo/issue-manager action to v0.5.1 ([`ce13f4f`](https://github.com/MartinHjelmare/aiomysensors/commit/ce13f4fd0dad4bb44b7389ecece0c15fb1cf6278))
 * Bump cryptography from 42.0.4 to 43.0.1 (#452) ([`5ae1913`](https://github.com/MartinHjelmare/aiomysensors/commit/5ae19136f52d061ecd3ea557dc6b497964e9c356))
