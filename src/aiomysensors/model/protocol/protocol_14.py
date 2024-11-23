@@ -1,10 +1,12 @@
 """Provide the protocol for MySensors version 1.4."""
 
+from __future__ import annotations
+
 import calendar
 from collections.abc import Awaitable, Callable, Coroutine
 from enum import IntEnum
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from aiomysensors.exceptions import (
     MissingChildError,
@@ -12,16 +14,20 @@ from aiomysensors.exceptions import (
     TooManyNodesError,
     UnsupportedMessageError,
 )
-from aiomysensors.gateway import Gateway, MessageBuffer
-from aiomysensors.model.message import Message
-from aiomysensors.model.node import Node
-
-from . import (
+from aiomysensors.model.const import (
     DEFAULT_PROTOCOL_VERSION,
     MAX_NODE_ID,
     SYSTEM_CHILD_ID,
-    IncomingMessageHandlerBase,
 )
+from aiomysensors.model.message import Message
+from aiomysensors.model.node import Node
+
+from .message_handler import IncomingMessageHandlerBase
+
+if TYPE_CHECKING:
+    from aiomysensors.gateway import Gateway, MessageBuffer
+
+VERSION = "1.4"
 
 
 def handle_missing_protocol_version[

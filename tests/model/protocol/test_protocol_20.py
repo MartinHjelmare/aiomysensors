@@ -330,6 +330,7 @@ async def test_missing_node(
     transport: MockTransport,
 ) -> None:
     """Test missing node handling."""
+    protocol = message_schema.context["protocol"]
     assert not gateway.nodes
 
     # Receive command for a missing node.
@@ -351,9 +352,7 @@ async def test_missing_node(
     transport.writes.clear()
 
     # Receive a presentation of the node.
-    presentation_command = (
-        f"1;255;0;0;17;{message_schema.context['protocol_version']}\n"
-    )
+    presentation_command = f"1;255;0;0;17;{protocol.VERSION}\n"
     transport.messages.append(presentation_command)
 
     msg = await anext(gateway.listen())

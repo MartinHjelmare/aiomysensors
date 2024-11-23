@@ -13,15 +13,15 @@ from aiomysensors.model.protocol import PROTOCOL_VERSIONS
 from tests.common import NODE_CHILD_SERIALIZED, MockTransport
 
 HEARTBEAT_PAYLOAD = "1111"
-PROTOCOL_VERSIONS_2x = list(PROTOCOL_VERSIONS)
-PROTOCOL_VERSIONS_2x.remove("1.4")
-PROTOCOL_VERSIONS_2x.remove("1.5")
-PROTOCOL_VERSIONS_2x.remove("2.0")
-PROTOCOL_VERSIONS_2x.remove("2.1")
+PROTOCOL_VERSIONS_22 = list(PROTOCOL_VERSIONS)
+PROTOCOL_VERSIONS_22.remove("1.4")
+PROTOCOL_VERSIONS_22.remove("1.5")
+PROTOCOL_VERSIONS_22.remove("2.0")
+PROTOCOL_VERSIONS_22.remove("2.1")
 
 
 @pytest.mark.usefixtures("command", "node_before")
-@pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
+@pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_22, indirect=True)
 @pytest.mark.parametrize(
     ("command", "context", "node_before", "writes", "heartbeat"),
     [
@@ -60,7 +60,7 @@ async def test_heartbeat_response(
 
 
 @pytest.mark.usefixtures("node_before")
-@pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
+@pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_22, indirect=True)
 @pytest.mark.parametrize(
     (
         "command",
@@ -122,8 +122,9 @@ async def test_pre_sleep_notification(
     transport: MockTransport,
 ) -> None:
     """Test internal pre sleep notification command."""
+    protocol_version = gateway.protocol.VERSION
     # Set a node that won't send a pre sleep notification.
-    gateway.nodes[1] = node = Node(1, 17, "2.2")
+    gateway.nodes[1] = node = Node(1, 17, protocol_version)
     node.children[0] = Child(0, 0)
 
     # Receive command.

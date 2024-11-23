@@ -19,6 +19,8 @@ from .protocol_20 import (
     OutgoingMessageHandler as OutgoingMessageHandler20,
 )
 
+VERSION = "2.1"
+
 
 class IncomingMessageHandler(IncomingMessageHandler20):
     """Represent a message handler."""

@@ -16,6 +16,8 @@ from .protocol_14 import (
     OutgoingMessageHandler as OutgoingMessageHandler14,
 )
 
+VERSION = "1.5"
+
 
 class IncomingMessageHandler(IncomingMessageHandler14):
     """Represent a message handler."""

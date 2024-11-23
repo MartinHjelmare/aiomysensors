@@ -8,8 +8,10 @@ import aiofiles
 import pytest
 
 from aiomysensors.gateway import Gateway
+from aiomysensors.model.const import DEFAULT_PROTOCOL_VERSION
 from aiomysensors.model.message import Message, MessageSchema
 from aiomysensors.model.node import Child, Node, NodeSchema
+from aiomysensors.model.protocol import get_protocol
 from tests.common import MockTransport
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
@@ -20,9 +22,10 @@ def message_schema_fixture(request: pytest.FixtureRequest) -> MessageSchema:
     """Apply protocol version to schema."""
     message_schema = MessageSchema()
     if not (protocol_version := getattr(request, "param", None)):
+        message_schema.set_protocol(get_protocol(DEFAULT_PROTOCOL_VERSION))
         return message_schema
 
-    message_schema.context["protocol_version"] = protocol_version
+    message_schema.set_protocol(get_protocol(protocol_version))
     return message_schema
 
 
@@ -72,7 +75,8 @@ def message_fixture(message_schema: MessageSchema, transport: MockTransport) -> 
 def gateway_fixture(message_schema: MessageSchema, transport: MockTransport) -> Gateway:
     """Mock a gateway."""
     gateway = Gateway(transport)
-    gateway.protocol_version = message_schema.context.get("protocol_version", "1.4")
+    protocol = message_schema.context["protocol"]
+    gateway.protocol_version = protocol.VERSION
     return gateway
 
 

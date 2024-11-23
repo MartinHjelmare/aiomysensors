@@ -3,8 +3,10 @@
 Validation should be done on a protocol level, i.e. not with gateway state.
 """
 
+from __future__ import annotations
+
 from collections.abc import Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from marshmallow import (
     Schema,
@@ -16,13 +18,10 @@ from marshmallow import (
     validate,
 )
 
-from .const import NODE_ID_FIELD
-from .protocol import (
-    DEFAULT_PROTOCOL_VERSION,
-    SYSTEM_CHILD_ID,
-    ProtocolType,
-    get_protocol,
-)
+from .const import NODE_ID_FIELD, SYSTEM_CHILD_ID
+
+if TYPE_CHECKING:
+    from .protocol import ProtocolType
 
 DELIMITER = ";"
 
@@ -68,11 +67,9 @@ class ChildIdField(fields.Field):
     ) -> int:
         if data is None:
             raise ValidationError("Data must be provided.")
-        protocol_version = self.context.get(
-            "protocol_version",
-            DEFAULT_PROTOCOL_VERSION,
-        )
-        protocol = get_protocol(protocol_version)
+        protocol = self.context.get("protocol")
+        if protocol is None:
+            raise ValidationError("Protocol not set on MessageSchema.")
         return validate_child_id(value=value, data=data, protocol=protocol)
 
 
@@ -83,11 +80,10 @@ class CommandField(fields.Field):
         """Validate the command field."""
         command = validate_command(value)
 
-        protocol_version = self.context.get(
-            "protocol_version",
-            DEFAULT_PROTOCOL_VERSION,
-        )
-        protocol = get_protocol(protocol_version)
+        protocol = self.context.get("protocol")
+        if protocol is None:
+            raise ValidationError("Protocol not set on MessageSchema.")
+
         command_type = protocol.Command
 
         valid_commands = {member.value for member in tuple(command_type)}
@@ -134,6 +130,10 @@ class MessageSchema(Schema):
 
         fields = ("node_id", "child_id", "command", "ack", "message_type", "payload")
         ordered = True
+
+    def set_protocol(self, protocol: ProtocolType) -> None:
+        """Set the protocol."""
+        self.context["protocol"] = protocol
 
     @pre_load
     def to_dict(self, in_data: str, **kwargs: Any) -> dict[str, str]:  # noqa: ANN401, ARG002

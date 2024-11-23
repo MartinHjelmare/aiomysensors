@@ -1,15 +1,16 @@
 """Provide the protocol for MySensors version 2.0."""
 
+from __future__ import annotations
+
 from collections.abc import Awaitable, Callable, Coroutine
 from enum import IntEnum
 from functools import wraps
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from aiomysensors.exceptions import MissingChildError, MissingNodeError
-from aiomysensors.gateway import Gateway, MessageBuffer
+from aiomysensors.model.const import SYSTEM_CHILD_ID
 from aiomysensors.model.message import Message
 
-from . import SYSTEM_CHILD_ID
 from .protocol_15 import (  # noqa: F401
     INTERNAL_COMMAND_TYPE,
     STRICT_SYSTEM_COMMAND_TYPES,
@@ -23,6 +24,11 @@ from .protocol_15 import (
 from .protocol_15 import (
     OutgoingMessageHandler as OutgoingMessageHandler15,
 )
+
+if TYPE_CHECKING:
+    from aiomysensors.gateway import Gateway, MessageBuffer
+
+VERSION = "2.0"
 
 
 def handle_missing_node_child[

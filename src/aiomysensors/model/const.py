@@ -2,8 +2,9 @@
 
 from marshmallow import fields, validate
 
-from .protocol import BROADCAST_ID
-
+BROADCAST_ID = 255
+DEFAULT_PROTOCOL_VERSION = "1.4"
+MAX_NODE_ID = 254
 NODE_ID_FIELD = fields.Int(
     required=True,
     validate=validate.Range(
@@ -12,3 +13,4 @@ NODE_ID_FIELD = fields.Int(
         error="Not valid node_id: {input}",
     ),
 )
+SYSTEM_CHILD_ID = 255
