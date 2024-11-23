@@ -1,9 +1,11 @@
 """Provide the protocol for MySensors version 2.2."""
 
+from __future__ import annotations
+
 from enum import IntEnum
+from typing import TYPE_CHECKING
 
 from aiomysensors.exceptions import MissingNodeError
-from aiomysensors.gateway import Gateway, MessageBuffer
 from aiomysensors.model.message import Message
 
 from .protocol_20 import handle_missing_node_child
@@ -23,6 +25,11 @@ from .protocol_21 import (
 from .protocol_21 import (
     OutgoingMessageHandler as OutgoingMessageHandler21,
 )
+
+if TYPE_CHECKING:
+    from aiomysensors.gateway import Gateway, MessageBuffer
+
+VERSION = "2.2"
 
 
 class IncomingMessageHandler(IncomingMessageHandler21):

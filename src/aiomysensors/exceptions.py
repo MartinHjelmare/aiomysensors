@@ -1,6 +1,8 @@
 """Provide aiomysensors exceptions."""
 
-from typing import TYPE_CHECKING, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .model.message import Message
@@ -39,7 +41,7 @@ class TooManyNodesError(AIOMySensorsError):
 class InvalidMessageError(AIOMySensorsError):
     """Represent an invalid message exception."""
 
-    def __init__(self, error: Exception, message: Union["Message", str]) -> None:
+    def __init__(self, error: Exception, message: Message | str) -> None:
         """Set up error."""
         super().__init__(f"Invalid message {message} received: {error}")
         self.message = message
@@ -50,7 +52,7 @@ class UnsupportedMessageError(AIOMySensorsError):
 
     def __init__(
         self,
-        message: "Message",
+        message: Message,
         protocol_version: str | None = None,
     ) -> None:
         """Set up error."""

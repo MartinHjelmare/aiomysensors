@@ -1,10 +1,12 @@
 """Provide a gateway."""
 
+from __future__ import annotations
+
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass, field
 import logging
 from types import TracebackType
-from typing import Optional
+from typing import Self
 
 from marshmallow import ValidationError
 
@@ -27,7 +29,7 @@ LOGGER = logging.getLogger(__package__)
 class Gateway:
     """Represent a MySensors gateway."""
 
-    def __init__(self, transport: Transport, config: Optional["Config"] = None) -> None:
+    def __init__(self, transport: Transport, config: Config | None = None) -> None:
         """Set up gateway."""
         self.config = config or Config()
         self.nodes: dict[int, Node] = {}
@@ -35,18 +37,15 @@ class Gateway:
         if self.config.persistence_file:
             self.persistence = Persistence(self.nodes, self.config.persistence_file)
         self.transport = transport
-        self._message_schema = MessageSchema()
-        self._protocol: ProtocolType | None = None
+        message_schema = self._message_schema = MessageSchema()
+        protocol = self._protocol = get_protocol(DEFAULT_PROTOCOL_VERSION)
+        message_schema.set_protocol(protocol)
         self._protocol_version: str | None = None
         self._message_buffer = MessageBuffer()
 
     @property
     def protocol(self) -> ProtocolType:
         """Return the correct protocol."""
-        if not self._protocol:
-            protocol_version = self._protocol_version or DEFAULT_PROTOCOL_VERSION
-            self._protocol = get_protocol(protocol_version)
-
         return self._protocol
 
     @property
@@ -57,10 +56,9 @@ class Gateway:
     @protocol_version.setter
     def protocol_version(self, value: str) -> None:
         """Return the protocol version."""
-        self._message_schema.context["protocol_version"] = self._protocol_version = (
-            value
-        )
-        self._protocol = get_protocol(self._protocol_version)
+        self._protocol_version = value
+        protocol = self._protocol = get_protocol(self._protocol_version)
+        self._message_schema.set_protocol(protocol)
 
     async def listen(self) -> AsyncGenerator[Message, None]:
         """Listen and yield a message."""
@@ -92,7 +90,7 @@ class Gateway:
         LOGGER.debug("Sending: %s", message)
         await message_handler(self, message, _message_buffer, decoded_message)
 
-    async def __aenter__(self) -> "Gateway":
+    async def __aenter__(self) -> Self:
         """Connect to the transport."""
         if self.persistence:
             await self.persistence.load()

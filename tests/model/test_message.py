@@ -104,3 +104,13 @@ def test_load_bad_message(message_schema: MessageSchema) -> None:
     # Message with incorrect child id and command type combination
     with pytest.raises(ValidationError):
         message_schema.load("1;255;1;0;0;0\n")  # type: ignore[arg-type]
+
+
+def test_message_schema_without_protocol() -> None:
+    """Test an incorrectly used message schema."""
+    message_schema = MessageSchema()
+
+    with pytest.raises(ValidationError) as err:
+        message_schema.load("1;255;3;0;0;57\n")  # type: ignore[arg-type]
+
+    assert "Protocol not set on MessageSchema." in str(err.value)

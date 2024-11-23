@@ -1,5 +1,7 @@
 """Provide a MySensors node and child abstraction."""
 
+from __future__ import annotations
+
 from typing import Any
 
 from marshmallow import Schema, fields, post_load, validate
@@ -19,7 +21,7 @@ class Node:
         node_type: int,
         protocol_version: str,
         *,
-        children: dict[int, "Child"] | None = None,
+        children: dict[int, Child] | None = None,
         sketch_name: str = "",
         sketch_version: str = "",
         battery_level: int = 0,
