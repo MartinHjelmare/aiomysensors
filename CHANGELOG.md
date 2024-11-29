@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.4.10 (2024-11-29)
+
+### Bug fixes
+
+* Update dependency typer to ^0.14.0 ([`bc56f8b`](https://github.com/MartinHjelmare/aiomysensors/commit/bc56f8bc19f07634ba035f071bd7aeb280bb29a9))
+
+### Chores
+
+* Update pre-commit hook commitizen-tools/commitizen to v4 (#465) ([`025c3b1`](https://github.com/MartinHjelmare/aiomysensors/commit/025c3b1073e9f81b6b080e8ba0ef6cb974d834b9))
+* Update pre-commit stages (#463) ([`77ea1d6`](https://github.com/MartinHjelmare/aiomysensors/commit/77ea1d66e64a3e3c1270f72e31f39db90775d82f))
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.8.0 ([`2cf1cb9`](https://github.com/MartinHjelmare/aiomysensors/commit/2cf1cb90d403744a8fef389c3011d7dab9389946))
+* Update dependency ruff to ^0.8.0 ([`7737221`](https://github.com/MartinHjelmare/aiomysensors/commit/77372219fab43a705c65ff82ef11129cceabaadb))
+
+### Refactoring
+
+* Import protocol modules normally (#464) ([`c9b2a82`](https://github.com/MartinHjelmare/aiomysensors/commit/c9b2a8222a51dde385085bca08bb9d73c4982f9f))
+
 ## v0.4.9 (2024-11-19)
 
 ### Bug fixes
