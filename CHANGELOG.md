@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.4.11 (2024-12-03)
+
+### Bug fixes
+
+* Update dependency typer to ^0.15.0 ([`4c77e8e`](https://github.com/MartinHjelmare/aiomysensors/commit/4c77e8e97e90a4ca62409d3acdf5c9f2f114cb9f))
+
+### Chores
+
+* Update python-semantic-release/python-semantic-release action to v9.15.1 ([`e9cdf00`](https://github.com/MartinHjelmare/aiomysensors/commit/e9cdf00bc2fa73804d11d233a334a66b1741ea02))
+* Update dependency python-semantic-release to v9.15.1 ([`1949b79`](https://github.com/MartinHjelmare/aiomysensors/commit/1949b79ce74b8c906b68eef70fb971af037b458c))
+* Update dependency python-semantic-release to v9.15.0 ([`d08a3e6`](https://github.com/MartinHjelmare/aiomysensors/commit/d08a3e6995d26609f4c9a1c080c5206765058cbb))
+* Update python-semantic-release/python-semantic-release action to v9.15.0 ([`aa60af3`](https://github.com/MartinHjelmare/aiomysensors/commit/aa60af37478d0b91f9c97ab60131178193566ee3))
+* Update dependency pytest to v8.3.4 ([`be87ce6`](https://github.com/MartinHjelmare/aiomysensors/commit/be87ce6910af5ced071ebf6432ee0b77e8d4436d))
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.8.1 ([`025ee2c`](https://github.com/MartinHjelmare/aiomysensors/commit/025ee2cd0681db8d929e0e291eb242e7e9f12532))
+* Update dependency ruff to v0.8.1 ([`d213f03`](https://github.com/MartinHjelmare/aiomysensors/commit/d213f031626517471f38a245e83b1513f5b135bb))
+
 ## v0.4.10 (2024-11-29)
 
 ### Bug fixes
