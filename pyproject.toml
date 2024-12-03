@@ -35,7 +35,7 @@ awesomeversion = "^24.0.0"
 marshmallow = "^3.17"
 pyserial-asyncio = "^0.6"
 python = "^3.12"
-typer = "^0.14.0"
+typer = "^0.15.0"
 
 [tool.poetry.extras]
 cli = ["aiomqtt", "typer"]
