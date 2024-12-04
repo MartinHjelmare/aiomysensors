@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.4.12 (2024-12-04)
+
+### Bug fixes
+
+* Update dependency typer to v0.15.1 ([`ba0db9f`](https://github.com/MartinHjelmare/aiomysensors/commit/ba0db9fd04b2f3871dc2b45c56b3a8f7dabaa130))
+
+### Chores
+
+* Update actions/attest-build-provenance action to v2 (#466) ([`81d4473`](https://github.com/MartinHjelmare/aiomysensors/commit/81d4473ce010d549b9c7d2b0827a47ae6ed8ad20))
+
 ## v0.4.11 (2024-12-03)
 
 ### Bug fixes
