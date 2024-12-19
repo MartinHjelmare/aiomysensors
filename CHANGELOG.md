@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.4.13 (2024-12-19)
+
+### Bug fixes
+
+* Update dependency marshmallow to v3.23.2 ([`08676de`](https://github.com/MartinHjelmare/aiomysensors/commit/08676de5e6c0e5e74c122a7ac1fe9e1ef4e93d34))
+
+### Chores
+
+* Update wagoid/commitlint-github-action action to v6.2.0 ([`cad2677`](https://github.com/MartinHjelmare/aiomysensors/commit/cad267752b5dd72b515e62035090498afa4458d7))
+* Update python-semantic-release/python-semantic-release action to v9.15.2 ([`e8d17a1`](https://github.com/MartinHjelmare/aiomysensors/commit/e8d17a10ced82c662bc6b886a95c0ea8d1721b07))
+* Update dependency python-semantic-release to v9.15.2 ([`a1be635`](https://github.com/MartinHjelmare/aiomysensors/commit/a1be635e7189baaa73f4511a4032d00227ba46b1))
+* Update dependency pytest-asyncio to ^0.25.0 ([`b479261`](https://github.com/MartinHjelmare/aiomysensors/commit/b479261b043489b5dd1f6c9ff9ec3876303776cd))
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.8.3 ([`832c53f`](https://github.com/MartinHjelmare/aiomysensors/commit/832c53f6993e0daa82abe859fa72af4c41b9caa4))
+* Update dependency ruff to v0.8.3 ([`4b0aecd`](https://github.com/MartinHjelmare/aiomysensors/commit/4b0aecd7dc8304bc20a91d562cf3d3293fd54a7c))
+* Update pre-commit hook commitizen-tools/commitizen to v4.1.0 ([`f2cc46d`](https://github.com/MartinHjelmare/aiomysensors/commit/f2cc46dca4031d6b4fa29e9a0e13b0afbedf84ac))
+* Update pre-commit hook python-poetry/poetry to v1.8.5 ([`52d7e0a`](https://github.com/MartinHjelmare/aiomysensors/commit/52d7e0a5cd77956db2f311780d06e5206d8008dc))
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.8.2 ([`0800c2f`](https://github.com/MartinHjelmare/aiomysensors/commit/0800c2f5152c6822ec128509be8beef60d025c48))
+* Update dependency ruff to v0.8.2 ([`ad58cae`](https://github.com/MartinHjelmare/aiomysensors/commit/ad58cae705e2a47c7e4feba3b232c31abd2fab4b))
+
 ## v0.4.12 (2024-12-04)
 
 ### Bug fixes
