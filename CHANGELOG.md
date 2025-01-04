@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.4.14 (2025-01-04)
+
+### Bug fixes
+
+* Update dependency marshmallow to v3.23.3 ([`28686d9`](https://github.com/MartinHjelmare/aiomysensors/commit/28686d91117eb8d50e4f9e8f78b0a24dceac62e4))
+
+### Chores
+
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.8.5 ([`47cb9ee`](https://github.com/MartinHjelmare/aiomysensors/commit/47cb9ee33251cadb7b96776839eea83fd8f09635))
+* Update dependency ruff to v0.8.5 ([`041354d`](https://github.com/MartinHjelmare/aiomysensors/commit/041354de43e6bd0e7c808ddcc70b557183f5ff52))
+* Update dependency pytest-asyncio to v0.25.1 ([`f4ee3dc`](https://github.com/MartinHjelmare/aiomysensors/commit/f4ee3dc9aaddacb24f7828f5d40270a84057bb2e))
+* Bump jinja2 from 3.1.4 to 3.1.5 (#467) ([`0328e0d`](https://github.com/MartinHjelmare/aiomysensors/commit/0328e0d0516740c4d79ae11e1e2f259532821098))
+* Update dependency mypy to v1.14.1 ([`dfe2721`](https://github.com/MartinHjelmare/aiomysensors/commit/dfe27218dfbb579fda171bb6a2d16ae9cbeb452a))
+* Update dependency mypy to v1.14.0 ([`4b42c36`](https://github.com/MartinHjelmare/aiomysensors/commit/4b42c36c8bafe50118fd75e99457cad56f765d2b))
+* Update pre-commit hook astral-sh/ruff-pre-commit to v0.8.4 ([`9edea0a`](https://github.com/MartinHjelmare/aiomysensors/commit/9edea0a3e6b9773a02d6b88d1152588d23c656cd))
+* Update dependency ruff to v0.8.4 ([`bcf5245`](https://github.com/MartinHjelmare/aiomysensors/commit/bcf5245beb7299e5986f2c362943f3edc28eef03))
+
 ## v0.4.13 (2024-12-19)
 
 ### Bug fixes
