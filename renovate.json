@@ -1,4 +1,12 @@
 {
-  "extends": ["github>browniebroke/renovate-configs:python"],
-  "automergeType": "branch"
+  "extends": [
+    "github>browniebroke/renovate-configs:python",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "automergeType": "branch",
+  "dependencies": {
+    "major": {
+      "semanticCommitType": "fix"
+    }
+  }
 }
