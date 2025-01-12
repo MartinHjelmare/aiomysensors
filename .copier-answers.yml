@@ -1,9 +1,9 @@
 # Changes here will be overwritten by Copier
-_commit: 8e5f4cc
+_commit: eb58cae
 _src_path: https://github.com/browniebroke/pypackage-template
 add_me_as_contributor: false
 cli_name: aiomysensors
-copyright_year: '2022'
+copyright_year: '2025'
 documentation: false
 email: marhje52@gmail.com
 full_name: Martin Hjelmare
@@ -16,7 +16,7 @@ package_name: aiomysensors
 project_name: aiomysensors
 project_short_description: Python asyncio package to connect to MySensors gateways.
 project_slug: aiomysensors
-run_poetry_install: true
+run_uv_sync: false
 setup_github: false
 setup_pre_commit: true
 
