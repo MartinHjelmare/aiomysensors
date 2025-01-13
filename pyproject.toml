@@ -1,56 +1,58 @@
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.0.0"]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools"]
 
-[tool.poetry]
-authors = ["Martin Hjelmare <marhje52@gmail.com>"]
+[project]
+authors = [
+  {name = "Martin Hjelmare", email = "marhje52@gmail.com"},
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Natural Language :: English",
   "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries",
   "Topic :: Home Automation",
 ]
 description = "Python asyncio package to connect to MySensors gateways."
-license = "Apache-2.0"
+license = {text = "Apache-2.0"}
 name = "aiomysensors"
-packages = [
-  {include = "aiomysensors", from = "src"},
-]
 readme = "README.md"
-repository = "https://github.com/MartinHjelmare/aiomysensors"
+requires-python = ">=3.12"
 version = "0.4.14"
 
-[tool.poetry.urls]
-"Bug Tracker" = "https://github.com/MartinHjelmare/aiomysensors/issues"
-"Changelog" = "https://github.com/MartinHjelmare/aiomysensors/blob/main/CHANGELOG.md"
+dependencies = [
+  "aiofiles>=24,<25",
+  "awesomeversion>=24,<25",
+  "marshmallow>=3.17,<3.24",
+  "pyserial-asyncio>=0.6,<1",
+]
+scripts.aiomysensors = "aiomysensors.cli:cli"
+urls."Bug Tracker" = "https://github.com/MartinHjelmare/aiomysensors/issues"
+urls.Changelog = "https://github.com/MartinHjelmare/aiomysensors/blob/main/CHANGELOG.md"
+urls.repository = "https://github.com/MartinHjelmare/aiomysensors"
 
-[tool.poetry.scripts]
-aiomysensors = 'aiomysensors.cli:cli'
+[project.optional-dependencies]
+cli = [
+  "aiomqtt>=2.3,<3",
+  "typer>=0.15,<1",
+]
 
-[tool.poetry.dependencies]
-aiofiles = "^24.0.0"
-aiomqtt = "^2.3"
-awesomeversion = "^24.0.0"
-marshmallow = "^3.17"
-pyserial-asyncio = "^0.6"
-python = "^3.12"
-typer = "^0.15.0"
-
-[tool.poetry.extras]
-cli = ["aiomqtt", "typer"]
-
-[tool.poetry.group.dev.dependencies]
-codespell = "^2.3.0"
-copier = "^9.3.1"
-mypy = "^1.0"
-pre-commit = "^4.0.0"
-pytest = "^8.0.0"
-pytest-asyncio = "^0.25.0"
-pytest-cov = "^6.0.0"
-python-semantic-release = "^9.0.0"
-ruff = "^0.9.0"
-types-aiofiles = "^22.0.0"
+[dependency-groups]
+dev = [
+  "codespell==2.3.0",
+  "copier==9.3.1",
+  "mypy==1.14.1",
+  "pre-commit==4.0.1",
+  "pytest==8.3.4",
+  "pytest-asyncio==0.25.2",
+  "pytest-cov==6.0.0",
+  "python-semantic-release==9.16.0",
+  "ruff==0.9.1",
+  "types-aiofiles==24.1.0.20241221",
+]
 
 [tool.ruff]
 line-length = 88
@@ -113,7 +115,6 @@ check_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
-enable_incomplete_feature = "NewGenericSyntax"
 exclude = [
   'setup.py',
 ]
@@ -141,16 +142,28 @@ module = [
 ]
 
 [tool.semantic_release]
-build_command = "pip install poetry && poetry build"
+build_command = """
+pip install uv
+uv lock
+git add uv.lock
+uv build
+"""
 major_on_zero = false
-version_toml = ["pyproject.toml:tool.poetry.version"]
+version_toml = ["pyproject.toml:project.version"]
 version_variables = [
   "src/aiomysensors/__init__.py:__version__",
 ]
 
 [tool.semantic_release.changelog]
 exclude_commit_patterns = [
-  "Merge pull request .*",
+  '''chore(?:\([^)]*?\))?: .+''',
+  '''ci(?:\([^)]*?\))?: .+''',
+  '''refactor(?:\([^)]*?\))?: .+''',
+  '''style(?:\([^)]*?\))?: .+''',
+  '''test(?:\([^)]*?\))?: .+''',
+  '''build\((?!deps\): .+)''',
+  '''Merged? .*''',
+  '''Initial [Cc]ommit.*''', # codespell:ignore
 ]
 
 [tool.semantic_release.changelog.environment]
