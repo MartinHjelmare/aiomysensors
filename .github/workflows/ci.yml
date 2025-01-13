@@ -24,7 +24,7 @@ jobs:
         with:
           enable-cache: true
       - name: Install Dependencies
-        run: uv sync --no-python-downloads
+        run: uv sync --all-extras --no-python-downloads
         shell: bash
       - uses: actions/cache@v4
         with:
@@ -61,7 +61,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync --no-python-downloads
+      - run: uv sync --all-extras --no-python-downloads
         shell: bash
       - run: uv run pytest
         shell: bash
