@@ -18,7 +18,7 @@ def command_fixture(
 ) -> str:
     """Add a MySensors command to the transport."""
     message = request.param
-    cmd = cast(str, message_schema.dump(message))
+    cmd = cast("str", message_schema.dump(message))
     transport.messages.append(cmd)
     return cmd
 
@@ -30,6 +30,6 @@ def node_fixture(
     """Populate a node in the gateway from node data."""
     if not (node_data := request.param):
         return None
-    node = cast(Node, node_schema.load(node_data))
+    node = cast("Node", node_schema.load(node_data))
     gateway.nodes[node.node_id] = node
     return node

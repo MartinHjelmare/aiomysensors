@@ -262,7 +262,7 @@ class MQTTClient(MQTTTransport):
             raise RuntimeError("Client not connected.")
         try:
             async for message in self._client.messages:
-                payload = cast(bytes, message.payload)
+                payload = cast("bytes", message.payload)
                 self._receive(message.topic.value, payload.decode())
         except MqttError as err:
             self._receive_error(
