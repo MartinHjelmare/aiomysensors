@@ -60,7 +60,7 @@ def get_protocol(protocol_version: str) -> ProtocolType:
         ),
         protocol_14,
     )
-    return cast(ProtocolType, module)
+    return cast("ProtocolType", module)
 
 
 def get_incoming_message_handler(
