@@ -4,9 +4,12 @@
     ":semanticCommitTypeAll(chore)"
   ],
   "automergeType": "branch",
-  "dependencies": {
-    "major": {
-      "semanticCommitType": "fix"
+  "packageRules": [
+    {
+      "matchDepTypes": ["dependencies"],
+      "major": {
+        "semanticCommitType": "fix"
+      }
     }
-  }
+  ]
 }
