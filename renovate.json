@@ -6,9 +6,7 @@
   "automergeType": "branch",
   "packageRules": [
     {
-      "matchDepTypes": [
-        "dependencies"
-      ],
+      "matchDepTypes": ["dependencies"],
       "major": {
         "semanticCommitType": "fix"
       }
