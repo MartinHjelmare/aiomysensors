@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.5.0 (2025-03-16)
+
+### Features
+
+- Use mashumaro for Message model ([#481](https://github.com/MartinHjelmare/aiomysensors/pull/481),
+  [`9b9b748`](https://github.com/MartinHjelmare/aiomysensors/commit/9b9b748fc68b27f9361df1fda9172d75b32f73c0))
+
+
 ## v0.4.14 (2025-01-04)
 
 ### Bug Fixes
