@@ -160,7 +160,7 @@ async def test_gateway_ready(
     """Test internal gateway ready command."""
     msg = await anext(gateway.listen())
 
-    assert message_schema.dump(msg) == command
+    assert msg.to_string(message_schema) == command
     assert transport.writes == writes
 
 
@@ -330,7 +330,7 @@ async def test_missing_node(
     transport: MockTransport,
 ) -> None:
     """Test missing node handling."""
-    protocol = message_schema.context["protocol"]
+    protocol = message_schema.protocol
     assert not gateway.nodes
 
     # Receive command for a missing node.
@@ -357,7 +357,7 @@ async def test_missing_node(
 
     msg = await anext(gateway.listen())
 
-    assert message_schema.dump(msg) == presentation_command
+    assert msg.to_string(message_schema) == presentation_command
     assert gateway.nodes
     assert gateway.nodes[1]
     node = gateway.nodes[1]
@@ -379,7 +379,7 @@ async def test_missing_node(
 
     msg = await anext(gateway.listen())
 
-    assert message_schema.dump(msg) == presentation_command
+    assert msg.to_string(message_schema) == presentation_command
     assert gateway.nodes
     assert gateway.nodes[1]
     node = gateway.nodes[1]
@@ -391,7 +391,7 @@ async def test_missing_node(
 
     msg = await anext(gateway.listen())
 
-    assert message_schema.dump(msg) == command
+    assert msg.to_string(message_schema) == command
     # Check transport messages after fourth command.
     assert transport.writes == fourth_writes
 

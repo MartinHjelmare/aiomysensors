@@ -41,11 +41,6 @@ class TooManyNodesError(AIOMySensorsError):
 class InvalidMessageError(AIOMySensorsError):
     """Represent an invalid message exception."""
 
-    def __init__(self, error: Exception, message: Message | str) -> None:
-        """Set up error."""
-        super().__init__(f"Invalid message {message} received: {error}")
-        self.message = message
-
 
 class UnsupportedMessageError(AIOMySensorsError):
     """Represent an unsupported message exception."""

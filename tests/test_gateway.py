@@ -21,12 +21,12 @@ async def test_listen(
     message_schema: MessageSchema,
 ) -> None:
     """Test gateway listen."""
-    cmd = message_schema.dump(message)
+    cmd = message.to_string(message_schema)
 
     async with gateway:
         msg = await anext(gateway.listen())
 
-    assert message_schema.dump(msg) == cmd
+    assert msg.to_string(message_schema) == cmd
 
 
 async def test_listen_invalid_message(
@@ -48,19 +48,12 @@ async def test_send(
     transport: MockTransport,
 ) -> None:
     """Test gateway send."""
-    cmd = message_schema.dump(message)
+    cmd = message.to_string(message_schema)
 
     async with gateway:
         await gateway.send(message)
 
     assert transport.writes == [cmd]
-
-
-async def test_send_invalid_message(gateway: Gateway) -> None:
-    """Test gateway send invalid message."""
-    async with gateway:
-        with pytest.raises(InvalidMessageError):
-            await gateway.send("invalid")  # type: ignore[arg-type]
 
 
 @pytest.mark.usefixtures("child")
@@ -74,13 +67,13 @@ async def test_unset_protocol_version(
     """Test gateway listen."""
     gateway = Gateway(transport)
     gateway.nodes[0] = node
-    cmd = message_schema.dump(message)
+    cmd = message.to_string(message_schema)
 
     async with gateway:
         msg = await anext(gateway.listen())
 
-    assert message_schema.dump(msg) == cmd
-    assert transport.writes == [message_schema.dump(Message(0, 255, 3, 0, 2, ""))]
+    assert msg.to_string(message_schema) == cmd
+    assert transport.writes == [Message(0, 255, 3, 0, 2, "").to_string(message_schema)]
 
 
 async def test_persistence(

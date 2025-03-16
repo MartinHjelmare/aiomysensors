@@ -5,7 +5,7 @@ from typing import cast
 import pytest
 
 from aiomysensors.gateway import Gateway
-from aiomysensors.model.message import MessageSchema
+from aiomysensors.model.message import Message, MessageSchema
 from aiomysensors.model.node import Node, NodeSchema
 from tests.common import MockTransport
 
@@ -17,8 +17,8 @@ def command_fixture(
     request: pytest.FixtureRequest,
 ) -> str:
     """Add a MySensors command to the transport."""
-    message = request.param
-    cmd = cast("str", message_schema.dump(message))
+    message = cast("Message", request.param)
+    cmd = message.to_string(message_schema)
     transport.messages.append(cmd)
     return cmd
 
