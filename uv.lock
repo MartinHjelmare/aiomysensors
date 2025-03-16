@@ -60,7 +60,7 @@ requires-dist = [
     { name = "aiofiles", specifier = ">=24,<25" },
     { name = "aiomqtt", marker = "extra == 'cli'", specifier = ">=2.3,<3" },
     { name = "awesomeversion", specifier = ">=24,<25" },
-    { name = "marshmallow", specifier = ">=3.17,<3.24" },
+    { name = "marshmallow", specifier = ">=3.26,<3.27" },
     { name = "mashumaro", specifier = ">=3.15" },
     { name = "pyserial-asyncio", specifier = ">=0.6,<1" },
     { name = "typer", marker = "extra == 'cli'", specifier = ">=0.15,<1" },
@@ -454,14 +454,14 @@ wheels = [
 
 [[package]]
 name = "marshmallow"
-version = "3.23.3"
+version = "3.26.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fd/c0/d674c9de69227beafa41e1601b0c48b8b51060212abc231d4332e4b1e794/marshmallow-3.23.3.tar.gz", hash = "sha256:d586c8685ebdb80bf754e1f96e3f305aaf30951f1fc69175b977453633467e76", size = 175606 }
+sdist = { url = "https://files.pythonhosted.org/packages/ab/5e/5e53d26b42ab75491cda89b871dab9e97c840bf12c63ec58a1919710cd06/marshmallow-3.26.1.tar.gz", hash = "sha256:e6d8affb6cb61d39d26402096dc0aee12d5a26d490a121f118d2e81dc0719dc6", size = 221825 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/af/82/d8c37cc92948ce11e5d8d71602bbac7ac4257f9e1f918fd91b1ddac4ec97/marshmallow-3.23.3-py3-none-any.whl", hash = "sha256:20c0f8c613f68bcb45b2a0d3282e2f172575560170bf220d67aafb42717910e4", size = 48911 },
+    { url = "https://files.pythonhosted.org/packages/34/75/51952c7b2d3873b44a0028b1bd26a25078c18f92f256608e8d1dc61b39fd/marshmallow-3.26.1-py3-none-any.whl", hash = "sha256:3350409f20a70a7e4e11a27661187b77cdcaeb20abca41c1454fe33636bea09c", size = 50878 },
 ]
 
 [[package]]
