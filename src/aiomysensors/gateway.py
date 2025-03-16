@@ -8,9 +8,6 @@ import logging
 from types import TracebackType
 from typing import Self
 
-from marshmallow import ValidationError
-
-from .exceptions import InvalidMessageError
 from .model.message import Message, MessageSchema
 from .model.node import Node
 from .model.protocol import (
@@ -37,9 +34,8 @@ class Gateway:
         if self.config.persistence_file:
             self.persistence = Persistence(self.nodes, self.config.persistence_file)
         self.transport = transport
-        message_schema = self._message_schema = MessageSchema()
         protocol = self._protocol = get_protocol(DEFAULT_PROTOCOL_VERSION)
-        message_schema.set_protocol(protocol)
+        self._message_schema = MessageSchema(protocol)
         self._protocol_version: str | None = None
         self._message_buffer = MessageBuffer()
 
@@ -58,19 +54,13 @@ class Gateway:
         """Return the protocol version."""
         self._protocol_version = value
         protocol = self._protocol = get_protocol(self._protocol_version)
-        self._message_schema.set_protocol(protocol)
+        self._message_schema = MessageSchema(protocol)
 
     async def listen(self) -> AsyncGenerator[Message, None]:
         """Listen and yield a message."""
         while True:
             decoded_message = await self.transport.read()
-            try:
-                message = self._message_schema.load(
-                    decoded_message,  # type: ignore[arg-type]
-                )
-            except ValidationError as err:
-                raise InvalidMessageError(err, decoded_message) from err
-
+            message = Message.from_string(decoded_message, self._message_schema)
             message_handler = get_incoming_message_handler(self.protocol, message)
             message = await message_handler(self, message, self._message_buffer)
 
@@ -79,13 +69,8 @@ class Gateway:
     async def send(self, message: Message, *, message_buffer: bool = True) -> None:
         """Send a message."""
         # Check valid message first.
-        try:
-            decoded_message: str = self._message_schema.dump(message)
-        except ValidationError as err:
-            raise InvalidMessageError(err, message) from err
-
+        decoded_message = message.to_string(self._message_schema)
         _message_buffer = self._message_buffer if message_buffer else None
-
         message_handler = get_outgoing_message_handler(self.protocol, message)
         LOGGER.debug("Sending: %s", message)
         await message_handler(self, message, _message_buffer, decoded_message)

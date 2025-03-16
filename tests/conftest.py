@@ -20,13 +20,10 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 @pytest.fixture(name="message_schema")
 def message_schema_fixture(request: pytest.FixtureRequest) -> MessageSchema:
     """Apply protocol version to schema."""
-    message_schema = MessageSchema()
     if not (protocol_version := getattr(request, "param", None)):
-        message_schema.set_protocol(get_protocol(DEFAULT_PROTOCOL_VERSION))
-        return message_schema
+        return MessageSchema(get_protocol(DEFAULT_PROTOCOL_VERSION))
 
-    message_schema.set_protocol(get_protocol(protocol_version))
-    return message_schema
+    return MessageSchema(get_protocol(protocol_version))
 
 
 @pytest.fixture(name="node_schema")
@@ -66,7 +63,7 @@ def transport_fixture() -> MockTransport:
 def message_fixture(message_schema: MessageSchema, transport: MockTransport) -> Message:
     """Mock a message."""
     message = Message(0, 0, 1, 0, 0, "20.0")
-    cmd = message_schema.dump(message)
+    cmd = message.to_string(message_schema)
     transport.messages.append(cmd)
     return message
 
@@ -75,7 +72,7 @@ def message_fixture(message_schema: MessageSchema, transport: MockTransport) -> 
 def gateway_fixture(message_schema: MessageSchema, transport: MockTransport) -> Gateway:
     """Mock a gateway."""
     gateway = Gateway(transport)
-    protocol = message_schema.context["protocol"]
+    protocol = message_schema.protocol
     gateway.protocol_version = protocol.VERSION
     return gateway
 

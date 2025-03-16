@@ -194,7 +194,7 @@ async def test_write_failure(
     """Test MQTT transport write failure."""
     mqtt_client = mqtt.return_value
     mqtt_client.publish.side_effect = MqttError("Boom")
-    cmd = message_schema.dump(message)
+    cmd = message.to_string(message_schema)
 
     transport = MQTTClient(HOST, PORT, IN_PREFIX, OUT_PREFIX)
 

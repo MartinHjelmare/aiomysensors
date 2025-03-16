@@ -88,13 +88,13 @@ async def test_presentation_gateway_protocol_version(
     """Test that gateway presentation sets protocol version."""
     gateway = Gateway(transport)
     message = Message(0, 255, 0, 0, 17, protocol_version)
-    command = message_schema.dump(message)
+    command = message.to_string(message_schema)
     transport.messages.append(command)
     assert gateway.protocol_version is None
 
     msg = await anext(gateway.listen())
 
-    assert message_schema.dump(msg) == command
+    assert msg.to_string(message_schema) == command
     assert gateway.protocol_version == protocol_version
     assert gateway.protocol is get_protocol(protocol_version)
 
@@ -285,7 +285,7 @@ async def test_internal_version(
 
     msg = await anext(gateway.listen())
 
-    assert message_schema.dump(msg) == command
+    assert msg.to_string(message_schema) == command
     assert gateway.protocol_version == "2.0"
 
 
@@ -356,7 +356,7 @@ async def test_internal_config(
 
     msg = await anext(gateway.listen())
 
-    assert message_schema.dump(msg) == command
+    assert msg.to_string(message_schema) == command
     assert transport.writes == writes
 
 
@@ -382,7 +382,7 @@ async def test_internal_time(
     """Test internal time command."""
     msg = await anext(gateway.listen())
 
-    assert message_schema.dump(msg) == command
+    assert msg.to_string(message_schema) == command
     assert transport.writes == writes
 
 

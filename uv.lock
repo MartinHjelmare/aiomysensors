@@ -31,6 +31,7 @@ dependencies = [
     { name = "aiofiles" },
     { name = "awesomeversion" },
     { name = "marshmallow" },
+    { name = "mashumaro" },
     { name = "pyserial-asyncio" },
 ]
 
@@ -60,6 +61,7 @@ requires-dist = [
     { name = "aiomqtt", marker = "extra == 'cli'", specifier = ">=2.3,<3" },
     { name = "awesomeversion", specifier = ">=24,<25" },
     { name = "marshmallow", specifier = ">=3.17,<3.24" },
+    { name = "mashumaro", specifier = ">=3.15" },
     { name = "pyserial-asyncio", specifier = ">=0.6,<1" },
     { name = "typer", marker = "extra == 'cli'", specifier = ">=0.15,<1" },
 ]
@@ -460,6 +462,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fd/c0/d674c9de69227beafa41e1601b0c48b8b51060212abc231d4332e4b1e794/marshmallow-3.23.3.tar.gz", hash = "sha256:d586c8685ebdb80bf754e1f96e3f305aaf30951f1fc69175b977453633467e76", size = 175606 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/af/82/d8c37cc92948ce11e5d8d71602bbac7ac4257f9e1f918fd91b1ddac4ec97/marshmallow-3.23.3-py3-none-any.whl", hash = "sha256:20c0f8c613f68bcb45b2a0d3282e2f172575560170bf220d67aafb42717910e4", size = 48911 },
+]
+
+[[package]]
+name = "mashumaro"
+version = "3.15"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f3/c1/7b687c8b993202e2eb49e559b25599d8e85f1b6d92ce676c8801226b8bdf/mashumaro-3.15.tar.gz", hash = "sha256:32a2a38a1e942a07f2cbf9c3061cb2a247714ee53e36a5958548b66bd116d0a9", size = 188646 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f9/59/595eabaa779c87a72d65864351e0fdd2359d7d73967d5ed9f2f0c6186fa3/mashumaro-3.15-py3-none-any.whl", hash = "sha256:cdd45ef5a4d09860846a3ee37a4c2f5f4bc70eb158caa55648c4c99451ca6c4c", size = 93761 },
 ]
 
 [[package]]

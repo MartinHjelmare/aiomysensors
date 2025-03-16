@@ -6,19 +6,14 @@ Validation should be done on a protocol level, i.e. not with gateway state.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal, Self
 
-from marshmallow import (
-    Schema,
-    ValidationError,
-    fields,
-    post_dump,
-    post_load,
-    pre_load,
-    validate,
-)
+from mashumaro import DataClassDictMixin
 
-from .const import NODE_ID_FIELD, SYSTEM_CHILD_ID
+from aiomysensors.exceptions import InvalidMessageError
+
+from .const import BROADCAST_ID, SYSTEM_CHILD_ID
 
 if TYPE_CHECKING:
     from .protocol import ProtocolType
@@ -26,25 +21,55 @@ if TYPE_CHECKING:
 DELIMITER = ";"
 
 
-class Message:
+@dataclass
+class Message(DataClassDictMixin):
     """Represent a message from the gateway."""
 
-    def __init__(
-        self,
-        node_id: int = 0,
-        child_id: int = 0,
-        command: int = 0,
-        ack: int = 0,
-        message_type: int = 0,
-        payload: str = "",
-    ) -> None:
-        """Set up message."""
-        self.node_id = int(node_id)  # handle IntEnum
-        self.child_id = int(child_id)
-        self.command = int(command)
-        self.ack = ack
-        self.message_type = int(message_type)
-        self.payload = payload
+    node_id: int = 0
+    child_id: int = 0
+    command: int = 0
+    ack: Literal[0, 1] = 0
+    message_type: int = 0
+    payload: str = ""
+
+    @classmethod
+    def from_string(cls, value: str, validation_schema: MessageSchema) -> Self:
+        """Create a message from a string."""
+        items = value.rstrip().split(DELIMITER)
+        try:
+            data = {
+                "node_id": items[0],
+                "child_id": items[1],
+                "command": items[2],
+                "ack": items[3],
+                "message_type": items[4],
+                "payload": items[5],
+            }
+        except IndexError as err:
+            raise InvalidMessageError(
+                f"Failed to parse string {value} to message: {err}"
+            ) from err
+
+        node_id = validation_schema.validate_node_id(data=data)
+        child_id = validation_schema.validate_child_id(data=data)
+        command = validation_schema.validate_command(data=data)
+        ack = validation_schema.validate_ack(data=data)
+        message_type = validation_schema.validate_message_type(data=data)
+        payload = data["payload"]
+        return cls(node_id, child_id, command, ack, message_type, payload)
+
+    def to_string(self, validation_schema: MessageSchema) -> str:
+        """Serialize the message."""
+        data = self.to_dict()
+        validation_schema.validate_node_id(data=data)
+        validation_schema.validate_child_id(data=data)
+        validation_schema.validate_command(data=data)
+        validation_schema.validate_ack(data=data)
+        validation_schema.validate_message_type(data=data)
+        return (
+            f"{self.node_id};{self.child_id};{self.command};"
+            f"{self.ack};{self.message_type};{self.payload}\n"
+        )
 
     def __repr__(self) -> str:
         """Return the representation."""
@@ -55,156 +80,110 @@ class Message:
         )
 
 
-class ChildIdField(fields.Field):
-    """Represent a child id field."""
+@dataclass
+class MessageSchema:
+    """Represent the message validation schema."""
 
-    def _deserialize(
+    protocol: ProtocolType
+
+    def validate_node_id(self, *, data: Mapping[str, str]) -> int:
+        """Validate the node id field."""
+        value = data["node_id"]
+        try:
+            node_id = int(value)
+        except ValueError as err:
+            raise InvalidMessageError("The node_id type must be an integer.") from err
+
+        if node_id < 0 or node_id > BROADCAST_ID:
+            raise InvalidMessageError(
+                f"The node_id must be between 0 and {BROADCAST_ID}, got {node_id}."
+            )
+
+        return node_id
+
+    def validate_child_id(
         self,
-        value: str,
-        attr: str | None,  # noqa: ARG002
-        data: Mapping[str, Any] | None,
-        **kwargs: Any,  # noqa: ANN401, ARG002
+        *,
+        data: Mapping[str, str],
+        command: int | None = None,
     ) -> int:
-        if data is None:
-            raise ValidationError("Data must be provided.")
-        protocol = self.context.get("protocol")
-        if protocol is None:
-            raise ValidationError("Protocol not set on MessageSchema.")
-        return validate_child_id(value=value, data=data, protocol=protocol)
+        """Validate the child id field."""
+        value = data["child_id"]
+        try:
+            child_id = int(value)
+        except ValueError as exc:
+            raise InvalidMessageError("The child_id type must be an integer.") from exc
 
+        if child_id < 0 or child_id > SYSTEM_CHILD_ID:
+            raise InvalidMessageError(
+                f"The child_id must be between 0 and {SYSTEM_CHILD_ID}, got {child_id}."
+            )
 
-class CommandField(fields.Field):
-    """Represent a command field."""
+        if command is None:
+            command = self.validate_command(data=data, child_id=child_id)
+        message_type = self.validate_message_type(data=data)
 
-    def validate_command(self, *, value: str, data: Mapping[str, Any]) -> int:
-        """Validate the command field."""
-        command = validate_command(value)
+        if (
+            command == self.protocol.INTERNAL_COMMAND_TYPE
+            and message_type in self.protocol.NODE_ID_REQUEST_TYPES
+        ):
+            return child_id
 
-        protocol = self.context.get("protocol")
-        if protocol is None:
-            raise ValidationError("Protocol not set on MessageSchema.")
+        if command in self.protocol.STRICT_SYSTEM_COMMAND_TYPES:
+            valid_child_id = SYSTEM_CHILD_ID
+            error = (
+                f"When message command is {command}, child_id must be {SYSTEM_CHILD_ID}"
+            )
 
-        command_type = protocol.Command
+            if child_id != valid_child_id:
+                raise InvalidMessageError(error)
+
+        return child_id
+
+    def validate_command(
+        self,
+        *,
+        data: Mapping[str, str],
+        child_id: int | None = None,
+    ) -> int:
+        """Validate a command."""
+        value = data["command"]
+        try:
+            command = int(value)
+        except ValueError as exc:
+            raise InvalidMessageError("The command type must be an integer.") from exc
+
+        command_type = self.protocol.Command
 
         valid_commands = {member.value for member in tuple(command_type)}
-        child_id = validate_child_id(
-            value=data["child_id"],
-            data=data,
-            protocol=protocol,
-        )
+        if child_id is None:
+            child_id = self.validate_child_id(data=data, command=command)
         if child_id == SYSTEM_CHILD_ID:
-            valid_commands = protocol.VALID_SYSTEM_COMMAND_TYPES
+            valid_commands = self.protocol.VALID_SYSTEM_COMMAND_TYPES
 
         if command not in valid_commands:
-            raise ValidationError(
+            raise InvalidMessageError(
                 f"The command type must one of {valid_commands} "
                 f"when child id is {SYSTEM_CHILD_ID}.",
             )
 
         return command
 
-    def _deserialize(
-        self,
-        value: str,
-        attr: str | None,  # noqa: ARG002
-        data: Mapping[str, Any] | None,
-        **kwargs: Any,  # noqa: ANN401, ARG002
-    ) -> int:
-        if data is None:
-            raise ValidationError("Data must be provided.")
-        return self.validate_command(value=value, data=data)
-
-
-class MessageSchema(Schema):
-    """Represent a message schema."""
-
-    node_id = NODE_ID_FIELD
-    child_id = ChildIdField(required=True)
-    command = CommandField(required=True)
-    ack = fields.Int(required=True, validate=validate.OneOf((0, 1)))
-    message_type = fields.Int(required=True)
-    payload = fields.Str(required=True)
-
-    class Meta:
-        """Schema options."""
-
-        fields = ("node_id", "child_id", "command", "ack", "message_type", "payload")
-        ordered = True
-
-    def set_protocol(self, protocol: ProtocolType) -> None:
-        """Set the protocol."""
-        self.context["protocol"] = protocol
-
-    @pre_load
-    def to_dict(self, in_data: str, **kwargs: Any) -> dict[str, str]:  # noqa: ANN401, ARG002
-        """Transform message string to a dict."""
-        list_data = in_data.rstrip().split(DELIMITER)
-        return dict(zip(self.fields, list_data, strict=False))
-
-    @post_load
-    def make_message(self, data: dict, **kwargs: Any) -> Message:  # noqa: ANN401, ARG002
-        """Make a message."""
-        return Message(**data)
-
-    @post_dump
-    def to_string(self, data: dict[str, int | str], **kwargs: Any) -> str:  # noqa: ANN401, ARG002
-        """Serialize message from a dict to a MySensors message string."""
+    def validate_ack(self, *, data: Mapping[str, str]) -> Literal[0, 1]:
+        """Validate an ack."""
+        value = data["ack"]
         try:
-            string = f"{DELIMITER.join([str(data[field]) for field in self.fields])}\n"
-        except KeyError as err:
-            raise ValidationError("Not a valid Message instance") from err
-        return string
+            ack = int(value)
+        except ValueError as exc:
+            raise InvalidMessageError("The ack type must be an integer.") from exc
+        if ack not in (0, 1):
+            raise InvalidMessageError(f"The ack must be either 0 or 1, got {ack}.")
+        return 1 if ack else 0
 
-
-def validate_child_id(
-    *,
-    value: str,
-    data: Mapping[str, Any],
-    protocol: ProtocolType,
-) -> int:
-    """Validate the child id field."""
-    try:
-        child_id = int(value)
-    except ValueError as exc:
-        raise ValidationError("The child_id type must be an integer.") from exc
-
-    child_range = validate.Range(
-        min=0,
-        max=SYSTEM_CHILD_ID,
-        error="Not valid child_id: {input}",
-    )
-    child_range(child_id)
-
-    command = validate_command(data["command"])
-    message_type = validate_message_type(data["message_type"])
-
-    if (
-        command == protocol.INTERNAL_COMMAND_TYPE
-        and message_type in protocol.NODE_ID_REQUEST_TYPES
-    ):
-        return child_id
-
-    if command in protocol.STRICT_SYSTEM_COMMAND_TYPES:
-        valid_child_id = SYSTEM_CHILD_ID
-        error = f"When message command is {command}, child_id must be {SYSTEM_CHILD_ID}"
-
-        if child_id != valid_child_id:
-            raise ValidationError(error)
-
-    return child_id
-
-
-def validate_command(value: str) -> int:
-    """Validate a command."""
-    try:
-        return int(value)
-    except ValueError as exc:
-        raise ValidationError("The command type must be an integer.") from exc
-
-
-def validate_message_type(value: str) -> int:
-    """Validate a message type."""
-    try:
-        return int(value)
-    except ValueError as exc:
-        raise ValidationError("The message type must be an integer.") from exc
+    def validate_message_type(self, *, data: Mapping[str, str]) -> int:
+        """Validate a message type."""
+        value = data["message_type"]
+        try:
+            return int(value)
+        except ValueError as exc:
+            raise InvalidMessageError("The message type must be an integer.") from exc
