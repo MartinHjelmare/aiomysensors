@@ -10,7 +10,7 @@ from typing import Any
 import aiofiles
 
 from .exceptions import PersistenceReadError, PersistenceWriteError
-from .model.node import Node, NodeSchema
+from .model.node import Node
 
 LOGGER = logging.getLogger(__package__)
 SAVE_INTERVAL = 900
@@ -42,17 +42,15 @@ class Persistence:
         except (OSError, ValueError) as err:
             raise PersistenceReadError(err) from err
 
-        node_schema = NodeSchema()
         for node_data in data.values():
-            node: Node = node_schema.load(node_data)
+            node = Node.from_dict(node_data)
             self.nodes[node.node_id] = node
 
     async def save(self) -> None:
         """Save data."""
         data = {}
-        node_schema = NodeSchema()
         for node in self.nodes.values():
-            data[node.node_id] = node_schema.dump(node)
+            data[node.node_id] = node.to_dict()
 
         try:
             async with aiofiles.open(self.path, mode="w") as fil:

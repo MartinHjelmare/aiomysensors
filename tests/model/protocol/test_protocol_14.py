@@ -17,7 +17,7 @@ from aiomysensors.exceptions import (
 )
 from aiomysensors.gateway import Gateway
 from aiomysensors.model.message import Message, MessageSchema
-from aiomysensors.model.node import Node, NodeSchema
+from aiomysensors.model.node import Node
 from aiomysensors.model.protocol import PROTOCOL_VERSIONS, get_protocol
 from tests.common import (
     DEFAULT_CHILD,
@@ -69,14 +69,13 @@ async def test_presentation(
     context: AbstractContextManager,
     node_after: dict[str, Any],
     gateway: Gateway,
-    node_schema: NodeSchema,
 ) -> None:
     """Test presentation command."""
     with context:
         await anext(gateway.listen())
 
     for _node in gateway.nodes.values():
-        assert node_schema.dump(_node) == node_after
+        assert _node.to_dict() == node_after
 
 
 @pytest.mark.parametrize("protocol_version", list(PROTOCOL_VERSIONS))
@@ -318,7 +317,11 @@ async def test_internal_id_request(
 ) -> None:
     """Test internal id request command."""
     for node_id in range(nodes_before):
-        gateway.nodes[node_id] = Node(node_id, 17, "1.4")
+        gateway.nodes[node_id] = Node(
+            node_id=node_id,
+            node_type=17,
+            protocol_version="1.4",
+        )
 
     with context:
         await anext(gateway.listen())
