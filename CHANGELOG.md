@@ -1,6 +1,20 @@
 # CHANGELOG
 
 
+## v0.6.0 (2025-03-17)
+
+### Features
+
+- Use mashumaro for Node model ([#482](https://github.com/MartinHjelmare/aiomysensors/pull/482),
+  [`264d034`](https://github.com/MartinHjelmare/aiomysensors/commit/264d034d8a37829dfdd5d4abb4433fe6e603bdaf))
+
+BREAKING CHANGE: The `Node` and `Child` classes now require only keyword arguments.
+
+### Breaking Changes
+
+- The `Node` and `Child` classes now require only keyword arguments.
+
+
 ## v0.5.0 (2025-03-16)
 
 ### Features
