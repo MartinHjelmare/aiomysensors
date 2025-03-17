@@ -104,7 +104,11 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         """Process a presentation message."""
         if message.child_id == SYSTEM_CHILD_ID:
             # this is a presentation of a node
-            node = Node(message.node_id, message.message_type, message.payload)
+            node = Node(
+                node_id=message.node_id,
+                node_type=message.message_type,
+                protocol_version=message.payload,
+            )
             gateway.nodes[node.node_id] = node
             if message.node_id == 0:
                 # Set the gateway protocol version.
@@ -267,9 +271,9 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
         # Use temporary default values for the node until node sends presentation.
         gateway.nodes[next_id] = Node(
-            next_id,
-            Presentation.S_ARDUINO_NODE,
-            DEFAULT_PROTOCOL_VERSION,
+            node_id=next_id,
+            node_type=Presentation.S_ARDUINO_NODE,
+            protocol_version=DEFAULT_PROTOCOL_VERSION,
         )
         id_response_message = Message(
             node_id=message.node_id,

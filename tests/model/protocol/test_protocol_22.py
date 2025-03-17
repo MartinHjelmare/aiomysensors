@@ -124,8 +124,12 @@ async def test_pre_sleep_notification(
     """Test internal pre sleep notification command."""
     protocol_version = gateway.protocol.VERSION
     # Set a node that won't send a pre sleep notification.
-    gateway.nodes[1] = node = Node(1, 17, protocol_version)
-    node.children[0] = Child(0, 0)
+    gateway.nodes[1] = node = Node(
+        node_id=1,
+        node_type=17,
+        protocol_version=protocol_version,
+    )
+    node.children[0] = Child(child_id=0, child_type=0)
 
     # Receive command.
     with context:

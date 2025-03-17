@@ -6,7 +6,7 @@ import pytest
 
 from aiomysensors.gateway import Gateway
 from aiomysensors.model.message import Message, MessageSchema
-from aiomysensors.model.node import Node, NodeSchema
+from aiomysensors.model.node import Node
 from tests.common import MockTransport
 
 
@@ -24,12 +24,10 @@ def command_fixture(
 
 
 @pytest.fixture(name="node_before")
-def node_fixture(
-    gateway: Gateway, node_schema: NodeSchema, request: pytest.FixtureRequest
-) -> Node | None:
+def node_fixture(gateway: Gateway, request: pytest.FixtureRequest) -> Node | None:
     """Populate a node in the gateway from node data."""
     if not (node_data := request.param):
         return None
-    node = cast("Node", node_schema.load(node_data))
+    node = Node.from_dict(node_data)
     gateway.nodes[node.node_id] = node
     return node

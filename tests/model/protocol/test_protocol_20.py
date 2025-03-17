@@ -261,8 +261,8 @@ async def test_heartbeat_response(
 ) -> None:
     """Test internal heartbeat response command."""
     # Set a node that won't send a heartbeat.
-    gateway.nodes[1] = node = Node(1, 17, "2.0")
-    node.children[0] = Child(0, 0)
+    gateway.nodes[1] = node = Node(node_id=1, node_type=17, protocol_version="2.0")
+    node.children[0] = Child(child_id=0, child_type=0)
 
     # Receive command.
     with context:

@@ -1,25 +1,25 @@
 """Test the node and child model."""
 
-from marshmallow.exceptions import ValidationError
+from mashumaro.exceptions import MissingField
 import pytest
 
 from aiomysensors.exceptions import MissingChildError
-from aiomysensors.model.node import Child, Node, NodeSchema
+from aiomysensors.model.node import Child, Node
 from tests.common import NODE_CHILD_SERIALIZED, NODE_SERIALIZED
 
 
-def test_dump(child: Child, node_schema: NodeSchema) -> None:
+def test_dump(child: Child) -> None:
     """Test dump of node."""
-    node = Node(0, 17, "2.0")
+    node = Node(node_id=0, node_type=17, protocol_version="2.0")
 
-    node_dump = node_schema.dump(node)
+    node_dump = node.to_dict()
 
     assert node_dump == NODE_SERIALIZED
 
     node = Node(
-        0,
-        17,
-        "2.0",
+        node_id=0,
+        node_type=17,
+        protocol_version="2.0",
         children={0: child},
         sketch_name="test node 0",
         sketch_version="1.0.0",
@@ -27,14 +27,14 @@ def test_dump(child: Child, node_schema: NodeSchema) -> None:
         heartbeat=10,
     )
 
-    node_dump = node_schema.dump(node)
+    node_dump = node.to_dict()
 
     assert node_dump == NODE_CHILD_SERIALIZED
 
 
-def test_load(node_schema: NodeSchema) -> None:
+def test_load() -> None:
     """Test load of message."""
-    node = node_schema.load(NODE_CHILD_SERIALIZED)
+    node = Node.from_dict(NODE_CHILD_SERIALIZED)
     assert node.node_id == 0
     assert node.node_type == 17
     assert node.protocol_version == "2.0"
@@ -54,10 +54,14 @@ def test_load(node_schema: NodeSchema) -> None:
     assert child.values == {0: "20.0"}
 
 
-def test_load_bad_node(node_schema: NodeSchema) -> None:
+def test_load_bad_node() -> None:
     """Test load of bad node."""
-    with pytest.raises(ValidationError):
-        node_schema.load({"bad": "bad"})
+    with pytest.raises(MissingField) as exc_info:
+        Node.from_dict({"bad": "bad"})
+
+    assert (
+        str(exc_info.value) == 'Field "node_id" of type int is missing in Node instance'
+    )
 
 
 def test_add_child(node: Node) -> None:

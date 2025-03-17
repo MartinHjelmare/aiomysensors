@@ -71,14 +71,6 @@ class Message(DataClassDictMixin):
             f"{self.ack};{self.message_type};{self.payload}\n"
         )
 
-    def __repr__(self) -> str:
-        """Return the representation."""
-        return (
-            f"{type(self).__name__}(node_id={self.node_id!r}, "
-            f"child_id={self.child_id!r}, command={self.command!r}, ack={self.ack!r}, "
-            f"message_type={self.message_type!r}, payload={self.payload!r})"
-        )
-
 
 @dataclass
 class MessageSchema:

@@ -10,7 +10,7 @@ import pytest
 from aiomysensors.gateway import Gateway
 from aiomysensors.model.const import DEFAULT_PROTOCOL_VERSION
 from aiomysensors.model.message import Message, MessageSchema
-from aiomysensors.model.node import Child, Node, NodeSchema
+from aiomysensors.model.node import Child, Node
 from aiomysensors.model.protocol import get_protocol
 from tests.common import MockTransport
 
@@ -26,16 +26,10 @@ def message_schema_fixture(request: pytest.FixtureRequest) -> MessageSchema:
     return MessageSchema(get_protocol(protocol_version))
 
 
-@pytest.fixture(name="node_schema")
-def node_schema_fixture() -> NodeSchema:
-    """Return a node schema."""
-    return NodeSchema()
-
-
 @pytest.fixture(name="node")
 def node_fixture(gateway: Gateway) -> Node:
     """Return a node."""
-    node = Node(0, 17, "2.0")
+    node = Node(node_id=0, node_type=17, protocol_version="2.0")
     gateway.nodes[node.node_id] = node
     return node
 
@@ -44,8 +38,8 @@ def node_fixture(gateway: Gateway) -> Node:
 def child_fixture(node: Node) -> Child:
     """Return a child on a node."""
     child = node.children[0] = Child(
-        0,
-        6,
+        child_id=0,
+        child_type=6,
         description="test child 0",
         values={0: "20.0"},
     )
