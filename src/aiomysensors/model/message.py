@@ -156,7 +156,7 @@ class MessageSchema:
         if command not in valid_commands:
             raise InvalidMessageError(
                 f"The command type must one of {valid_commands} "
-                f"when child id is {SYSTEM_CHILD_ID}.",
+                f"when child id is {child_id}, got {command}.",
             )
 
         return command
