@@ -1,7 +1,5 @@
 """Provide common protocol fixtures."""
 
-from typing import cast
-
 import pytest
 
 from aiomysensors.gateway import Gateway
@@ -17,8 +15,8 @@ def command_fixture(
     request: pytest.FixtureRequest,
 ) -> str:
     """Add a MySensors command to the transport."""
-    message = cast("Message", request.param)
-    cmd = message.to_string(message_schema)
+    param: Message | str = request.param
+    cmd = param.to_string(message_schema) if isinstance(param, Message) else param
     transport.messages.append(cmd)
     return cmd
 

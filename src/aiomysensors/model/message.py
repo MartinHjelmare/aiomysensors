@@ -98,6 +98,7 @@ class MessageSchema:
         *,
         data: Mapping[str, str],
         command: int | None = None,
+        message_type: int | None = None,
     ) -> int:
         """Validate the child id field."""
         value = data["child_id"]
@@ -113,7 +114,8 @@ class MessageSchema:
 
         if command is None:
             command = self.validate_command(data=data, child_id=child_id)
-        message_type = self.validate_message_type(data=data)
+        if message_type is None:
+            message_type = self.validate_message_type(data=data, command=command)
 
         if (
             command == self.protocol.INTERNAL_COMMAND_TYPE
@@ -137,6 +139,7 @@ class MessageSchema:
         *,
         data: Mapping[str, str],
         child_id: int | None = None,
+        message_type: int | None = None,
     ) -> int:
         """Validate a command."""
         value = data["command"]
@@ -149,7 +152,9 @@ class MessageSchema:
 
         valid_commands = {member.value for member in tuple(command_type)}
         if child_id is None:
-            child_id = self.validate_child_id(data=data, command=command)
+            child_id = self.validate_child_id(
+                data=data, command=command, message_type=message_type
+            )
         if child_id == SYSTEM_CHILD_ID:
             valid_commands = self.protocol.VALID_SYSTEM_COMMAND_TYPES
 
@@ -172,10 +177,29 @@ class MessageSchema:
             raise InvalidMessageError(f"The ack must be either 0 or 1, got {ack}.")
         return 1 if ack else 0
 
-    def validate_message_type(self, *, data: Mapping[str, str]) -> int:
+    def validate_message_type(
+        self,
+        *,
+        data: Mapping[str, str],
+        command: int | None = None,
+    ) -> int:
         """Validate a message type."""
         value = data["message_type"]
         try:
-            return int(value)
+            message_type = int(value)
         except ValueError as exc:
             raise InvalidMessageError("The message type must be an integer.") from exc
+
+        if command is None:
+            command = self.validate_command(data=data, message_type=message_type)
+        valid_message_types = {
+            member.value for member in self.protocol.VALID_COMMAND_TYPES[command]
+        }
+
+        if message_type not in valid_message_types:
+            raise InvalidMessageError(
+                f"The message type must one of {valid_message_types} "
+                f"when command is {command}, got {message_type}.",
+            )
+
+        return message_type
