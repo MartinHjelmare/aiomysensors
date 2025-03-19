@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## v0.6.1 (2025-03-19)
+
+### Bug Fixes
+
+- Clarify command validation error message
+  ([#483](https://github.com/MartinHjelmare/aiomysensors/pull/483),
+  [`539e930`](https://github.com/MartinHjelmare/aiomysensors/commit/539e930f71de62180d133c0fcf8b5d771eb6a5a9))
+
+
 ## v0.6.0 (2025-03-17)
 
 ### Features
