@@ -6,9 +6,9 @@ import logging
 
 from aiomysensors.exceptions import (
     AIOMySensorsError,
+    InvalidMessageError,
     MissingChildError,
     MissingNodeError,
-    UnsupportedMessageError,
 )
 from aiomysensors.gateway import Gateway
 
@@ -40,8 +40,8 @@ async def start_gateway(gateway_factory: GatewayFactory) -> None:
                 LOGGER.debug("Missing node: %s", err.node_id)
             except MissingChildError as err:
                 LOGGER.debug("Missing child: %s", err.child_id)
-            except UnsupportedMessageError as err:
-                LOGGER.warning("Unsupported message: %s", err)
+            except InvalidMessageError as err:
+                LOGGER.warning("Invalid message: %s", err)
             except AIOMySensorsError:
                 LOGGER.exception("Error")
                 break

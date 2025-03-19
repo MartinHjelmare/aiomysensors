@@ -10,10 +10,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from aiomysensors.exceptions import (
+    InvalidMessageError,
     MissingChildError,
     MissingNodeError,
     TooManyNodesError,
-    UnsupportedMessageError,
 )
 from aiomysensors.gateway import Gateway
 from aiomysensors.model.message import Message, MessageSchema
@@ -225,9 +225,9 @@ async def test_req(
             DefaultContext(),  # context
         ),  # gateway version
         (
-            Message(0, 255, 3, 0, 9999999, ""),  # command
-            pytest.raises(UnsupportedMessageError),  # context
-        ),  # Unsupported message
+            "0;255;3;0;9999999;\n",  # command
+            pytest.raises(InvalidMessageError),  # context
+        ),  # Invalid message
         (
             Message(0, 255, 3, 0, 10, ""),  # command
             DefaultContext(),  # context
@@ -252,10 +252,10 @@ async def test_internal(context: AbstractContextManager, gateway: Gateway) -> No
             None,  # node_before
         ),  # Missing node
         (
-            Message(0, 255, 4, 0, 9999999),  # command
-            pytest.raises(UnsupportedMessageError),  # context
+            "0;255;4;0;9999999\n",  # command
+            pytest.raises(InvalidMessageError),  # context
             NODE_CHILD_SERIALIZED,  # node_before
-        ),  # Unsupported message
+        ),  # Invalid message
         (
             Message(0, 255, 4, 0, 5),  # command
             DefaultContext(),  # context
