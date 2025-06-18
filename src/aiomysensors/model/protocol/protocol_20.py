@@ -32,22 +32,22 @@ VERSION = "2.0"
 
 
 def handle_missing_node_child[
-    _IncomingMessageHandlerT: type[IncomingMessageHandler],
-    **_P,
+    IncomingMessageHandlerT: type[IncomingMessageHandler],
+    **P,
 ](
     func: Callable[
-        [_IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
+        [IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
         Awaitable[Message],
     ],
 ) -> Callable[
-    [_IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
+    [IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
     Coroutine[Any, Any, Message],
 ]:
     """Handle a missing node or child."""
 
     @wraps(func)
     async def wrapper(
-        self: _IncomingMessageHandlerT,
+        self: IncomingMessageHandlerT,
         gateway: Gateway,
         message: Message,
         message_buffer: MessageBuffer,
