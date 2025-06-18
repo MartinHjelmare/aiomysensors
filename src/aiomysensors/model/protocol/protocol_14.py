@@ -31,21 +31,21 @@ VERSION = "1.4"
 
 
 def handle_missing_protocol_version[
-    _IncomingMessageHandlerT: type[IncomingMessageHandler],
-    **_P,
+    IncomingMessageHandlerT: type[IncomingMessageHandler],
+    **P,
 ](
     func: Callable[
-        [_IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
+        [IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
         Awaitable[Message],
     ],
 ) -> Callable[
-    [_IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
+    [IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
     Coroutine[Any, Any, Message],
 ]:
     """Handle a missing set protocol version."""
 
     async def wrapper(
-        self: _IncomingMessageHandlerT,
+        self: IncomingMessageHandlerT,
         gateway: Gateway,
         message: Message,
         message_buffer: MessageBuffer,
