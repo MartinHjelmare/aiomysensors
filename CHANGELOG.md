@@ -1,5 +1,6 @@
 # CHANGELOG
 
+<!-- version list -->
 
 ## v0.6.1 (2025-03-19)
 
@@ -16,8 +17,6 @@
 
 - Use mashumaro for Node model ([#482](https://github.com/MartinHjelmare/aiomysensors/pull/482),
   [`264d034`](https://github.com/MartinHjelmare/aiomysensors/commit/264d034d8a37829dfdd5d4abb4433fe6e603bdaf))
-
-BREAKING CHANGE: The `Node` and `Child` classes now require only keyword arguments.
 
 ### Breaking Changes
 
@@ -151,10 +150,6 @@ BREAKING CHANGE: The `Node` and `Child` classes now require only keyword argumen
 - Copier copy ([#454](https://github.com/MartinHjelmare/aiomysensors/pull/454),
   [`2398fc7`](https://github.com/MartinHjelmare/aiomysensors/commit/2398fc7980a87054311cd90c9da2e485ef96937e))
 
-BREAKING CHANGE: drop support for python 3.9, 3.10 and 3.11
-
-Minimum Python version is now 3.12.
-
 ### Breaking Changes
 
 - Drop support for python 3.9, 3.10 and 3.11
@@ -175,8 +170,6 @@ Minimum Python version is now 3.12.
 - **deps**: Update dependency aiofiles to v24
   ([#446](https://github.com/MartinHjelmare/aiomysensors/pull/446),
   [`4025a64`](https://github.com/MartinHjelmare/aiomysensors/commit/4025a640939022c2a14d224d1c534aa48f205bab))
-
-Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>
 
 
 ## v0.3.17 (2024-06-24)
@@ -227,8 +220,6 @@ Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>
   ([#435](https://github.com/MartinHjelmare/aiomysensors/pull/435),
   [`ad6b60d`](https://github.com/MartinHjelmare/aiomysensors/commit/ad6b60d3ef1544173eacaa6883a3c3af0ad0fa3e))
 
-Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>
-
 
 ## v0.3.11 (2024-01-10)
 
@@ -278,8 +269,6 @@ Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>
   ([#391](https://github.com/MartinHjelmare/aiomysensors/pull/391),
   [`9799fa1`](https://github.com/MartinHjelmare/aiomysensors/commit/9799fa11aa9c827305652f5e8f115b98c1946bb5))
 
-Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>
-
 
 ## v0.3.5 (2022-12-06)
 
@@ -321,8 +310,6 @@ Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>
   ([#364](https://github.com/MartinHjelmare/aiomysensors/pull/364),
   [`136a7b1`](https://github.com/MartinHjelmare/aiomysensors/commit/136a7b133c871001043dd93ae975b6d3a89ecd84))
 
-Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>
-
 
 ## v0.3.0 (2022-07-30)
 
@@ -340,3 +327,5 @@ Co-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>
 
 
 ## v0.1.0 (2021-01-02)
+
+- Initial Release

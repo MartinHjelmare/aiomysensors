@@ -49,7 +49,7 @@ dev = [
   "pytest==8.4.1",
   "pytest-asyncio==1.1.0",
   "pytest-cov==6.2.1",
-  "python-semantic-release==9.21.1",
+  "python-semantic-release>=10,<11",
   "ruff==0.12.7",
   "types-aiofiles==24.1.0.20250801",
 ]
@@ -142,6 +142,7 @@ module = [
 ]
 
 [tool.semantic_release]
+allow_zero_version = true
 build_command = """
 pip install uv
 uv lock
@@ -153,6 +154,9 @@ version_toml = ["pyproject.toml:project.version"]
 version_variables = [
   "src/aiomysensors/__init__.py:__version__",
 ]
+
+[tool.semantic_release.commit_parser_options]
+parse_squash_commits = false
 
 [tool.semantic_release.changelog]
 exclude_commit_patterns = [
