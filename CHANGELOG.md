@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.7.0 (2025-08-08)
+
+### Features
+
+- Validate message type based on command
+  ([#506](https://github.com/MartinHjelmare/aiomysensors/pull/506),
+  [`3b84a2b`](https://github.com/MartinHjelmare/aiomysensors/commit/3b84a2bb86794c5a5031e359d8c1a105b0ccb43d))
+
+
 ## v0.6.1 (2025-03-19)
 
 ### Bug Fixes

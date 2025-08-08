@@ -21,7 +21,7 @@ license = {text = "Apache-2.0"}
 name = "aiomysensors"
 readme = "README.md"
 requires-python = ">=3.12"
-version = "0.6.1"
+version = "0.7.0"
 
 dependencies = [
   "aiofiles>=24,<25",
