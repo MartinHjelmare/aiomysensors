@@ -27,7 +27,7 @@ dependencies = [
   "aiofiles>=24,<25",
   "awesomeversion>=25,<26",
   "mashumaro>=3.15",
-  "pyserial-asyncio>=0.6,<1",
+  "pyserial-asyncio-fast>=0.16",
 ]
 scripts.aiomysensors = "aiomysensors.cli:cli"
 urls."Bug Tracker" = "https://github.com/MartinHjelmare/aiomysensors/issues"
@@ -138,7 +138,6 @@ module = [
   "paho",
   "paho.mqtt",
   "paho.mqtt.client",
-  "serial_asyncio",
 ]
 
 [tool.semantic_release]
