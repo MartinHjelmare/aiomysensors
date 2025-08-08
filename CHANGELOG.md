@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.7.1 (2025-08-08)
+
+### Bug Fixes
+
+- Use pyserial-asyncio-fast ([#508](https://github.com/MartinHjelmare/aiomysensors/pull/508),
+  [`f8da7d7`](https://github.com/MartinHjelmare/aiomysensors/commit/f8da7d74d963981fd169290ce2bc7205d668f2d4))
+
+
 ## v0.7.0 (2025-08-08)
 
 ### Features
