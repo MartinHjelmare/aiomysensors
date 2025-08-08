@@ -2,11 +2,6 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .model.message import Message
-
 
 class AIOMySensorsError(Exception):
     """Represent a base exception for aiomysensors."""
@@ -40,23 +35,6 @@ class TooManyNodesError(AIOMySensorsError):
 
 class InvalidMessageError(AIOMySensorsError):
     """Represent an invalid message exception."""
-
-
-class UnsupportedMessageError(AIOMySensorsError):
-    """Represent an unsupported message exception."""
-
-    def __init__(
-        self,
-        message: Message,
-        protocol_version: str | None = None,
-    ) -> None:
-        """Set up error."""
-        protocol_version = protocol_version or "1.4"
-        super().__init__(
-            f"Message type is not supported for protocol {protocol_version}: {message}",
-        )
-        self.message = message
-        self.protocol_version = protocol_version
 
 
 class PersistenceError(AIOMySensorsError):

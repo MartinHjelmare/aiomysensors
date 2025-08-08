@@ -8,11 +8,10 @@ from typer.testing import CliRunner
 from aiomysensors.cli import cli
 from aiomysensors.exceptions import (
     AIOMySensorsError,
+    InvalidMessageError,
     MissingChildError,
     MissingNodeError,
-    UnsupportedMessageError,
 )
-from aiomysensors.model.message import Message
 
 
 @pytest.mark.parametrize(
@@ -21,7 +20,7 @@ from aiomysensors.model.message import Message
         None,
         MissingNodeError(1),
         MissingChildError(1),
-        UnsupportedMessageError(Message()),
+        InvalidMessageError(),
         AIOMySensorsError(),
     ],
 )

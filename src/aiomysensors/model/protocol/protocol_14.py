@@ -12,7 +12,6 @@ from aiomysensors.exceptions import (
     MissingChildError,
     MissingNodeError,
     TooManyNodesError,
-    UnsupportedMessageError,
 )
 from aiomysensors.model.const import (
     DEFAULT_PROTOCOL_VERSION,
@@ -205,11 +204,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         message_buffer: MessageBuffer,
     ) -> Message:
         """Process an internal message."""
-        try:
-            internal = gateway.protocol.Internal(message.message_type)
-        except ValueError as err:
-            raise UnsupportedMessageError(message, gateway.protocol_version) from err
-
+        internal = gateway.protocol.Internal(message.message_type)
         message_handler = getattr(cls, f"handle_{internal.name.lower()}", None)
 
         return await cls._handle_message(
@@ -231,11 +226,7 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         if message.node_id not in gateway.nodes:
             raise MissingNodeError(message.node_id)
 
-        try:
-            stream = gateway.protocol.Stream(message.message_type)
-        except ValueError as err:
-            raise UnsupportedMessageError(message, gateway.protocol_version) from err
-
+        stream = gateway.protocol.Stream(message.message_type)
         message_handler = getattr(cls, f"handle_{stream.name.lower()}", None)
 
         return await cls._handle_message(
@@ -565,12 +556,12 @@ VALID_SYSTEM_COMMAND_TYPES = {
     Command.stream.value,
 }
 
-VALID_COMMAND_TYPES = {
-    Command.presentation: list(Presentation),
-    Command.set: list(SetReq),
-    Command.req: list(SetReq),
-    Command.internal: list(Internal),
-    Command.stream: list(Stream),
+VALID_COMMAND_TYPES: dict[int, list[IntEnum]] = {
+    Command.presentation.value: list(Presentation),
+    Command.set.value: list(SetReq),
+    Command.req.value: list(SetReq),
+    Command.internal.value: list(Internal),
+    Command.stream.value: list(Stream),
 }
 
 VALID_MESSAGE_TYPES = {
