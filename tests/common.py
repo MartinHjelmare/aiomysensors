@@ -13,7 +13,7 @@ NODE_SERIALIZED = {
     "sketch_name": "",
     "node_id": 0,
     "heartbeat": 0,
-    "battery_level": 0,
+    "battery_level": None,
     "sleeping": False,
 }
 
