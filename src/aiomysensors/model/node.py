@@ -31,9 +31,11 @@ class Node(DataClassDictMixin):
         default="",
         metadata=field_options(deserialize=lambda x: "" if x is None else x),
     )
-    battery_level: int = field(
-        default=0,
-        metadata=field_options(deserialize=lambda x: min(max(x, 0), 100)),
+    battery_level: int | None = field(
+        default=None,
+        metadata=field_options(
+            deserialize=lambda x: None if x is None else min(max(x, 0), 100)
+        ),
     )
     heartbeat: int = 0
     sleeping: bool = False
