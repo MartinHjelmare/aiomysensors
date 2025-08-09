@@ -119,6 +119,12 @@ async def test_read_failure(serial: AsyncMock) -> None:
     mock_reader, mock_writer = serial.return_value
     transport = SerialTransport("/test", 123456)
 
+    # Try reading before connected
+    with pytest.raises(TransportError) as exc_info:
+        await transport.read()
+
+    assert str(exc_info.value) == "Not connected to stream transport."
+
     await transport.connect()
 
     assert serial.call_count == 1
