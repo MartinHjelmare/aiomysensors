@@ -40,6 +40,29 @@ async def test_connect_disconnect(serial: AsyncMock) -> None:
     assert mock_writer.wait_closed.call_count == 1
 
 
+async def test_disconnect_before_connected(serial: AsyncMock) -> None:
+    """Test serial transport disconnect before connected."""
+    transport = SerialTransport("/test", 123456)
+
+    await transport.disconnect()
+
+    assert transport.reader is None
+    assert transport.writer is None
+    assert serial.call_count == 0
+
+    # Test connecting works
+    await transport.connect()
+
+    assert serial.call_count == 1
+    assert serial.call_args == call(url="/test", baudrate=123456)
+
+    await transport.disconnect()
+
+    _, mock_writer = serial.return_value
+    assert mock_writer.close.call_count == 1
+    assert mock_writer.wait_closed.call_count == 1
+
+
 async def test_connect_failure(serial: AsyncMock) -> None:
     """Test serial transport connect failure."""
     serial.side_effect = OSError("Boom")
@@ -96,6 +119,12 @@ async def test_read_failure(serial: AsyncMock) -> None:
     mock_reader, mock_writer = serial.return_value
     transport = SerialTransport("/test", 123456)
 
+    # Try reading before connected
+    with pytest.raises(TransportError) as exc_info:
+        await transport.read()
+
+    assert str(exc_info.value) == "Not connected to stream transport."
+
     await transport.connect()
 
     assert serial.call_count == 1
@@ -133,6 +162,12 @@ async def test_write_failure(serial: AsyncMock) -> None:
     bytes_message = b"0;0;0;0;0;test\n"
     mock_reader.readuntil.return_value = bytes_message
     transport = SerialTransport("/test", 123456)
+
+    # Try writing before connected
+    with pytest.raises(TransportError) as exc_info:
+        await transport.write("0;0;0;0;0;test\n")
+
+    assert str(exc_info.value) == "Not connected to stream transport."
 
     await transport.connect()
 
