@@ -24,7 +24,6 @@ def test_dump(child: Child) -> None:
         sketch_name="test node 0",
         sketch_version="1.0.0",
         battery_level=100,
-        heartbeat=10,
     )
 
     node_dump = node.to_dict()
@@ -41,7 +40,6 @@ def test_load() -> None:
     assert node.sketch_name == "test node 0"
     assert node.sketch_version == "1.0.0"
     assert node.battery_level == 100
-    assert node.heartbeat == 10
     assert node.reboot is False
 
     children = node.children

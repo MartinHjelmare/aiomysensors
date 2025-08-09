@@ -47,9 +47,6 @@ class IncomingMessageHandler(IncomingMessageHandler21):
         if message.node_id not in gateway.nodes:
             raise MissingNodeError(message.node_id)
 
-        node = gateway.nodes[message.node_id]
-        node.heartbeat = int(message.payload)
-
         return message
 
     @classmethod
