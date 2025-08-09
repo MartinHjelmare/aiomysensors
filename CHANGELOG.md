@@ -2,6 +2,20 @@
 
 <!-- version list -->
 
+## v0.9.0 (2025-08-09)
+
+### Features
+
+- Remove node heartbeat attribute ([#510](https://github.com/MartinHjelmare/aiomysensors/pull/510),
+  [`a8a3f3c`](https://github.com/MartinHjelmare/aiomysensors/commit/a8a3f3c5a2ebdfe5d47a0a3fcbfa9b99c81b996c))
+
+### Breaking Changes
+
+- Remove the node heartbeat attribute. The MySensors protocol doesn't require the heartbeat message
+  payload to have a specific meaning. It's not possible to use the payload as part of the node
+  state.
+
+
 ## v0.8.0 (2025-08-09)
 
 ### Features
