@@ -40,6 +40,29 @@ async def test_connect_disconnect(serial: AsyncMock) -> None:
     assert mock_writer.wait_closed.call_count == 1
 
 
+async def test_disconnect_before_connected(serial: AsyncMock) -> None:
+    """Test serial transport disconnect before connected."""
+    transport = SerialTransport("/test", 123456)
+
+    await transport.disconnect()
+
+    assert transport.reader is None
+    assert transport.writer is None
+    assert serial.call_count == 0
+
+    # Test connecting works
+    await transport.connect()
+
+    assert serial.call_count == 1
+    assert serial.call_args == call(url="/test", baudrate=123456)
+
+    await transport.disconnect()
+
+    _, mock_writer = serial.return_value
+    assert mock_writer.close.call_count == 1
+    assert mock_writer.wait_closed.call_count == 1
+
+
 async def test_connect_failure(serial: AsyncMock) -> None:
     """Test serial transport connect failure."""
     serial.side_effect = OSError("Boom")
