@@ -230,7 +230,6 @@ class IncomingMessageHandler(IncomingMessageHandler15):
 
         node = gateway.nodes[message.node_id]
         node.sleeping = True
-        node.heartbeat = int(message.payload)
 
         return await cls._handle_sleep_buffer(gateway, message, message_buffer)
 

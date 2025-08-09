@@ -30,6 +30,7 @@ async def test_persistence_load(mock_file: MagicMock, persistence_data: str) -> 
     node = nodes.get(1)
     assert node
     assert node.battery_level == 0
+    assert not hasattr(node, "heartbeat")
     assert node.children
     child = node.children.get(1)
     assert child

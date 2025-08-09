@@ -12,7 +12,6 @@ NODE_SERIALIZED = {
     "node_type": 17,
     "sketch_name": "",
     "node_id": 0,
-    "heartbeat": 0,
     "battery_level": None,
     "sleeping": False,
 }
@@ -36,7 +35,6 @@ NODE_CHILD_SERIALIZED.update(
     {
         "sketch_version": "1.0.0",
         "sketch_name": "test node 0",
-        "heartbeat": 10,
         "battery_level": 100,
     },
 )

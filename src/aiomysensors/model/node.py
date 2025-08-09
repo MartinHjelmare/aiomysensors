@@ -37,7 +37,6 @@ class Node(DataClassDictMixin):
             deserialize=lambda x: None if x is None else min(max(x, 0), 100)
         ),
     )
-    heartbeat: int = 0
     sleeping: bool = False
     reboot: bool = field(
         default=False,

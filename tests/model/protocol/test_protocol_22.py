@@ -23,21 +23,19 @@ PROTOCOL_VERSIONS_22.remove("2.1")
 @pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_22, indirect=True)
 @pytest.mark.parametrize(
-    ("command", "context", "node_before", "writes", "heartbeat"),
+    ("command", "context", "node_before", "writes"),
     [
         (
             Message(0, 255, 3, 0, 22, HEARTBEAT_PAYLOAD),  # command
             DefaultContext(),  # context
             NODE_CHILD_SERIALIZED,  # node_before
             [],  # writes
-            int(HEARTBEAT_PAYLOAD),  # heartbeat
         ),  # heartbeat
         (
             Message(0, 255, 3, 0, 22, HEARTBEAT_PAYLOAD),  # command
             pytest.raises(MissingNodeError),  # context
             None,  # node_before
             ["0;255;3;0;19;\n"],  # writes
-            None,  # heartbeat
         ),  # missing node
     ],
     indirect=["command", "node_before"],
@@ -45,16 +43,12 @@ PROTOCOL_VERSIONS_22.remove("2.1")
 async def test_heartbeat_response(
     context: AbstractContextManager,
     writes: list[str],
-    heartbeat: int,
     gateway: Gateway,
     transport: MockTransport,
 ) -> None:
     """Test internal heartbeat response command."""
     with context:
         await anext(gateway.listen())
-
-    for node in gateway.nodes.values():
-        assert node.heartbeat == heartbeat
 
     assert transport.writes == writes
 
