@@ -139,6 +139,18 @@ async def test_read_write(mqtt: AsyncMock, client_id: str) -> None:
         payload=payload,
     )
 
+    # Test writing with empty payload
+    mqtt_client.publish.reset_mock()
+
+    await transport.write("0;255;3;1;11;\n")
+    assert mqtt_client.publish.call_count == 1
+    assert mqtt_client.publish.call_args == call(
+        f"{OUT_PREFIX}/0/255/3/1/11",
+        qos=1,
+        retain=False,
+        timeout=10,
+    )
+
     await transport.disconnect()
 
     assert mqtt_client.__aexit__.call_count == 1
