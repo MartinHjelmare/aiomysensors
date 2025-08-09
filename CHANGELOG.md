@@ -2,6 +2,18 @@
 
 <!-- version list -->
 
+## v0.8.0 (2025-08-09)
+
+### Features
+
+- Make node battery level optional ([#509](https://github.com/MartinHjelmare/aiomysensors/pull/509),
+  [`a694d62`](https://github.com/MartinHjelmare/aiomysensors/commit/a694d6267badc3269624a34f4b9c3c9a11c65c7a))
+
+### Breaking Changes
+
+- The node battery level is now optional, and by default has the value `None`.
+
+
 ## v0.7.1 (2025-08-08)
 
 ### Bug Fixes
