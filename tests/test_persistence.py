@@ -149,13 +149,23 @@ async def test_persistence_start_stop(
     nodes: dict[int, Node] = {}
     persistence = Persistence(nodes, "test_path")
 
+    # Test stop without start
+    await persistence.stop()
+
+    assert mock_file.read.call_count == 0
+    assert mock_file.write.call_count == 1
+
+    mock_file.reset_mock()
+
     await persistence.start()
     await asyncio.sleep(0.1)
 
     assert mock_file.read.call_count == 0
     assert mock_file.write.call_count == 1
 
+    mock_file.reset_mock()
+
     await persistence.stop()
 
     assert mock_file.read.call_count == 0
-    assert mock_file.write.call_count == 2
+    assert mock_file.write.call_count == 1
