@@ -6,7 +6,7 @@ import calendar
 from collections.abc import Awaitable, Callable, Coroutine
 from enum import IntEnum
 import time
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from aiomysensors.exceptions import (
     MissingChildError,
@@ -21,39 +21,34 @@ from aiomysensors.model.const import (
 from aiomysensors.model.message import Message
 from aiomysensors.model.node import Node
 
-from .message_handler import IncomingMessageHandlerBase
-
-if TYPE_CHECKING:
-    from aiomysensors.gateway import Gateway, MessageBuffer
+from .message_handler import IncomingMessageHandlerBase, OutgoingMessageHandlerBase
 
 VERSION = "1.4"
 
 
 def handle_missing_protocol_version[
-    IncomingMessageHandlerT: type[IncomingMessageHandler],
+    IncomingMessageHandlerT: IncomingMessageHandler,
     **P,
 ](
     func: Callable[
-        [IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
+        [IncomingMessageHandlerT, Message],
         Awaitable[Message],
     ],
 ) -> Callable[
-    [IncomingMessageHandlerT, Gateway, Message, MessageBuffer],
+    [IncomingMessageHandlerT, Message],
     Coroutine[Any, Any, Message],
 ]:
     """Handle a missing set protocol version."""
 
     async def wrapper(
         self: IncomingMessageHandlerT,
-        gateway: Gateway,
         message: Message,
-        message_buffer: MessageBuffer,
     ) -> Message:
         """Wrap a message handler."""
         try:
-            message = await func(self, gateway, message, message_buffer)
+            message = await func(self, message)
         finally:
-            if gateway.protocol_version is None and (
+            if self._gateway.protocol_version is None and (
                 message.command != Command.internal
                 or message.message_type
                 not in (
@@ -66,7 +61,7 @@ def handle_missing_protocol_version[
                     command=Command.internal,
                     message_type=Internal.I_VERSION,
                 )
-                await gateway.send(version_message, message_buffer=False)
+                await self._gateway.send(version_message, message_buffer=False)
 
         return message
 
@@ -76,29 +71,22 @@ def handle_missing_protocol_version[
 class IncomingMessageHandler(IncomingMessageHandlerBase):
     """Represent a handler for incoming messages."""
 
-    @classmethod
     async def _handle_message(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,
-        message_handler: Callable[[Gateway, Message, MessageBuffer], Awaitable[Message]]
-        | None,
+        message_handler: Callable[[Message], Awaitable[Message]] | None,
     ) -> Message:
         """Handle a message."""
         if message_handler is None:
             # No special handling required.
             return message
 
-        return await message_handler(gateway, message, message_buffer)
+        return await message_handler(message)
 
-    @classmethod
     @handle_missing_protocol_version
     async def handle_presentation(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,
     ) -> Message:
         """Process a presentation message."""
         if message.child_id == SYSTEM_CHILD_ID:
@@ -108,17 +96,17 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
                 node_type=message.message_type,
                 protocol_version=message.payload,
             )
-            gateway.nodes[node.node_id] = node
+            self._gateway.nodes[node.node_id] = node
             if message.node_id == 0:
                 # Set the gateway protocol version.
-                message = await cls.handle_i_version(gateway, message, message_buffer)
+                message = await self.handle_i_version(message)
             return message
 
         # this is a presentation of a child sensor
-        if message.node_id not in gateway.nodes:
+        if message.node_id not in self._gateway.nodes:
             raise MissingNodeError(message.node_id)
 
-        gateway.nodes[message.node_id].add_child(
+        self._gateway.nodes[message.node_id].add_child(
             message.child_id,
             message.message_type,
             description=message.payload,
@@ -126,29 +114,26 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
 
         return message
 
-    @classmethod
     @handle_missing_protocol_version
     async def handle_set(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process a set message."""
-        if message.node_id not in gateway.nodes:
+        if message.node_id not in self._gateway.nodes:
             raise MissingNodeError(message.node_id)
 
-        if message.child_id not in gateway.nodes[message.node_id].children:
+        if message.child_id not in self._gateway.nodes[message.node_id].children:
             raise MissingChildError(message.node_id)
 
-        gateway.nodes[message.node_id].set_child_value(
+        self._gateway.nodes[message.node_id].set_child_value(
             message.child_id,
             message.message_type,
             message.payload,
         )
 
         # Check if reboot is true
-        if gateway.nodes[message.node_id].reboot:
+        if self._gateway.nodes[message.node_id].reboot:
             # Send a reboot command.
             reboot_message = Message(
                 node_id=message.node_id,
@@ -158,27 +143,24 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
                 message_type=Internal.I_REBOOT,
                 payload="",
             )
-            await gateway.send(reboot_message, message_buffer=False)
+            await self._gateway.send(reboot_message, message_buffer=False)
 
         return message
 
-    @classmethod
     @handle_missing_protocol_version
     async def handle_req(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process a req message."""
-        if message.node_id not in gateway.nodes:
+        if message.node_id not in self._gateway.nodes:
             raise MissingNodeError(message.node_id)
 
-        if message.child_id not in gateway.nodes[message.node_id].children:
+        if message.child_id not in self._gateway.nodes[message.node_id].children:
             raise MissingChildError(message.node_id)
 
         value = (
-            gateway.nodes[message.node_id]
+            self._gateway.nodes[message.node_id]
             .children[message.child_id]
             .values.get(message.message_type)
         )
@@ -191,77 +173,61 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
                 message_type=message.message_type,
                 payload=value,
             )
-            await gateway.send(set_message, message_buffer=False)
+            await self._gateway.send(set_message, message_buffer=False)
 
         return message
 
-    @classmethod
     @handle_missing_protocol_version
     async def handle_internal(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,
     ) -> Message:
         """Process an internal message."""
-        internal = gateway.protocol.Internal(message.message_type)
-        message_handler = getattr(cls, f"handle_{internal.name.lower()}", None)
+        internal = self._gateway.protocol.Internal(message.message_type)
+        message_handler = getattr(self, f"handle_{internal.name.lower()}", None)
 
-        return await cls._handle_message(
-            gateway,
+        return await self._handle_message(
             message,
-            message_buffer,
             message_handler,
         )
 
-    @classmethod
     @handle_missing_protocol_version
     async def handle_stream(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,
     ) -> Message:
         """Process a stream message."""
-        if message.node_id not in gateway.nodes:
+        if message.node_id not in self._gateway.nodes:
             raise MissingNodeError(message.node_id)
 
-        stream = gateway.protocol.Stream(message.message_type)
-        message_handler = getattr(cls, f"handle_{stream.name.lower()}", None)
+        stream = self._gateway.protocol.Stream(message.message_type)
+        message_handler = getattr(self, f"handle_{stream.name.lower()}", None)
 
-        return await cls._handle_message(
-            gateway,
+        return await self._handle_message(
             message,
-            message_buffer,
             message_handler,
         )
 
-    @classmethod
     async def handle_i_version(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal version message."""
-        gateway.protocol_version = message.payload
+        self._gateway.protocol_version = message.payload
         return message
 
-    @classmethod
     async def handle_i_id_request(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal id request message."""
-        next_id = max(gateway.nodes) + 1 if gateway.nodes else 1
+        next_id = max(self._gateway.nodes) + 1 if self._gateway.nodes else 1
 
         if next_id > MAX_NODE_ID:
             raise TooManyNodesError
 
         # Use temporary default values for the node until node sends presentation.
-        gateway.nodes[next_id] = Node(
+        self._gateway.nodes[next_id] = Node(
             node_id=next_id,
             node_type=Presentation.S_ARDUINO_NODE,
             protocol_version=DEFAULT_PROTOCOL_VERSION,
@@ -273,16 +239,13 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             message_type=Internal.I_ID_RESPONSE,
             payload=str(next_id),
         )
-        await gateway.send(id_response_message, message_buffer=False)
+        await self._gateway.send(id_response_message, message_buffer=False)
 
         return message
 
-    @classmethod
     async def handle_i_config(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal config message."""
         config_message = Message(
@@ -290,17 +253,14 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             child_id=message.child_id,
             command=message.command,
             message_type=message.message_type,
-            payload="M" if gateway.config.metric else "I",
+            payload="M" if self._gateway.config.metric else "I",
         )
-        await gateway.send(config_message, message_buffer=False)
+        await self._gateway.send(config_message, message_buffer=False)
         return message
 
-    @classmethod
     async def handle_i_time(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal time message."""
         time_message = Message(
@@ -310,91 +270,47 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
             message_type=message.message_type,
             payload=str(calendar.timegm(time.localtime())),
         )
-        await gateway.send(time_message, message_buffer=False)
+        await self._gateway.send(time_message, message_buffer=False)
         return message
 
-    @classmethod
     async def handle_i_battery_level(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal battery level message."""
-        if message.node_id not in gateway.nodes:
+        if message.node_id not in self._gateway.nodes:
             raise MissingNodeError(message.node_id)
 
-        gateway.nodes[message.node_id].battery_level = round(float(message.payload))
+        self._gateway.nodes[message.node_id].battery_level = round(
+            float(message.payload)
+        )
         return message
 
-    @classmethod
     async def handle_i_sketch_name(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal sketch name message."""
-        if message.node_id not in gateway.nodes:
+        if message.node_id not in self._gateway.nodes:
             raise MissingNodeError(message.node_id)
 
-        gateway.nodes[message.node_id].sketch_name = message.payload
+        self._gateway.nodes[message.node_id].sketch_name = message.payload
         return message
 
-    @classmethod
     async def handle_i_sketch_version(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal sketch version message."""
-        if message.node_id not in gateway.nodes:
+        if message.node_id not in self._gateway.nodes:
             raise MissingNodeError(message.node_id)
 
-        gateway.nodes[message.node_id].sketch_version = message.payload
+        self._gateway.nodes[message.node_id].sketch_version = message.payload
         return message
 
 
-class OutgoingMessageHandler:
+class OutgoingMessageHandler(OutgoingMessageHandlerBase):
     """Represent a handler for outgoing messages."""
-
-    @classmethod
-    async def handle_set(
-        cls,
-        gateway: Gateway,
-        message: Message,
-        message_buffer: MessageBuffer | None,
-        decoded_message: str,
-    ) -> None:
-        """Process outgoing set messages."""
-        node = gateway.nodes.get(message.node_id)
-        if message_buffer and node and node.sleeping:
-            message_buffer.set_messages[
-                (message.node_id, message.child_id, message.message_type)
-            ] = message
-
-            return
-
-        await gateway.transport.write(decoded_message)
-
-    @classmethod
-    async def handle_internal(
-        cls,
-        gateway: Gateway,
-        message: Message,
-        message_buffer: MessageBuffer | None,
-        decoded_message: str,
-    ) -> None:
-        """Process outgoing internal messages."""
-        if message_buffer:
-            message_buffer.internal_messages[
-                (message.node_id, message.child_id, message.message_type)
-            ] = message
-
-            return
-
-        await gateway.transport.write(decoded_message)
 
 
 class Command(IntEnum):

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from enum import IntEnum
-from typing import TYPE_CHECKING
 
 from aiomysensors.exceptions import MissingNodeError
 from aiomysensors.model.message import Message
@@ -26,45 +25,36 @@ from .protocol_21 import (
     OutgoingMessageHandler as OutgoingMessageHandler21,
 )
 
-if TYPE_CHECKING:
-    from aiomysensors.gateway import Gateway, MessageBuffer
-
 VERSION = "2.2"
 
 
 class IncomingMessageHandler(IncomingMessageHandler21):
     """Represent a message handler."""
 
-    @classmethod
     @handle_missing_node_child
     async def handle_i_heartbeat_response(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,  # noqa: ARG003
     ) -> Message:
         """Process an internal heartbeat response message."""
-        if message.node_id not in gateway.nodes:
+        if message.node_id not in self._gateway.nodes:
             raise MissingNodeError(message.node_id)
 
         return message
 
-    @classmethod
     @handle_missing_node_child
     async def handle_i_pre_sleep_notification(
-        cls,
-        gateway: Gateway,
+        self,
         message: Message,
-        message_buffer: MessageBuffer,
     ) -> Message:
         """Process an internal pre sleep notification message."""
-        if message.node_id not in gateway.nodes:
+        if message.node_id not in self._gateway.nodes:
             raise MissingNodeError(message.node_id)
 
-        node = gateway.nodes[message.node_id]
+        node = self._gateway.nodes[message.node_id]
         node.sleeping = True
 
-        return await cls._handle_sleep_buffer(gateway, message, message_buffer)
+        return await self._handle_sleep_buffer(message)
 
 
 class OutgoingMessageHandler(OutgoingMessageHandler21):
