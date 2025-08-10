@@ -2,6 +2,18 @@
 
 <!-- version list -->
 
+## v0.11.0 (2025-08-10)
+
+### Features
+
+- Improve valid command types ([#517](https://github.com/MartinHjelmare/aiomysensors/pull/517),
+  [`ae22fe6`](https://github.com/MartinHjelmare/aiomysensors/commit/ae22fe6d7f0af2efa5dcfb379fcb2cb733a580a0))
+
+### Breaking Changes
+
+- VALID_COMMAND_TYPES is now a dict with sets as values instead of a dict with lists as values.
+
+
 ## v0.10.0 (2025-08-10)
 
 ### Features
