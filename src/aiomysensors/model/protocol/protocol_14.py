@@ -481,12 +481,12 @@ VALID_SYSTEM_COMMAND_TYPES = {
     Command.stream.value,
 }
 
-VALID_COMMAND_TYPES: dict[int, list[IntEnum]] = {
-    Command.presentation.value: list(Presentation),
-    Command.set.value: list(SetReq),
-    Command.req.value: list(SetReq),
-    Command.internal.value: list(Internal),
-    Command.stream.value: list(Stream),
+VALID_COMMAND_TYPES: dict[int, set[IntEnum]] = {
+    Command.presentation.value: set(Presentation),
+    Command.set.value: set(SetReq),
+    Command.req.value: set(SetReq),
+    Command.internal.value: set(Internal),
+    Command.stream.value: set(Stream),
 }
 
 VALID_MESSAGE_TYPES = {
