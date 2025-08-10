@@ -9,6 +9,7 @@ import time
 from typing import Any
 
 from aiomysensors.exceptions import (
+    InvalidMessageError,
     MissingChildError,
     MissingNodeError,
     TooManyNodesError,
@@ -126,11 +127,19 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         if message.child_id not in self._gateway.nodes[message.node_id].children:
             raise MissingChildError(message.node_id)
 
-        self._gateway.nodes[message.node_id].set_child_value(
-            message.child_id,
-            message.message_type,
-            message.payload,
+        child = self._gateway.nodes[message.node_id].children[message.child_id]
+
+        valid_message_types = self._gateway.protocol.VALID_MESSAGE_TYPES.get(
+            child.child_type
         )
+        if valid_message_types and message.message_type not in valid_message_types:
+            raise InvalidMessageError(
+                f"Invalid message type {message.message_type} "
+                f"for child type {child.child_type}, "
+                f"expected one of {valid_message_types}"
+            )
+
+        child.set_value(message.message_type, message.payload)
 
         # Check if reboot is true
         if self._gateway.nodes[message.node_id].reboot:
@@ -481,30 +490,30 @@ VALID_COMMAND_TYPES: dict[int, list[IntEnum]] = {
 }
 
 VALID_MESSAGE_TYPES = {
-    Presentation.S_DOOR: [SetReq.V_TRIPPED, SetReq.V_ARMED],
-    Presentation.S_MOTION: [SetReq.V_TRIPPED, SetReq.V_ARMED],
-    Presentation.S_SMOKE: [SetReq.V_TRIPPED, SetReq.V_ARMED],
-    Presentation.S_LIGHT: [SetReq.V_LIGHT, SetReq.V_WATT],
-    Presentation.S_DIMMER: [SetReq.V_LIGHT, SetReq.V_DIMMER, SetReq.V_WATT],
-    Presentation.S_COVER: [SetReq.V_UP, SetReq.V_DOWN, SetReq.V_STOP, SetReq.V_DIMMER],
-    Presentation.S_TEMP: [SetReq.V_TEMP],
-    Presentation.S_HUM: [SetReq.V_HUM],
-    Presentation.S_BARO: [SetReq.V_PRESSURE, SetReq.V_FORECAST],
-    Presentation.S_WIND: [SetReq.V_WIND, SetReq.V_GUST, SetReq.V_DIRECTION],
-    Presentation.S_RAIN: [SetReq.V_RAIN, SetReq.V_RAINRATE],
-    Presentation.S_UV: [SetReq.V_UV],
-    Presentation.S_WEIGHT: [SetReq.V_WEIGHT, SetReq.V_IMPEDANCE],
-    Presentation.S_POWER: [SetReq.V_WATT, SetReq.V_KWH],
-    Presentation.S_HEATER: [SetReq.V_HEATER, SetReq.V_HEATER_SW, SetReq.V_TEMP],
-    Presentation.S_DISTANCE: [SetReq.V_DISTANCE],
-    Presentation.S_LIGHT_LEVEL: [SetReq.V_LIGHT_LEVEL],
-    Presentation.S_ARDUINO_NODE: [],
-    Presentation.S_ARDUINO_RELAY: [],
-    Presentation.S_LOCK: [SetReq.V_LOCK_STATUS],
-    Presentation.S_IR: [SetReq.V_IR_SEND, SetReq.V_IR_RECEIVE],
-    Presentation.S_WATER: [SetReq.V_FLOW, SetReq.V_VOLUME],
-    Presentation.S_AIR_QUALITY: [SetReq.V_DUST_LEVEL],
-    Presentation.S_CUSTOM: list(SetReq),
-    Presentation.S_DUST: [SetReq.V_DUST_LEVEL],
-    Presentation.S_SCENE_CONTROLLER: [SetReq.V_SCENE_ON, SetReq.V_SCENE_OFF],
+    Presentation.S_DOOR: {SetReq.V_TRIPPED, SetReq.V_ARMED},
+    Presentation.S_MOTION: {SetReq.V_TRIPPED, SetReq.V_ARMED},
+    Presentation.S_SMOKE: {SetReq.V_TRIPPED, SetReq.V_ARMED},
+    Presentation.S_LIGHT: {SetReq.V_LIGHT, SetReq.V_WATT},
+    Presentation.S_DIMMER: {SetReq.V_LIGHT, SetReq.V_DIMMER, SetReq.V_WATT},
+    Presentation.S_COVER: {SetReq.V_UP, SetReq.V_DOWN, SetReq.V_STOP, SetReq.V_DIMMER},
+    Presentation.S_TEMP: {SetReq.V_TEMP},
+    Presentation.S_HUM: {SetReq.V_HUM},
+    Presentation.S_BARO: {SetReq.V_PRESSURE, SetReq.V_FORECAST},
+    Presentation.S_WIND: {SetReq.V_WIND, SetReq.V_GUST, SetReq.V_DIRECTION},
+    Presentation.S_RAIN: {SetReq.V_RAIN, SetReq.V_RAINRATE},
+    Presentation.S_UV: {SetReq.V_UV},
+    Presentation.S_WEIGHT: {SetReq.V_WEIGHT, SetReq.V_IMPEDANCE},
+    Presentation.S_POWER: {SetReq.V_WATT, SetReq.V_KWH},
+    Presentation.S_HEATER: {SetReq.V_HEATER, SetReq.V_HEATER_SW, SetReq.V_TEMP},
+    Presentation.S_DISTANCE: {SetReq.V_DISTANCE},
+    Presentation.S_LIGHT_LEVEL: {SetReq.V_LIGHT_LEVEL},
+    Presentation.S_ARDUINO_NODE: set(),
+    Presentation.S_ARDUINO_RELAY: set(),
+    Presentation.S_LOCK: {SetReq.V_LOCK_STATUS},
+    Presentation.S_IR: {SetReq.V_IR_SEND, SetReq.V_IR_RECEIVE},
+    Presentation.S_WATER: {SetReq.V_FLOW, SetReq.V_VOLUME},
+    Presentation.S_AIR_QUALITY: {SetReq.V_DUST_LEVEL},
+    Presentation.S_CUSTOM: set(SetReq),
+    Presentation.S_DUST: {SetReq.V_DUST_LEVEL},
+    Presentation.S_SCENE_CONTROLLER: {SetReq.V_SCENE_ON, SetReq.V_SCENE_OFF},
 }

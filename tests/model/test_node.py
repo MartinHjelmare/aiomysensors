@@ -103,24 +103,9 @@ def test_set_child_value(node: Node, child: Child) -> None:
 
     assert child.values[value_type] == "20.0"
 
-    node.set_child_value(child_id, value_type, value)
+    child.set_value(value_type, value)
 
     assert len(node.children) == 1
     child = node.children[child_id]
     assert child.child_id == child_id
     assert child.values[value_type] == value
-
-
-def test_set_child_value_no_child(node: Node) -> None:
-    """Test set child value without child."""
-    child_id = 0
-    value_type = 0
-    value = "25.0"
-
-    assert not node.children
-
-    with pytest.raises(MissingChildError) as exc:
-        node.set_child_value(child_id, value_type, value)
-
-    assert exc.value.child_id == child_id
-    assert not node.children

@@ -57,7 +57,7 @@ class Node(DataClassDictMixin):
         description: str = "",
         values: dict[int, str] | None = None,
     ) -> None:
-        """Create and add a child sensor."""
+        """Create and add a child."""
         self.children[child_id] = Child(
             child_id=child_id,
             child_type=child_type,
@@ -66,23 +66,15 @@ class Node(DataClassDictMixin):
         )
 
     def remove_child(self, child_id: int) -> None:
-        """Remove a child sensor."""
+        """Remove a child."""
         if child_id not in self.children:
             raise MissingChildError(child_id)
         self.children.pop(child_id)
 
-    def set_child_value(self, child_id: int, value_type: int, value: str) -> None:
-        """Set a child sensor's value."""
-        if child_id not in self.children:
-            raise MissingChildError(child_id)
-
-        child = self.children[child_id]
-        child.values[value_type] = value
-
 
 @dataclass(kw_only=True)
 class Child(DataClassDictMixin):
-    """Represent a MySensors child sensor."""
+    """Represent a MySensors child."""
 
     child_id: int = field(metadata=field_options(alias="id"))
     child_type: int = field(metadata=field_options(alias="type"))
@@ -94,3 +86,7 @@ class Child(DataClassDictMixin):
 
         allow_deserialization_not_by_alias = True
         code_generation_options = ["TO_DICT_ADD_BY_ALIAS_FLAG"]  # noqa: RUF012
+
+    def set_value(self, value_type: int, value: str) -> None:
+        """Set a child's value."""
+        self.values[value_type] = value

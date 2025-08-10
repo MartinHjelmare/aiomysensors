@@ -101,7 +101,7 @@ async def test_presentation_gateway_protocol_version(
 @pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", ["1.4", "1.5"], indirect=True)
 @pytest.mark.parametrize(
-    ("command", "context", "node_before", "values_after", "writes", "reboot"),
+    ("command", "context", "node_before", "values_after", "writes", "node_attributes"),
     [
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -109,7 +109,7 @@ async def test_presentation_gateway_protocol_version(
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "25.0"},  # values_after
             [],  # writes
-            False,  # reboot
+            {"reboot": False},  # node_attributes
         ),  # Set message
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -117,7 +117,7 @@ async def test_presentation_gateway_protocol_version(
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "25.0"},  # values_after
             ["0;255;3;0;13;\n"],  # writes
-            True,  # reboot
+            {"reboot": True},  # node_attributes
         ),  # Set message, with node reboot true
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -125,7 +125,7 @@ async def test_presentation_gateway_protocol_version(
             None,  # node_before
             None,  # values_after
             [],  # writes
-            False,  # reboot
+            {"reboot": False},  # node_attributes
         ),  # Missing node
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -133,8 +133,16 @@ async def test_presentation_gateway_protocol_version(
             NODE_SERIALIZED,  # node_before
             None,  # values_after
             [],  # writes
-            False,  # reboot
+            {"reboot": False},  # node_attributes
         ),  # Missing child
+        (
+            Message(0, 0, 1, 0, 1, "50.0"),  # command
+            pytest.raises(InvalidMessageError),  # context
+            NODE_CHILD_SERIALIZED,  # node_before
+            {0: "20.0"},  # values_after
+            [],  # writes
+            {"reboot": False},  # node_attributes
+        ),  # Invalid message
     ],
     indirect=["command", "node_before"],
 )
@@ -142,14 +150,14 @@ async def test_set(
     context: AbstractContextManager,
     values_after: dict[str, str],
     writes: list[str],
-    reboot: bool,
+    node_attributes: dict[str, Any],
     gateway: Gateway,
     transport: MockTransport,
 ) -> None:
     """Test set command."""
-    if reboot:
+    for attribute, value in node_attributes.items():
         for node in gateway.nodes.values():
-            node.reboot = True
+            setattr(node, attribute, value)
 
     with context:
         await anext(gateway.listen())
