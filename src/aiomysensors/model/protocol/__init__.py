@@ -2,21 +2,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Coroutine
 from enum import IntEnum
 from functools import cache
 from typing import (
-    TYPE_CHECKING,
-    Any,
     Protocol,
     cast,
 )
 
 from awesomeversion import AwesomeVersion
-
-if TYPE_CHECKING:
-    from aiomysensors.gateway import Gateway, MessageBuffer
-    from aiomysensors.model.message import Message
 
 from aiomysensors.model.const import DEFAULT_PROTOCOL_VERSION
 
@@ -62,34 +55,3 @@ def get_protocol(protocol_version: str) -> ProtocolType:
         protocol_14,
     )
     return cast("ProtocolType", module)
-
-
-def get_incoming_message_handler(
-    protocol: ProtocolType,
-    message: Message,
-) -> Callable[[Gateway, Message, MessageBuffer], Coroutine[Any, Any, Message]]:
-    """Return the correct message handler from the protocol."""
-    command: IntEnum = protocol.Command(message.command)
-    message_handlers = protocol.IncomingMessageHandler
-    message_handler: Callable[
-        [Gateway, Message, MessageBuffer],
-        Coroutine[Any, Any, Message],
-    ] = getattr(message_handlers, f"handle_{command.name}")
-    return message_handler
-
-
-def get_outgoing_message_handler(
-    protocol: ProtocolType,
-    message: Message,
-) -> Callable[
-    [Gateway, Message, MessageBuffer | None, str],
-    Coroutine[Any, Any, None],
-]:
-    """Return the correct message handler from the protocol."""
-    command: IntEnum = protocol.Command(message.command)
-    message_handlers = protocol.OutgoingMessageHandler
-    message_handler: Callable[
-        [Gateway, Message, MessageBuffer | None, str],
-        Coroutine[Any, Any, None],
-    ] = getattr(message_handlers, f"handle_{command.name}")
-    return message_handler
