@@ -39,6 +39,7 @@ class ProtocolType(Protocol):
     NODE_ID_REQUEST_TYPES: set[int]
     STRICT_SYSTEM_COMMAND_TYPES: set[int]
     VALID_COMMAND_TYPES: dict[int, list[IntEnum]]
+    VALID_MESSAGE_TYPES: dict[int, set[IntEnum]]
     VALID_SYSTEM_COMMAND_TYPES: set[int]
     VERSION: str
 

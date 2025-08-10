@@ -2,6 +2,7 @@
 
 from contextlib import AbstractContextManager
 from contextlib import ExitStack as DefaultContext
+from typing import Any
 
 import pytest
 
@@ -25,7 +26,7 @@ PROTOCOL_VERSIONS_2x.remove("1.5")
 @pytest.mark.usefixtures("command", "node_before")
 @pytest.mark.parametrize("message_schema", PROTOCOL_VERSIONS_2x, indirect=True)
 @pytest.mark.parametrize(
-    ("command", "context", "node_before", "values_after", "writes", "reboot"),
+    ("command", "context", "node_before", "values_after", "writes", "node_attributes"),
     [
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -33,7 +34,7 @@ PROTOCOL_VERSIONS_2x.remove("1.5")
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "25.0"},  # values_after
             [],  # writes
-            False,  # reboot
+            {"reboot": False},  # node_attributes
         ),  # Set message
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -41,7 +42,7 @@ PROTOCOL_VERSIONS_2x.remove("1.5")
             NODE_CHILD_SERIALIZED,  # node_before
             {0: "25.0"},  # values_after
             ["0;255;3;0;13;\n"],  # writes
-            True,  # reboot
+            {"reboot": True},  # node_attributes
         ),  # Set message, with node reboot true
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -49,7 +50,7 @@ PROTOCOL_VERSIONS_2x.remove("1.5")
             None,  # node_before
             None,  # values_after
             ["0;255;3;0;19;\n"],  # writes
-            False,  # reboot
+            {"reboot": False},  # node_attributes
         ),  # Missing node
         (
             Message(0, 0, 1, 0, 0, "25.0"),  # command
@@ -57,7 +58,7 @@ PROTOCOL_VERSIONS_2x.remove("1.5")
             NODE_SERIALIZED,  # node_before
             None,  # values_after
             ["0;255;3;0;19;\n"],  # writes
-            False,  # reboot
+            {"reboot": False},  # node_attributes
         ),  # Missing child
     ],
     indirect=["command", "node_before"],
@@ -66,14 +67,14 @@ async def test_set(
     context: AbstractContextManager,
     values_after: dict[int, str],
     writes: list[str],
-    reboot: bool,
+    node_attributes: dict[str, Any],
     gateway: Gateway,
     transport: MockTransport,
 ) -> None:
     """Test set command."""
-    if reboot:
+    for attribute, value in node_attributes.items():
         for node in gateway.nodes.values():
-            node.reboot = True
+            setattr(node, attribute, value)
 
     with context:
         await anext(gateway.listen())

@@ -9,6 +9,7 @@ import time
 from typing import Any
 
 from aiomysensors.exceptions import (
+    InvalidMessageError,
     MissingChildError,
     MissingNodeError,
     TooManyNodesError,
@@ -126,11 +127,19 @@ class IncomingMessageHandler(IncomingMessageHandlerBase):
         if message.child_id not in self._gateway.nodes[message.node_id].children:
             raise MissingChildError(message.node_id)
 
-        self._gateway.nodes[message.node_id].set_child_value(
-            message.child_id,
-            message.message_type,
-            message.payload,
+        child = self._gateway.nodes[message.node_id].children[message.child_id]
+
+        valid_message_types = self._gateway.protocol.VALID_MESSAGE_TYPES.get(
+            child.child_type
         )
+        if valid_message_types and message.message_type not in valid_message_types:
+            raise InvalidMessageError(
+                f"Invalid message type {message.message_type} "
+                f"for child type {child.child_type}, "
+                f"expected one of {valid_message_types}"
+            )
+
+        child.set_value(message.message_type, message.payload)
 
         # Check if reboot is true
         if self._gateway.nodes[message.node_id].reboot:
