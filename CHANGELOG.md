@@ -2,6 +2,18 @@
 
 <!-- version list -->
 
+## v0.10.0 (2025-08-10)
+
+### Features
+
+- Validate child set value ([#516](https://github.com/MartinHjelmare/aiomysensors/pull/516),
+  [`ce4e038`](https://github.com/MartinHjelmare/aiomysensors/commit/ce4e038255c5c0b47e7d1b8b432ff17c53822549))
+
+### Breaking Changes
+
+- Replace Node.set_child_value with Child.set_value
+
+
 ## v0.9.0 (2025-08-09)
 
 ### Features
