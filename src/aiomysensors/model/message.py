@@ -174,9 +174,7 @@ class MessageSchema:
         except ValueError as exc:
             raise InvalidMessageError("The message type must be an integer.") from exc
 
-        valid_message_types = {
-            member.value for member in self.protocol.VALID_COMMAND_TYPES[command]
-        }
+        valid_message_types = self.protocol.VALID_COMMAND_TYPES[command]
 
         if message_type not in valid_message_types:
             raise InvalidMessageError(

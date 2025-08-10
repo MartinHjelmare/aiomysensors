@@ -133,9 +133,9 @@ class Internal(IntEnum):
 NODE_ID_REQUEST_TYPES = {Internal.I_ID_REQUEST, Internal.I_ID_RESPONSE}
 
 VALID_COMMAND_TYPES = {
-    Command.presentation: list(Presentation),
-    Command.set: list(SetReq),
-    Command.req: list(SetReq),
-    Command.internal: list(Internal),
-    Command.stream: list(Stream),
+    Command.presentation: set(Presentation),
+    Command.set: set(SetReq),
+    Command.req: set(SetReq),
+    Command.internal: set(Internal),
+    Command.stream: set(Stream),
 }
