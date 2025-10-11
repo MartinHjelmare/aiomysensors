@@ -51,7 +51,7 @@ dev = [
   "pytest-cov==7.0.0",
   "python-semantic-release>=10,<11",
   "ruff==0.14.0",
-  "types-aiofiles==24.1.0.20250822",
+  "types-aiofiles==25.1.0.20251011",
 ]
 
 [tool.ruff]
