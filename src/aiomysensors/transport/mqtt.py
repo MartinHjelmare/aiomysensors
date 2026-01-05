@@ -6,7 +6,6 @@ import contextlib
 from dataclasses import dataclass
 from enum import Enum
 import logging
-from typing import cast
 import uuid
 
 from aiomqtt import Client as AsyncioClient
@@ -262,8 +261,7 @@ class MQTTClient(MQTTTransport):
             raise RuntimeError("Client not connected.")
         try:
             async for message in self._client.messages:
-                payload = cast("bytes", message.payload)
-                self._receive(message.topic.value, payload.decode())
+                self._receive(message.topic.value, message.payload.decode())
         except MqttError as err:
             self._receive_error(
                 TransportFailedError(f"Failed to receive message: {err}"),
