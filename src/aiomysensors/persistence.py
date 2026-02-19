@@ -5,9 +5,8 @@ from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 import json
 import logging
+from pathlib import Path
 from typing import Any
-
-import aiofiles
 
 from .exceptions import PersistenceReadError, PersistenceWriteError
 from .model.node import Node
@@ -32,8 +31,7 @@ class Persistence:
         path = path or self.path
 
         try:
-            async with aiofiles.open(path) as fil:
-                read = await fil.read()
+            read = await asyncio.to_thread(Path(path).read_text)
             data: dict = json.loads(read or "{}")
         except FileNotFoundError:
             LOGGER.debug("Persistence file missing, creating file: %s", path)
@@ -53,8 +51,8 @@ class Persistence:
             data[node.node_id] = node.to_dict()
 
         try:
-            async with aiofiles.open(self.path, mode="w") as fil:
-                await fil.write(json.dumps(data, sort_keys=True, indent=2))
+            content = json.dumps(data, sort_keys=True, indent=2)
+            await asyncio.to_thread(Path(self.path).write_text, content)
         except OSError as err:
             raise PersistenceWriteError(err) from err
 

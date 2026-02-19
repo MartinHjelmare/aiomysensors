@@ -4,7 +4,6 @@ from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import aiofiles
 import pytest
 
 from aiomysensors.gateway import Gateway
@@ -73,14 +72,13 @@ def gateway_fixture(message_schema: MessageSchema, transport: MockTransport) -> 
 
 @pytest.fixture(name="mock_file")
 def mock_file_fixture() -> Generator[MagicMock, None, None]:
-    """Patch aiofiles."""
+    """Patch file operations."""
     mock_file = MagicMock()
-    io_base = aiofiles.threadpool.AsyncBufferedIOBase  # type: ignore[attr-defined]
-    aiofiles.threadpool.wrap.register(MagicMock)(  # type: ignore[attr-defined]
-        lambda *args, **kwargs: io_base(*args, **kwargs),
-    )
 
-    with patch("aiofiles.threadpool.sync_open", return_value=mock_file):
+    with (
+        patch.object(Path, "read_text", mock_file.read),
+        patch.object(Path, "write_text", mock_file.write),
+    ):
         yield mock_file
 
 
