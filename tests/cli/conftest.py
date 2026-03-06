@@ -9,7 +9,7 @@ from aiomysensors.gateway import Gateway
 
 
 @pytest.fixture(name="gateway_cli", autouse=True)
-def gateway_cli_fixture() -> Generator[Gateway, None, None]:
+def gateway_cli_fixture() -> Generator[Gateway]:
     """Mock the CLI gateway handler."""
     with patch("aiomysensors.cli.Gateway", autospec=True) as gateway_class:
         gateway = gateway_class.return_value
@@ -17,7 +17,7 @@ def gateway_cli_fixture() -> Generator[Gateway, None, None]:
 
 
 @pytest.fixture(name="gateway_handler")
-def gateway_handler_fixture() -> Generator[AsyncMock, None, None]:
+def gateway_handler_fixture() -> Generator[AsyncMock]:
     """Mock the CLI gateway handler."""
     with patch("aiomysensors.cli.helper.handle_gateway") as handler:
         yield handler

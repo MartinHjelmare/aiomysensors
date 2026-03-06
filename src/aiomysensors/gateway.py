@@ -66,7 +66,7 @@ class Gateway:
             self, self._message_buffer, message_schema
         )
 
-    async def listen(self) -> AsyncGenerator[Message, None]:
+    async def listen(self) -> AsyncGenerator[Message]:
         """Listen and yield a message."""
         while True:
             decoded_message = await self.transport.read()

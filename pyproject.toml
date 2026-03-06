@@ -11,7 +11,6 @@ classifiers = [
   "Intended Audience :: Developers",
   "Natural Language :: English",
   "Operating System :: OS Independent",
-  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Topic :: Software Development :: Libraries",
@@ -21,7 +20,7 @@ description = "Python asyncio package to connect to MySensors gateways."
 license = "Apache-2.0"
 name = "aiomysensors"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 version = "0.11.0"
 
 dependencies = [
@@ -81,7 +80,7 @@ lint.per-file-ignores."tests/**/*" = [
 lint.select = [
   "ALL", # all rules
 ]
-target-version = "py312"
+target-version = "py313"
 
 [tool.pytest.ini_options]
 addopts = """\

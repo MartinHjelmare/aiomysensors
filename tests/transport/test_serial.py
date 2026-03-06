@@ -15,7 +15,7 @@ from aiomysensors.transport.serial import SerialTransport
 
 
 @pytest.fixture(name="serial")
-def serial_fixture() -> Generator[AsyncMock, None, None]:
+def serial_fixture() -> Generator[AsyncMock]:
     """Mock the serial connection."""
     mock_reader = AsyncMock(spec=asyncio.StreamReader)
     mock_writer = AsyncMock(spec=asyncio.StreamWriter)

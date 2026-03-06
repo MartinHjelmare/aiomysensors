@@ -22,7 +22,7 @@ MQTT_CLIENT_ID = f"aiomysensors-{UUID}"
 
 
 @pytest.fixture(name="mqtt")
-def mqtt_fixture() -> Generator[MagicMock, None, None]:
+def mqtt_fixture() -> Generator[MagicMock]:
     """Mock the MQTT connection."""
     with patch(
         "aiomysensors.transport.mqtt.AsyncioClient",
@@ -32,7 +32,7 @@ def mqtt_fixture() -> Generator[MagicMock, None, None]:
 
 
 @pytest.fixture(name="client_id", autouse=True)
-def mqtt_client_id_fixture() -> Generator[str, None, None]:
+def mqtt_client_id_fixture() -> Generator[str]:
     """Mock the UUID for the client id."""
     with patch("aiomysensors.transport.mqtt.uuid.uuid4") as uuid4:
         uuid4.return_value.int = UUID
@@ -105,7 +105,7 @@ async def test_read_write(mqtt: AsyncMock, client_id: str) -> None:
     msg = AIOMQTTMessage._from_paho_message(mqtt_message)  # noqa: SLF001
     messages = [msg]
 
-    async def mock_messages() -> AsyncGenerator[AIOMQTTMessage, None]:
+    async def mock_messages() -> AsyncGenerator[AIOMQTTMessage]:
         """Mock the messages generator."""
         for message in messages:
             yield message
@@ -166,7 +166,7 @@ async def test_read_failure(mqtt: AsyncMock, client_id: str) -> None:
     msg = AIOMQTTMessage._from_paho_message(mqtt_message)  # noqa: SLF001
     messages = [msg]
 
-    async def mock_messages() -> AsyncGenerator[AIOMQTTMessage, None]:
+    async def mock_messages() -> AsyncGenerator[AIOMQTTMessage]:
         """Mock the messages generator."""
         for message in messages:
             yield message
