@@ -2,6 +2,18 @@
 
 <!-- version list -->
 
+## v0.12.0 (2026-03-06)
+
+### Chores
+
+- Require Python 3.13 ([#541](https://github.com/MartinHjelmare/aiomysensors/pull/541),
+  [`6ff6c29`](https://github.com/MartinHjelmare/aiomysensors/commit/6ff6c29dc4969b4ed1993b7f04c27a89c83acad2))
+
+### Breaking Changes
+
+- Drop support for Python 3.12
+
+
 ## v0.11.0 (2025-08-10)
 
 ### Features
