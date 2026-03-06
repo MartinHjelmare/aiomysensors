@@ -32,7 +32,7 @@ CHILD_PRESENTATION["children"] = {0: DEFAULT_CHILD}
 
 
 @pytest.fixture(name="mock_time")
-def mock_time_fixture() -> Generator[MagicMock, None, None]:
+def mock_time_fixture() -> Generator[MagicMock]:
     """Mock time."""
     with patch("aiomysensors.model.protocol.protocol_14.time") as mock_time:
         mock_time.localtime.return_value = time.gmtime(123456789)

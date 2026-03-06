@@ -15,7 +15,7 @@ from aiomysensors.transport.tcp import TCPTransport
 
 
 @pytest.fixture(name="tcp")
-def tcp_fixture() -> Generator[AsyncMock, None, None]:
+def tcp_fixture() -> Generator[AsyncMock]:
     """Mock the tcp connection."""
     mock_reader = AsyncMock(spec=asyncio.StreamReader)
     mock_writer = AsyncMock(spec=asyncio.StreamWriter)

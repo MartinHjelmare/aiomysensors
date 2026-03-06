@@ -71,7 +71,7 @@ def gateway_fixture(message_schema: MessageSchema, transport: MockTransport) -> 
 
 
 @pytest.fixture(name="mock_file")
-def mock_file_fixture() -> Generator[MagicMock, None, None]:
+def mock_file_fixture() -> Generator[MagicMock]:
     """Patch file operations."""
     mock_file = MagicMock()
 
