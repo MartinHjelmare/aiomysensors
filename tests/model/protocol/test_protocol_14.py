@@ -89,12 +89,15 @@ async def test_presentation_gateway_protocol_version(
     message = Message(0, 255, 0, 0, 17, protocol_version)
     command = message.to_string(message_schema)
     transport.messages.append(command)
-    assert gateway.protocol_version is None
+    gateway_protocol_version: str | None
+    gateway_protocol_version = gateway.protocol_version
+    assert gateway_protocol_version is None
 
     msg = await anext(gateway.listen())
 
     assert msg.to_string(message_schema) == command
-    assert gateway.protocol_version == protocol_version
+    gateway_protocol_version = gateway.protocol_version
+    assert gateway_protocol_version == protocol_version
     assert gateway.protocol is get_protocol(protocol_version)
 
 
