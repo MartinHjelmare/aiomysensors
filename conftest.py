@@ -1,3 +1,5 @@
+"""Provide fixtures for documentation tests."""
+
 from sybil import Sybil
 from sybil.evaluators.doctest import NUMBER
 from sybil.parsers.myst import ClearNamespaceParser as MarkdownClearNamespaceParser
