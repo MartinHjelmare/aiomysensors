@@ -2,12 +2,11 @@
   "extends": [
     "config:best-practices",
     ":pinOnlyDevDependencies",
-    ":automergeAll",
+    ":automergeBranch",
+    ":automergeMinor",
     ":enablePreCommit",
     ":semanticCommitTypeAll(chore)"
   ],
-  "automergeType": "branch",
-  "lockFileMaintenance": { "enabled": true },
   "packageRules": [
     {
       "matchDepTypes": ["dependencies"],
