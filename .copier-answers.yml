@@ -3,7 +3,7 @@ _commit: eb58cae
 _src_path: https://github.com/browniebroke/pypackage-template
 add_me_as_contributor: false
 cli_name: aiomysensors
-copyright_year: '2025'
+copyright_year: "2025"
 documentation: false
 email: marhje52@gmail.com
 full_name: Martin Hjelmare
@@ -18,5 +18,4 @@ project_short_description: Python asyncio package to connect to MySensors gatewa
 project_slug: aiomysensors
 run_uv_sync: false
 setup_github: false
-setup_pre_commit: true
-
+setup_pre_commit: false
