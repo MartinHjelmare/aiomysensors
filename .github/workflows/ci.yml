@@ -15,24 +15,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: 3.x
-      - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
-        with:
-          enable-cache: true
-      - name: Install Dependencies
-        run: uv sync --all-extras --no-python-downloads
-        shell: bash
-      - uses: actions/cache@v5
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
-      - name: Run pre-commit
-        run: uv run pre-commit run --all-files --show-diff-on-failure --color=always
-        shell: bash
+      - uses: actions/checkout@v6.0.2
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      - uses: j178/prek-action@v2.0.3
 
   # Make sure commit messages follow the conventional commits convention:
   # https://www.conventionalcommits.org
@@ -40,7 +25,7 @@ jobs:
     name: Lint Commit Messages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
       - uses: wagoid/commitlint-github-action@v6.2.1
@@ -56,18 +41,15 @@ jobs:
           - ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        id: setup-python
+      - uses: actions/checkout@v6.0.2
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       - run: uv sync --all-extras --no-python-downloads
         shell: bash
       - run: uv run pytest
         shell: bash
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -86,7 +68,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
           ref: ${{ github.sha }}
@@ -97,7 +79,7 @@ jobs:
 
       # Do a dry run of PSR
       - name: Test release
-        uses: python-semantic-release/python-semantic-release@v10
+        uses: python-semantic-release/python-semantic-release@v10.5.3
         if: github.ref_name != 'main'
         with:
           no_operation_mode: true
@@ -105,24 +87,24 @@ jobs:
 
       # On main branch: actual PSR + upload to PyPI & GitHub
       - name: Release
-        uses: python-semantic-release/python-semantic-release@v10
-        id: release
+        uses: python-semantic-release/python-semantic-release@v10.5.3
         if: github.ref_name == 'main'
+        id: release
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@v4
+        uses: actions/attest@v4
         if: steps.release.outputs.released == 'true'
         with:
           subject-path: "dist/*"
 
       - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@v1.14.0
         if: steps.release.outputs.released == 'true'
 
       - name: Publish package distributions to GitHub Releases
-        uses: python-semantic-release/publish-action@v10
+        uses: python-semantic-release/publish-action@v10.5.3
         if: steps.release.outputs.released == 'true'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
