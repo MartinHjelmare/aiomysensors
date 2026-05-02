@@ -28,10 +28,7 @@ from .protocol_15 import (
 VERSION = "2.0"
 
 
-def handle_missing_node_child[
-    IncomingMessageHandlerT: IncomingMessageHandler,
-    **P,
-](
+def handle_missing_node_child[IncomingMessageHandlerT: IncomingMessageHandler](
     func: Callable[
         [IncomingMessageHandlerT, Message],
         Awaitable[Message],
