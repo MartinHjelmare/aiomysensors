@@ -2,7 +2,7 @@
 
 import asyncio
 
-from serial_asyncio_fast import open_serial_connection
+from serialx import open_serial_connection
 
 from . import StreamTransport
 

@@ -26,7 +26,7 @@ classifiers = [
 dependencies = [
   "awesomeversion>=25,<26",
   "mashumaro>=3.15",
-  "pyserial-asyncio-fast>=0.16",
+  "serialx>=1.6.0",
 ]
 optional-dependencies.cli = [
   "aiomqtt>=2.3,<3",
