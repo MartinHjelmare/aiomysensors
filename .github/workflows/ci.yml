@@ -17,6 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.2
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      - run: uv sync --all-extras --no-python-downloads
+        shell: bash
       - uses: j178/prek-action@v2.0.3
 
   # Make sure commit messages follow the conventional commits convention:
