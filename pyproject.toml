@@ -4,7 +4,7 @@ requires = [ "setuptools>=77.0.3" ]
 
 [project]
 name = "aiomysensors"
-version = "0.12.0"
+version = "0.13.0"
 description = "Python asyncio package to connect to MySensors gateways."
 readme = "README.md"
 license = "Apache-2.0"

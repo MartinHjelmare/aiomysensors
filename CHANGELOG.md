@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.13.0 (2026-05-02)
+
+### Features
+
+- Use serialx ([#554](https://github.com/MartinHjelmare/aiomysensors/pull/554),
+  [`7d03fad`](https://github.com/MartinHjelmare/aiomysensors/commit/7d03fadf68e2019461606fcb1267e6f2102f71d0))
+
+
 ## v0.12.0 (2026-03-06)
 
 ### Chores
