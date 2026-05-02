@@ -27,10 +27,7 @@ from .message_handler import IncomingMessageHandlerBase, OutgoingMessageHandlerB
 VERSION = "1.4"
 
 
-def handle_missing_protocol_version[
-    IncomingMessageHandlerT: IncomingMessageHandler,
-    **P,
-](
+def handle_missing_protocol_version[IncomingMessageHandlerT: IncomingMessageHandler](
     func: Callable[
         [IncomingMessageHandlerT, Message],
         Awaitable[Message],
