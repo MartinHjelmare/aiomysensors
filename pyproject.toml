@@ -41,7 +41,7 @@ scripts.aiomysensors = "aiomysensors.cli:cli"
 dev = [
   "codespell==2.4.3",
   "copier==9.17.0",
-  "prek==0.4.9",
+  "prek==0.4.10",
   "pytest==9.1.1",
   "pytest-asyncio==1.4.0",
   "pytest-cov==7.1.0",
