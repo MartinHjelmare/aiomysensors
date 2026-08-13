@@ -48,7 +48,7 @@ dev = [
   "python-semantic-release>=10,<11",
   "ruff==0.16.2",
   "sybil[pytest]==10.1.0",
-  "ty==0.0.70",
+  "ty==0.0.71",
 ]
 
 [tool.ruff]
