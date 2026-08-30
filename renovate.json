@@ -11,6 +11,22 @@
   "prCreation": "not-pending",
   "packageRules": [
     {
+      "groupName": "ruff",
+      "matchPackageNames": ["ruff", "astral-sh/ruff-pre-commit"]
+    },
+    {
+      "groupName": "codespell",
+      "matchPackageNames": ["codespell", "codespell-project/codespell"]
+    },
+    {
+      "groupName": "python-semantic-release",
+      "matchPackageNames": [
+        "python-semantic-release",
+        "python-semantic-release/python-semantic-release",
+        "python-semantic-release/publish-action"
+      ]
+    },
+    {
       "matchDepTypes": ["dependencies"],
       "major": {
         "semanticCommitType": "fix"
