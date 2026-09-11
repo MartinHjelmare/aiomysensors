@@ -45,6 +45,7 @@ Install this via pip (or your favourite package manager):
 
 ```py
 """Show a minimal example using aiomysensors."""
+
 import asyncio
 
 from aiomysensors import AIOMySensorsError, Gateway, SerialTransport
